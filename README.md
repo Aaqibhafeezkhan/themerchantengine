@@ -29,7 +29,8 @@
   <a href="https://github.com/Xdabier/themerchantengine/commits"><img src="https://img.shields.io/github/last-commit/Xdabier/themerchantengine" alt="Last commit"></a>
   <a href="https://github.com/Xdabier/themerchantengine/stargazers"><img src="https://img.shields.io/github/stars/Xdabier/themerchantengine" alt="Stars"></a>
   <a href="https://github.com/Xdabier/themerchantengine/issues"><img src="https://img.shields.io/github/issues/Xdabier/themerchantengine" alt="Issues"></a>
-  <a href="https://www.opensourcealternatives.to"><img src="https://www.opensourcealternatives.to/badge-osa.svg" alt="As seen on Open Source Alternatives" height="20"></a>  <img src="https://img.shields.io/badge/node-22-339933.svg" alt="Node 22">
+  <a href="https://www.opensourcealternatives.to"><img src="https://www.opensourcealternatives.to/badge-osa.svg" alt="As seen on Open Source Alternatives" height="20"></a>
+  <a href="https://www.saashub.com/the-merchant-engine?utm_source=badge&utm_campaign=badge&utm_content=the-merchant-engine&badge_variant=color&badge_kind=approved"><img src="https://cdn-b.saashub.com/img/badges/approved-color.png?v=1" alt="The Merchant Engine badge" width="150"></a>  <img src="https://img.shields.io/badge/node-22-339933.svg" alt="Node 22">
 </p>
 
 <p align="center">
