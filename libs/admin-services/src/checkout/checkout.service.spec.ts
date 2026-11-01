@@ -1,6 +1,7 @@
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { ZodError } from 'zod';
 import { ADMIN_API_BASE_URL } from '../shared';
 import { CheckoutSettingsService } from './checkout.service';
 
@@ -43,7 +44,14 @@ describe('CheckoutSettingsService', () => {
   });
 
   it('update() rejects an invalid URL via Zod', () => {
-    expect(() => service.update({ termsOfServiceUrl: 'not-a-url' as never }).subscribe()).toThrow();
+    const next = jest.fn();
+    const error = jest.fn();
+    expect(() =>
+      service.update({ termsOfServiceUrl: 'not-a-url' }).subscribe({ next, error }),
+    ).not.toThrow();
+    expect(next).not.toHaveBeenCalled();
+    expect(error).toHaveBeenCalledTimes(1);
+    expect(error).toHaveBeenCalledWith(expect.any(ZodError));
     http.expectNone('/api/v1/admin/checkout/settings');
   });
 
