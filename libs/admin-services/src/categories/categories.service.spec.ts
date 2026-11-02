@@ -49,10 +49,14 @@ describe('CategoriesService', () => {
     http.expectOne('/api/v1/admin/categories').flush({ data: [categoryFixture] });
   });
 
-  it('create() validates slug regex', () => {
-    expect(() =>
-      service.create({ name: { default: 'X' }, slug: 'Not A Slug' }).subscribe(),
-    ).toThrow();
+  it('create() sends validation errors through the Observable error channel', (done) => {
+    service.create({ name: { default: 'X' }, slug: 'Not A Slug' }).subscribe({
+      next: () => done.fail('should not emit for invalid input'),
+      error: (err: unknown) => {
+        expect(err).toBeDefined();
+        done();
+      },
+    });
     http.expectNone('/api/v1/admin/categories');
   });
 
@@ -95,29 +99,47 @@ describe('CategoriesService', () => {
     req.flush(null);
   });
 
-  it('reorder() throws ZodError synchronously when items is empty', () => {
-    expect(() => service.reorder({ items: [] as never }).subscribe()).toThrow();
+  it('reorder() sends validation errors through the Observable error channel', (done) => {
+    service.reorder({ items: [] as never }).subscribe({
+      next: () => done.fail('should not emit for invalid input'),
+      error: (err: unknown) => {
+        expect(err).toBeDefined();
+        done();
+      },
+    });
     http.expectNone('/api/v1/admin/categories/reorder');
   });
 
-  it('reorder() throws ZodError synchronously when an id has disallowed characters', () => {
-    expect(() =>
-      service.reorder({ items: [{ id: 'not a valid id!', sortOrder: 0 }] as never }).subscribe(),
-    ).toThrow();
+  it('reorder() sends invalid ids through the Observable error channel', (done) => {
+    service.reorder({ items: [{ id: 'not a valid id!', sortOrder: 0 }] as never }).subscribe({
+      next: () => done.fail('should not emit for invalid input'),
+      error: (err: unknown) => {
+        expect(err).toBeDefined();
+        done();
+      },
+    });
     http.expectNone('/api/v1/admin/categories/reorder');
   });
 
-  it('reorder() throws ZodError synchronously when sortOrder is negative', () => {
-    expect(() =>
-      service.reorder({ items: [{ id: VALID_ID_A, sortOrder: -1 }] }).subscribe(),
-    ).toThrow();
+  it('reorder() sends negative sort orders through the Observable error channel', (done) => {
+    service.reorder({ items: [{ id: VALID_ID_A, sortOrder: -1 }] }).subscribe({
+      next: () => done.fail('should not emit for invalid input'),
+      error: (err: unknown) => {
+        expect(err).toBeDefined();
+        done();
+      },
+    });
     http.expectNone('/api/v1/admin/categories/reorder');
   });
 
-  it('reorder() throws ZodError synchronously when sortOrder is not an integer', () => {
-    expect(() =>
-      service.reorder({ items: [{ id: VALID_ID_A, sortOrder: 1.5 }] }).subscribe(),
-    ).toThrow();
+  it('reorder() sends non-integer sort orders through the Observable error channel', (done) => {
+    service.reorder({ items: [{ id: VALID_ID_A, sortOrder: 1.5 }] }).subscribe({
+      next: () => done.fail('should not emit for invalid input'),
+      error: (err: unknown) => {
+        expect(err).toBeDefined();
+        done();
+      },
+    });
     http.expectNone('/api/v1/admin/categories/reorder');
   });
 
@@ -151,6 +173,17 @@ describe('CategoriesService', () => {
         { error: { code: 'VALIDATION', message: 'bad' } },
         { status: 400, statusText: 'Bad Request' },
       );
+  });
+
+  it('update() sends validation errors through the Observable error channel', (done) => {
+    service.update(VALID_ID_A, { slug: 'Not A Slug' }).subscribe({
+      next: () => done.fail('should not emit for invalid input'),
+      error: (err: unknown) => {
+        expect(err).toBeDefined();
+        done();
+      },
+    });
+    http.expectNone(`/api/v1/admin/categories/${VALID_ID_A}`);
   });
 
   it('delete() DELETEs for soft-delete semantics', (done) => {
