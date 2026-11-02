@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable, map, throwError } from 'rxjs';
 import { ADMIN_API_ROUTES, adminRoute, fillRoute } from '@admin-routes';
 import { ADMIN_API_BASE_URL, envelope, rawLocaleContext } from '../shared';
 import {
@@ -38,7 +38,12 @@ export class CategoriesService {
   }
 
   create(input: CreateCategoryRequest): Observable<Category> {
-    const body = createCategoryRequestSchema.parse(input);
+    let body: CreateCategoryRequest;
+    try {
+      body = createCategoryRequestSchema.parse(input);
+    } catch (err) {
+      return throwError(() => err);
+    }
     return this.http
       .post<unknown>(`${this.apiBase}/${adminRoute(CATEGORIES.base, CATEGORIES.adminList)}`, body, {
         withCredentials: true,
@@ -48,7 +53,12 @@ export class CategoriesService {
 
   /** PATCH /v1/admin/categories/reorder — declared before /:id to avoid shadowing. */
   reorder(input: ReorderCategoriesRequest): Observable<void> {
-    const body = reorderCategoriesRequestSchema.parse(input);
+    let body: ReorderCategoriesRequest;
+    try {
+      body = reorderCategoriesRequestSchema.parse(input);
+    } catch (err) {
+      return throwError(() => err);
+    }
     return this.http
       .patch<void>(`${this.apiBase}/${adminRoute(CATEGORIES.base, CATEGORIES.reorder)}`, body, {
         withCredentials: true,
@@ -57,7 +67,12 @@ export class CategoriesService {
   }
 
   update(id: string, input: UpdateCategoryRequest): Observable<Category> {
-    const body = updateCategoryRequestSchema.parse(input);
+    let body: UpdateCategoryRequest;
+    try {
+      body = updateCategoryRequestSchema.parse(input);
+    } catch (err) {
+      return throwError(() => err);
+    }
     return this.http
       .patch<unknown>(
         `${this.apiBase}/${adminRoute(CATEGORIES.base, fillRoute(CATEGORIES.adminById, { id }))}`,
