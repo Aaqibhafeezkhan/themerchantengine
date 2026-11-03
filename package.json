@@ -86,8 +86,8 @@
     "multer": "^2.2.0"
   },
   "dependencies": {
-    "@analogjs/content": "^2.4.10",
-    "@analogjs/router": "^2.4.10",
+    "@analogjs/content": "^2.9.5",
+    "@analogjs/router": "^2.9.5",
     "@angular/cdk": "~21.2.0",
     "@angular/common": "~21.2.0",
     "@angular/compiler": "~21.2.0",
@@ -143,9 +143,9 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@analogjs/platform": "^2.4.10",
-    "@analogjs/vite-plugin-angular": "^2.4.10",
-    "@analogjs/vitest-angular": "^2.4.10",
+    "@analogjs/platform": "^2.9.5",
+    "@analogjs/vite-plugin-angular": "^2.9.5",
+    "@analogjs/vitest-angular": "^2.9.5",
     "@angular-devkit/core": "~21.2.0",
     "@angular-devkit/schematics": "~21.2.0",
     "@angular-eslint/eslint-plugin": "^21.2.0",

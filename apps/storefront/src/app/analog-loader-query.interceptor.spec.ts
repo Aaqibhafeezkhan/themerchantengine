@@ -23,11 +23,10 @@ import { LOADER_QUERY_HEADER, loaderSearchParams } from '../lib/loader-query';
  * would actually receive. `ssr-loaders-query.spec.ts` covers the other half:
  * that the loaders read what arrives.
  *
- * The `still drops the search` case is deliberate. It is a canary on the
- * upstream bug, not an endorsement of it: when Analog forwards the query on
- * this branch it will go red, and that is the signal to delete
- * `analogLoaderQueryInterceptor` and `lib/loader-query.ts` rather than carry
- * them forever.
+ * The first case is a canary on the upstream bug. It went red when Analog
+ * 2.9 started forwarding the query on this branch, and now asserts the fixed
+ * behavior. The interceptor and `lib/loader-query.ts` are redundant on that
+ * Analog version and can be deleted in a follow-up.
  */
 
 const BASE = 'http://ssr.test';
@@ -84,11 +83,11 @@ afterEach(() => {
 });
 
 describe('analogLoaderQueryInterceptor over the real Analog resolve path', () => {
-  it("still drops the search from the fetched url (canary on Analog's bug)", async () => {
+  it("now keeps the search on the fetched url (canary on Analog's fix)", async () => {
     await firstValueFrom(makeClient('server').get(`${ENDPOINT}?brand=Nike&sortBy=price`));
 
     expect(captured).toHaveLength(1);
-    expect(captured[0].url).toBe('/api/_analog/pages/fr/catalog/index');
+    expect(captured[0].url).toBe('/api/_analog/pages/fr/catalog/index?brand=Nike&sortBy=price');
   });
 
   it('carries the search on the header the internal fetch does forward', async () => {
