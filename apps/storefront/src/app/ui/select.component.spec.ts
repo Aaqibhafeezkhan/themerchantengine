@@ -69,6 +69,7 @@ describe('SelectComponent', () => {
 function restingRule(): string {
   const css = (SelectComponent as unknown as { ɵcmp: { styles: string[] } }).ɵcmp.styles
     .join('\n')
+    .replace(/%NS%/g, '')
     .replace(/\[_ng(?:content|host)-[^\]]*\]/g, '');
   const rule = /(?:^|[}\n])\s*select\s*\{([^{}]*)\}/.exec(css);
   expect(rule, 'no bare select rule found').not.toBeNull();

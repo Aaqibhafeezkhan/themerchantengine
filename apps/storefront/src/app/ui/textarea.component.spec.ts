@@ -49,6 +49,7 @@ describe('TextareaComponent', () => {
 function restingRule(): string {
   const css = (TextareaComponent as unknown as { ɵcmp: { styles: string[] } }).ɵcmp.styles
     .join('\n')
+    .replace(/%NS%/g, '')
     .replace(/\[_ng(?:content|host)-[^\]]*\]/g, '');
   const rule = /(?:^|[}\n])\s*textarea\s*\{([^{}]*)\}/.exec(css);
   expect(rule, 'no bare textarea rule found').not.toBeNull();

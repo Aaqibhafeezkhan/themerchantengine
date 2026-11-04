@@ -110,6 +110,7 @@ describe('PaginationComponent', () => {
 function styleSheet(): string {
   return (PaginationComponent as unknown as { ɵcmp: { styles: string[] } }).ɵcmp.styles
     .join('\n')
+    .replace(/%NS%/g, '')
     .replace(/\[_ng(?:content|host)-[^\]]*\]/g, '');
 }
 

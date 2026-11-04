@@ -66,7 +66,13 @@ writeMarker({ adminPort, apiPort, pid: process.pid });
 const child = spawn(
   'npx',
   serveAdminArgs({ proxyConfigPath: PROXY_CONF_PATH, adminPort }),
-  { cwd: WORKSPACE_ROOT, stdio: 'inherit', shell: true },
+  {
+    cwd: WORKSPACE_ROOT,
+    stdio: 'inherit',
+    shell: true,
+    // Angular 22 lets a PORT variable beat --port, and Nx loads the API's PORT from .env.
+    env: { ...process.env, PORT: adminPort },
+  },
 );
 
 for (const signal of ['SIGINT', 'SIGTERM']) {

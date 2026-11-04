@@ -1,5 +1,6 @@
 import { ErrorHandler, Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 
 /**
  * Storefront global error handler.
@@ -23,7 +24,8 @@ import { isPlatformBrowser } from '@angular/common';
  *
  * Leaving the page makes WebKit reject every in-flight lazy import. Those
  * failures are dropped once the page is unloading; a lazy import that fails
- * on a live page is still logged.
+ * on a live page is still logged. The same goes for an HTTP request the
+ * browser aborts because the page is going away (status 0).
  */
 @Injectable()
 export class StorefrontErrorHandler implements ErrorHandler {
@@ -61,7 +63,7 @@ export class StorefrontErrorHandler implements ErrorHandler {
       return;
     }
 
-    if (this.unloading && isFailedLazyImport(error)) return;
+    if (this.unloading && (isFailedLazyImport(error) || isAbortedRequest(error))) return;
 
     // eslint-disable-next-line no-console
     console.error('[storefront]', message, error);
@@ -76,6 +78,10 @@ const FAILED_LAZY_IMPORT =
 
 function isFailedLazyImport(error: unknown): boolean {
   return error instanceof TypeError && FAILED_LAZY_IMPORT.test(error.message);
+}
+
+function isAbortedRequest(error: unknown): boolean {
+  return error instanceof HttpErrorResponse && error.status === 0;
 }
 
 /**

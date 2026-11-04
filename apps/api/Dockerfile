@@ -74,7 +74,7 @@ COPY scripts/install-git-hooks.mjs ./scripts/
 # (already on PATH for every user), so prisma's raw spawn() finds them
 # without npx, no per-user cache write, no node_modules resolution dance.
 RUN npm ci --omit=dev --no-audit --no-fund \
-    && npm install -g ts-node@10 typescript@5.9 \
+    && npm install -g ts-node@10 typescript@6.0 \
     && npm cache clean --force \
     && npx prisma generate
 

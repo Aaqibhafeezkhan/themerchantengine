@@ -1,4 +1,5 @@
 import { Injector, PLATFORM_ID } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { StorefrontErrorHandler, sanitizeFromParam } from './error-handler';
@@ -31,6 +32,28 @@ describe('StorefrontErrorHandler', () => {
     handler.handleError(cancelledImport);
     handler.handleError(new TypeError('Failed to fetch dynamically imported module: /x.js'));
     expect(log).not.toHaveBeenCalled();
+  });
+
+  it('drops an aborted HTTP request once the page is unloading', () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const handler = browserHandler();
+    window.dispatchEvent(new Event('beforeunload'));
+    handler.handleError(new HttpErrorResponse({ status: 0, url: '/v1/cart' }));
+    expect(log).not.toHaveBeenCalled();
+  });
+
+  it('logs an aborted HTTP request while the page is live', () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    browserHandler().handleError(new HttpErrorResponse({ status: 0, url: '/v1/cart' }));
+    expect(log).toHaveBeenCalledTimes(1);
+  });
+
+  it('logs a real HTTP failure while the page is unloading', () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const handler = browserHandler();
+    window.dispatchEvent(new Event('beforeunload'));
+    handler.handleError(new HttpErrorResponse({ status: 500, url: '/v1/cart' }));
+    expect(log).toHaveBeenCalledTimes(1);
   });
 
   it('still logs any other error while the page is unloading', () => {

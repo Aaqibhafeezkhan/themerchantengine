@@ -73,6 +73,7 @@ describe('InputComponent', () => {
 function restingRule(): string {
   const css = (InputComponent as unknown as { ɵcmp: { styles: string[] } }).ɵcmp.styles
     .join('\n')
+    .replace(/%NS%/g, '')
     .replace(/\[_ng(?:content|host)-[^\]]*\]/g, '');
   const rule = /(?:^|[}\n])\s*input\s*\{([^{}]*)\}/.exec(css);
   expect(rule, 'no bare input rule found').not.toBeNull();

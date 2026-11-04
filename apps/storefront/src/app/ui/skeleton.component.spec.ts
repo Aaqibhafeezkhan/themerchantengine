@@ -65,5 +65,6 @@ describe('SkeletonComponent', () => {
 function styleSheet(): string {
   return (SkeletonComponent as unknown as { ɵcmp: { styles: string[] } }).ɵcmp.styles
     .join('\n')
+    .replace(/%NS%/g, '')
     .replace(/\[_ng(?:content|host)-[^\]]*\]/g, '');
 }
