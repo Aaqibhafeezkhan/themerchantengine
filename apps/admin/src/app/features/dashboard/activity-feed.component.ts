@@ -60,7 +60,7 @@ export interface ActivityItem {
                 <a
                   [routerLink]="['/audit-logs', item.entityType, item.entityId]"
                   [attr.aria-label]="linkLabel(item)"
-                  class="px-5 py-4 flex flex-col gap-1 hover:bg-surface-elevated focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-[-2px]"
+                  class="px-5 py-4 flex flex-col gap-1 hover:bg-surface-elevated focus-visible:outline-2 focus-visible:outline-ink focus-visible:-outline-offset-2"
                   data-testid="activity-link"
                 >
                   <span class="text-sm text-ink" data-testid="activity-sentence">

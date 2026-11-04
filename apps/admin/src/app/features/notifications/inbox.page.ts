@@ -152,7 +152,7 @@ import { AdminDatePipe } from '../../shared/pipes/admin-date.pipe';
                     }
                   </div>
                   @if (bodyText(n)) {
-                    <p class="text-sm text-ink-muted break-words">
+                    <p class="text-sm text-ink-muted wrap-break-word">
                       {{ bodyText(n) }}
                     </p>
                   }

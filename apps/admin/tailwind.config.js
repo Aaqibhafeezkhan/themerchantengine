@@ -1,13 +1,13 @@
 const path = require('path');
 
 /**
- * A semantic token, composed so Tailwind's opacity modifiers keep working.
+ * A semantic token, wrapped so Tailwind opacity modifiers keep working.
  *
  * The variables in `styles.css` hold space-separated RGB channels rather than
  * hex for exactly this reason: `bg-surface-elevated/80` expands to
- * `rgb(26 26 26 / 0.8)`, which a hex variable cannot produce.
+ * `color-mix(in oklab, rgb(26 26 26) 80%, transparent)`.
  */
-const semantic = (name) => `rgb(var(--${name}) / <alpha-value>)`;
+const semantic = (name) => `rgb(var(--${name}))`;
 
 /** The four status colours, each in its three semantic forms. */
 const statusColors = () => {

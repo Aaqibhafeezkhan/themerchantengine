@@ -17,6 +17,8 @@
 
 /* ── §1 Brand tokens (`@import` first per CSS spec) ── */
 @import './brand.css';
+@import 'tailwindcss';
+@config '../../tailwind.config.js';
 
 /* ── §3.3 Self-hosted fonts ── */
 
@@ -137,11 +139,6 @@
   font-display: swap;
   unicode-range: U+0000-00FF, U+0600-06FF, U+0750-077F, U+0900-097F, U+FB50-FDFF, U+FE70-FEFF;
 }
-
-/* ── Tailwind base ── */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 /* ── Project base ── */
 html,

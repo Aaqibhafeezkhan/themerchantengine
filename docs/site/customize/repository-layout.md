@@ -53,7 +53,7 @@ How it builds:
 `apps/admin/` is a standalone-component Angular 21 app.
 
 - The source is `apps/admin/src/app/`: `core/` (stores, guards, HTTP interceptors, the session bootstrap), `features/` (one lazy-loaded route group per module), `shared/` (layouts and navigation).
-- Tailwind 3 with `apps/admin/tailwind.config.js`; the brand tokens live in `apps/admin/src/styles.css`.
+- Tailwind 4 with `apps/admin/tailwind.config.js`; the brand tokens live in `apps/admin/src/styles.css`.
 - Signals hold local UI state, Reactive Forms hold every form, and `@angular/cdk` supplies the dialog, overlay, listbox and a11y primitives. TanStack Query caches server state only; there is no NgRx.
 - Every API response and form is parsed by a Zod schema from `libs/admin-types/`, called by the matching service in `libs/admin-services/`. Component tests run jest-axe; the Playwright journeys run axe.
 - The app's API base is the relative `/api` (`apps/admin/src/environments/environment.ts`), in dev and in production alike.

@@ -70,7 +70,7 @@
 - **Mail:** Resend (`RESEND_API_KEY`), plus a console transport that logs mail in development. See [Environment variables](docs/site/reference/environment-variables.md).
 - **Storage:** local disk or any S3-compatible bucket (`S3_BUCKET`). See [Install on a server](docs/site/getting-started/install-on-a-server.md).
 - **Shipping:** zones and methods with the rates you enter in the admin, and a carrier list for tracking links. See [Store settings](docs/site/operate/store-settings.md).
-- **Admin:** Angular 21 with signals, `@angular/cdk` and Tailwind 3.4, themed at runtime from the store's brand settings. See [Store settings](docs/site/operate/store-settings.md).
+- **Admin:** Angular 21 with signals, `@angular/cdk` and Tailwind 4.3, themed at runtime from the store's brand settings. See [Store settings](docs/site/operate/store-settings.md).
 - **Storefront:** Analog SSR with locale routing and a documented API contract, so you can also [build your own](docs/site/build-a-storefront/index.md).
 - **Roles and permissions:** granular admin permissions, listed in [Permissions](docs/site/reference/permissions.md).
 

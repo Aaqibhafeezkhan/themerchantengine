@@ -133,13 +133,13 @@ export interface ProductCardData {
       }
       .image-area {
         position: relative;
-        flex-shrink: 0;
+        shrink: 0;
       }
       .image-link {
         display: block;
         aspect-ratio: 1 / 1;
         background-color: var(--brand-bg);
-        flex-shrink: 0;
+        shrink: 0;
         overflow: hidden;
       }
       .card-wishlist {

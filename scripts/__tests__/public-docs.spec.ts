@@ -236,7 +236,7 @@ describe('README', () => {
       .devDependencies['tailwindcss'];
     const [major, minor] = range.replace(/^[^\d]*/, '').split('.');
     expect(readme).toContain(`Tailwind ${major}.${minor}`);
-    expect(readme).not.toMatch(/Tailwind v?(?!3\b)\d/);
+    expect(readme).not.toMatch(new RegExp(`Tailwind v?(?!${major}\\b)\\d`));
   });
 
   it('lists the mail and shipping adapters as planned', () => {

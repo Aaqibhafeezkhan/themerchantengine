@@ -38,7 +38,7 @@ export interface CommandPaletteResult {
         #searchInput
         type="text"
         [placeholder]="data.placeholder ?? 'Jump to…'"
-        class="w-full h-14 px-4 bg-surface text-ink tabular text-sm border-b border-line placeholder:text-ink-muted focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-[-2px]"
+        class="w-full h-14 px-4 bg-surface text-ink tabular text-sm border-b border-line placeholder:text-ink-muted focus-visible:outline-2 focus-visible:outline-ink focus-visible:-outline-offset-2"
         [ngModel]="query()"
         (ngModelChange)="onQuery($event)"
         (keydown.arrowDown)="move(1, $event)"

@@ -45,7 +45,7 @@ export interface QuickAction {
             <li class="sm:min-h-[64px]">
               <a
                 [routerLink]="action.to"
-                class="flex items-center px-5 py-4 text-sm text-ink hover:bg-surface-elevated focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-[-2px]"
+                class="flex items-center px-5 py-4 text-sm text-ink hover:bg-surface-elevated focus-visible:outline-2 focus-visible:outline-ink focus-visible:-outline-offset-2"
                 [attr.data-testid]="'quick-action-' + testSuffix(action.to)"
               >
                 <span>{{ action.label }}</span>

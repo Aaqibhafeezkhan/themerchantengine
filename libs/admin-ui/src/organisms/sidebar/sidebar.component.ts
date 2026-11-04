@@ -63,7 +63,7 @@ export interface NavGroup {
               [routerLink]="item.to"
               routerLinkActive="bg-surface-elevated text-ink-emphasis"
               [routerLinkActiveOptions]="{ exact: item.to === '/' }"
-              class="flex items-center justify-between px-3 py-2 min-h-[44px] text-sm text-ink hover:bg-surface-elevated focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-[-2px]"
+              class="flex items-center justify-between px-3 py-2 min-h-[44px] text-sm text-ink hover:bg-surface-elevated focus-visible:outline-2 focus-visible:outline-ink focus-visible:-outline-offset-2"
               (click)="navItemClicked.emit()"
             >
               <span>{{ item.label }}</span>

@@ -82,7 +82,7 @@ export interface TrustPillar {
         justify-content: center;
         inline-size: 44px;
         block-size: 44px;
-        flex-shrink: 0;
+        shrink: 0;
         color: var(--brand-primary);
         background-color: var(--brand-surface-strong);
         border-radius: var(--brand-radius-md);

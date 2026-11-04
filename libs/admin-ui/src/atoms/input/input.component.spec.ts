@@ -99,7 +99,7 @@ describe('InputComponent', () => {
     });
 
     // Logical inline positioning so the adornment follows the writing direction.
-    // Tailwind 3.4 spells that `end-0` (inset-inline-end); `right-0` would pin it
+    // Tailwind spells that `end-0` (inset-inline-end); `right-0` would pin it
     // to the wrong edge under RTL.
     it('positions the suffix with logical properties only', () => {
       host.suffix.set('EUR');

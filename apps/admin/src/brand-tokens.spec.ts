@@ -65,9 +65,9 @@ describe('admin semantic token layer', () => {
   });
 
   it('declares every colour token as RGB channels, never as hex', () => {
-    // Tailwind composes these as `rgb(var(--token) / <alpha-value>)`. A hex
-    // value produces `rgb(#0a0a0a / 0.8)`, which is invalid, so every opacity
-    // modifier in the tree would stop resolving without a single error.
+    // Tailwind wraps these as `rgb(var(--token))`. A hex value produces
+    // `rgb(#0a0a0a)`, which is invalid, so every semantic colour in the tree
+    // would stop resolving without a single error.
     const channels = /^\d{1,3} \d{1,3} \d{1,3}$/;
     const notColour = new Set(['--scheme', '--picker-indicator-filter']);
     for (const block of [dark, lightBySystem, lightByChoice]) {

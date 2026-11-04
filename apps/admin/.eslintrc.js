@@ -13,7 +13,7 @@ module.exports = {
     '!**/*',
     '**/*.js.map',
     'jest.config.ts',
-    'postcss.config.js',
+    '.postcssrc.json',
     'tailwind.config.js',
     '.eslintrc.js',
   ],

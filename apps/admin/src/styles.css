@@ -19,6 +19,8 @@
  * off CDK overlay.
  */
 @import '@angular/cdk/overlay-prebuilt.css';
+@import 'tailwindcss';
+@config '../tailwind.config.js';
 
 /*
  * Side-panel CDK panelClass — explicit CSS instead of runtime Tailwind
@@ -87,10 +89,6 @@ input[type='date']::-webkit-calendar-picker-indicator {
 input[type='date']::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
 }
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 /* Brand design tokens exposed as CSS variables for non-Tailwind contexts. */
 :root {

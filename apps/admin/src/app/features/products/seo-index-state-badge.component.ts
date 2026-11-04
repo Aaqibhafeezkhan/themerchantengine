@@ -78,25 +78,25 @@ import { ApiError, ApiForbiddenError } from '@admin-types';
             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3" data-testid="seo-index-state-detail">
               <div class="border border-line p-3">
                 <dt class="text-xs tracking-widest uppercase text-ink-muted">Coverage</dt>
-                <dd class="mt-1 text-sm text-ink break-words">
+                <dd class="mt-1 text-sm text-ink wrap-break-word">
                   {{ dash(r.coverageState) }}
                 </dd>
               </div>
               <div class="border border-line p-3">
                 <dt class="text-xs tracking-widest uppercase text-ink-muted">Indexing</dt>
-                <dd class="mt-1 text-sm text-ink break-words">
+                <dd class="mt-1 text-sm text-ink wrap-break-word">
                   {{ dash(r.indexingState) }}
                 </dd>
               </div>
               <div class="border border-line p-3">
                 <dt class="text-xs tracking-widest uppercase text-ink-muted">robots.txt</dt>
-                <dd class="mt-1 text-sm text-ink break-words">
+                <dd class="mt-1 text-sm text-ink wrap-break-word">
                   {{ dash(r.robotsTxtState) }}
                 </dd>
               </div>
               <div class="border border-line p-3">
                 <dt class="text-xs tracking-widest uppercase text-ink-muted">Last crawl</dt>
-                <dd class="mt-1 text-sm text-ink tabular-nums break-words">
+                <dd class="mt-1 text-sm text-ink tabular-nums wrap-break-word">
                   {{ dash(r.lastCrawlTime) }}
                 </dd>
               </div>

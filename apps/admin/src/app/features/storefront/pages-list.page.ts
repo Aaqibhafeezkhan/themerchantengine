@@ -57,7 +57,7 @@ import { ApiError, ApiForbiddenError, ApiNotFoundError } from '@admin-types';
             <li class="border-b border-line last:border-b-0">
               <a
                 [routerLink]="['/storefront', slug]"
-                class="flex items-center justify-between gap-4 px-5 py-4 hover:bg-surface-elevated focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-[-2px]"
+                class="flex items-center justify-between gap-4 px-5 py-4 hover:bg-surface-elevated focus-visible:outline-2 focus-visible:outline-ink focus-visible:-outline-offset-2"
                 [attr.data-testid]="'storefront-page-link-' + slug"
               >
                 <span class="flex flex-col gap-1 min-w-0">

@@ -156,7 +156,7 @@ interface ChipEntry {
         margin-inline-start: -0.25rem;
         border-radius: var(--brand-radius-full);
         overflow: hidden;
-        flex-shrink: 0;
+        shrink: 0;
       }
       .thumb img {
         inline-size: 100%;

@@ -190,7 +190,7 @@ const PRICE_BAND_FROM_QUERY = (
         display: inline-flex;
         inline-size: 72px;
         block-size: 72px;
-        flex-shrink: 0;
+        shrink: 0;
         border-radius: var(--brand-radius-lg);
         overflow: hidden;
       }

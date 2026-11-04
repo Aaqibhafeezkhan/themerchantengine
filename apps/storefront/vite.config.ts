@@ -63,7 +63,7 @@ const NITRO_ALIASES = {
 
 // Analog (Angular meta-framework) + Vite + Vitest configuration for the
 // merchants-engine storefront. Dev port 53300, e2e port 53311.
-// Brand tokens, Tailwind v3 + brand.css are wired via the project-local
+// Brand tokens, Tailwind v4 + brand.css are wired via the project-local
 // postcss.config.cjs which Vite picks up automatically.
 export default defineConfig(({ mode }) => ({
   root: __dirname,

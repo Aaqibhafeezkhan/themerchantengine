@@ -54,7 +54,7 @@ import { AuthStore } from '../../core/stores/auth.store';
         <a
           cdkMenuItem
           routerLink="/me"
-          class="flex items-center min-h-[44px] px-4 text-xs uppercase tracking-widest text-ink hover:bg-surface-elevated focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-[-2px]"
+          class="flex items-center min-h-[44px] px-4 text-xs uppercase tracking-widest text-ink hover:bg-surface-elevated focus-visible:outline-2 focus-visible:outline-ink focus-visible:-outline-offset-2"
           data-testid="topbar-account-profile"
         >
           My profile
@@ -62,7 +62,7 @@ import { AuthStore } from '../../core/stores/auth.store';
         <a
           cdkMenuItem
           routerLink="/me/security"
-          class="flex items-center min-h-[44px] px-4 text-xs uppercase tracking-widest text-ink hover:bg-surface-elevated focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-[-2px]"
+          class="flex items-center min-h-[44px] px-4 text-xs uppercase tracking-widest text-ink hover:bg-surface-elevated focus-visible:outline-2 focus-visible:outline-ink focus-visible:-outline-offset-2"
           data-testid="topbar-account-security"
         >
           Two-factor authentication
