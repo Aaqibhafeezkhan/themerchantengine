@@ -663,13 +663,17 @@ export class SeoInsightsService {
    * source for every PT calendar date the service needs — the inspect-budget
    * counter key and the analytics date window both derive from it. */
   private ptDate(offsetDays: number): string {
-    const instant = new Date(Date.now() - offsetDays * 86_400_000);
-    return new Intl.DateTimeFormat('en-CA', {
+    const today = new Intl.DateTimeFormat('en-CA', {
       timeZone: 'America/Los_Angeles',
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
-    }).format(instant);
+    }).format(new Date());
+    // Step back on the calendar date, not in 24h blocks, so a DST change
+    // inside the window cannot shift the result by a day.
+    const day = new Date(`${today}T00:00:00Z`);
+    day.setUTCDate(day.getUTCDate() - offsetDays);
+    return day.toISOString().slice(0, 10);
   }
 
   private errMessage(err: unknown): string {

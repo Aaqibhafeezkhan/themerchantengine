@@ -26,31 +26,31 @@
       "dependsOn": ["build"]
     },
     "test": {
-      "executor": "@nx/jest:jest",
+      "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/apps/api"],
       "options": {
-        "jestConfig": "apps/api/jest.config.ts"
+        "command": "jest -c apps/api/jest.config.ts"
       }
     },
     "e2e": {
-      "executor": "@nx/jest:jest",
+      "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/apps/api-e2e"],
       "dependsOn": ["build"],
       "options": {
-        "jestConfig": "test/jest.e2e.config.ts",
-        "runInBand": true
+        "command": "jest -c test/jest.e2e.config.ts --runInBand"
       }
     },
     "lint": {
-      "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
+      "executor": "nx:run-commands",
       "options": {
-        "lintFilePatterns": ["apps/api/**/*.ts", "test/**/*.ts"]
+        "command": "eslint \"apps/api/**/*.ts\" \"test/**/*.ts\""
       }
     },
     "prisma-generate": {
       "executor": "nx:run-commands",
-      "options": { "command": "prisma generate" }
+      "options": {
+        "command": "prisma generate"
+      }
     }
   }
 }

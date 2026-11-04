@@ -6,14 +6,17 @@
   "tags": ["scope:storefront", "type:services"],
   "targets": {
     "test": {
-      "executor": "@nx/vitest:test",
+      "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "configFile": "libs/storefront-services/vite.config.ts"
+        "command": "vitest run -c libs/storefront-services/vite.config.ts"
       }
     },
     "lint": {
-      "executor": "@nx/eslint:lint"
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint libs/storefront-services"
+      }
     }
   }
 }

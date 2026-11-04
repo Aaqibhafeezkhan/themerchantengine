@@ -6,14 +6,17 @@
   "implicitDependencies": ["storefront"],
   "targets": {
     "e2e": {
-      "executor": "@nx/playwright:playwright",
+      "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/dist/.playwright/{projectRoot}"],
       "options": {
-        "config": "{projectRoot}/playwright.config.ts"
+        "command": "playwright test -c apps/storefront-e2e/playwright.config.ts"
       }
     },
     "lint": {
-      "executor": "@nx/eslint:lint"
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint apps/storefront-e2e"
+      }
     }
   }
 }

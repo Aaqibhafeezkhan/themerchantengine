@@ -45,7 +45,12 @@
     "serve-production": {
       "executor": "nx:run-commands",
       "continuous": true,
-      "dependsOn": [{ "target": "build", "params": "ignore" }],
+      "dependsOn": [
+        {
+          "target": "build",
+          "params": "ignore"
+        }
+      ],
       "options": {
         "command": "node dist/apps/storefront/analog/server/index.mjs",
         "cwd": "{workspaceRoot}",
@@ -65,9 +70,9 @@
       }
     },
     "lint": {
-      "executor": "@nx/eslint:lint",
+      "executor": "nx:run-commands",
       "options": {
-        "lintFilePatterns": ["apps/storefront/src/**/*.{ts,html}"]
+        "command": "eslint \"apps/storefront/src/**/*.{ts,html}\""
       }
     },
     "lighthouse": {

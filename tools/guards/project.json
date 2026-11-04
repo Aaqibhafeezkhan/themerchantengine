@@ -6,10 +6,10 @@
   "tags": ["scope:tools", "type:app"],
   "targets": {
     "test": {
-      "executor": "@nx/jest:jest",
+      "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/tools/guards"],
       "options": {
-        "jestConfig": "tools/guards/jest.config.ts"
+        "command": "jest -c tools/guards/jest.config.ts"
       }
     },
     "typecheck": {

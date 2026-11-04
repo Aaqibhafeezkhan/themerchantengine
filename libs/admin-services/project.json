@@ -6,16 +6,17 @@
   "tags": ["scope:admin", "type:services"],
   "targets": {
     "test": {
-      "executor": "@nx/jest:jest",
+      "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "libs/admin-services/jest.config.cts",
-        "passWithNoTests": false,
-        "args": ["--forceExit"]
+        "command": "jest -c libs/admin-services/jest.config.cts --forceExit"
       }
     },
     "lint": {
-      "executor": "@nx/eslint:lint"
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint libs/admin-services"
+      }
     }
   }
 }

@@ -4,10 +4,10 @@ import { fileURLToPath } from 'node:url';
 
 import analog from '@analogjs/platform';
 import { defineConfig } from 'vite';
-import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
 // SH2 — Nitro's bundle resolver does not honour the workspace tsconfig path
-// aliases that Vite + nxViteTsPaths handle for the Angular client + SSR
+// aliases that Vite + vite-tsconfig-paths handle for the Angular client + SSR
 // pipelines. Transitive imports from `pages/**/*.server.ts` companion files
 // (page server endpoints) trigger `Invalid module "@storefront-types"`
 // 500s when the bundled module hits Nitro's runtime resolver. Surfacing the
@@ -257,9 +257,12 @@ export default defineConfig(({ mode }) => ({
       nitro: {
         ignore: ['**/*.spec.ts'],
         alias: NITRO_ALIASES,
+        // Nitro's esbuild transform never reads a tsconfig. The shared libs use
+        // constructor parameter decorators, so it needs the flag spelled out.
+        esbuild: { options: { tsconfigRaw: { compilerOptions: { experimentalDecorators: true } } } },
       },
     }),
-    nxViteTsPaths(),
+    tsconfigPaths({ root: '../../', projects: ['tsconfig.base.json'] }),
   ],
   test: {
     globals: true,
