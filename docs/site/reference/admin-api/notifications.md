@@ -2,7 +2,7 @@
 title: "Notifications (admin API)"
 description: "The 13 admin routes of the notifications module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api notifications ecommerce"
-updated: 2026-10-18
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -42,12 +42,12 @@ List notification send-log entries
 
 Parameters:
 
-- `channel` in query (`"email"`, `"sms"`, `"push"`, optional).
+- `channel` in query (`"email"`, `"push"`, `"sms"`, optional).
 - `from` in query (string, optional).
 - `page` in query (number, min 1, optional).
 - `pageSize` in query (number, min 1, max 100, optional).
 - `recipient` in query (string, optional).
-- `status` in query (`"queued"`, `"sent"`, `"delivered"`, `"bounced"`, `"complained"`, `"failed"`, `"suppressed"`, `"skipped"`, `"enqueue-failed"`, optional).
+- `status` in query (`"bounced"`, `"complained"`, `"delivered"`, `"enqueue-failed"`, `"failed"`, `"queued"`, `"sent"`, `"skipped"`, `"suppressed"`, optional).
 - `templateCode` in query (string, optional).
 - `to` in query (string, optional).
 
@@ -82,7 +82,7 @@ List notification templates
 
 Parameters:
 
-- `channel` in query (`"email"`, `"sms"`, `"push"`, optional).
+- `channel` in query (`"email"`, `"push"`, `"sms"`, optional).
 - `event` in query (string, optional).
 - `isEnabled` in query (boolean, optional).
 - `page` in query (number, min 1, optional).
@@ -190,15 +190,15 @@ Responses:
 
 ### CreateNotificationTemplateDto
 
-- `code` (string, pattern `/^[a-z][a-z0-9_.]*$/`, min length 2, max length 100, required).
+- `code` (string, pattern `^[a-z][a-z0-9_.]*$`, min length 2, max length 100, required).
 - `subject` ([OptionalTranslatableBodyDto](#optionaltranslatablebodydto), optional).
 - `body` ([TranslatableBodyDto](#translatablebodydto), required).
-- `channel` (`"email"`, `"sms"`, `"push"`, required).
-- `event` (string, pattern `/^[a-z][a-z0-9_.]*$/`, required).
+- `channel` (`"email"`, `"push"`, `"sms"`, required).
+- `event` (string, pattern `^[a-z][a-z0-9_.]*$`, required).
 - `variables` (array of string, optional).
 - `isEnabled` (boolean, optional).
 - `sendEnabled` (boolean, optional).
-- `category` (`"TRANSACTIONAL"`, `"LIFECYCLE"`, `"MARKETING"`, optional).
+- `category` (`"LIFECYCLE"`, `"MARKETING"`, `"TRANSACTIONAL"`, optional).
 
 ### OptionalTranslatableBodyDto
 
@@ -216,7 +216,7 @@ Responses:
 
 ### SendTestTemplateDto
 
-- `locale` (`"fr"`, `"en"`, `"ar"`, optional).
+- `locale` (`"ar"`, `"en"`, `"fr"`, optional).
 - `variables` (object, optional).
 
 ### TranslatableBodyDto
@@ -233,4 +233,4 @@ Responses:
 - `variables` (array of string, optional).
 - `isEnabled` (boolean, optional).
 - `sendEnabled` (boolean, optional).
-- `category` (`"TRANSACTIONAL"`, `"LIFECYCLE"`, `"MARKETING"`, optional).
+- `category` (`"LIFECYCLE"`, `"MARKETING"`, `"TRANSACTIONAL"`, optional).

@@ -2,7 +2,7 @@
 title: "Products (admin API)"
 description: "The 17 admin routes of the products module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api products ecommerce"
-updated: 2026-10-15
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -24,6 +24,8 @@ Parameters:
 - `productTypeId` in query (string, optional).
 - `search` in query (string, optional).
 - `sortBy` in query (string, optional).
+- `sortOrder` in query (`"asc"`, `"desc"`, optional).
+- `status` in query (`"ACTIVE"`, `"ARCHIVED"`, `"DRAFT"`, optional).
 
 Responses:
 
@@ -311,15 +313,15 @@ Responses:
 ### BulkUpdateStatusAdminDto
 
 - `productIds` (array of string, required).
-- `status` (object, required).
+- `status` (`"ACTIVE"`, `"ARCHIVED"`, `"DRAFT"`, required).
 
 ### CreateProductAdminDto
 
 - `name` ([TranslatableDto](#translatabledto), required).
-- `slug` (string, pattern `/^[a-z0-9]+(?:-[a-z0-9]+)*$/`, optional).
+- `slug` (string, pattern `^[a-z0-9]+(?:-[a-z0-9]+)*$`, optional).
 - `description` ([OptionalContentTranslatableDto](#optionalcontenttranslatabledto), optional).
 - `shortDescription` ([OptionalContentTranslatableDto](#optionalcontenttranslatabledto), optional).
-- `status` (object, optional).
+- `status` (`"ACTIVE"`, `"ARCHIVED"`, `"DRAFT"`, optional).
 - `productTypeId` (string, optional).
 - `brand` (string, optional).
 - `tags` (array of string, optional).

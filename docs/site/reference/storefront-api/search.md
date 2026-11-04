@@ -2,7 +2,7 @@
 title: "Search (storefront API)"
 description: "The 5 storefront routes of the search module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "storefront api search ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -25,6 +25,8 @@ Parameters:
 - `priceMin` in query (number, min 0, optional).
 - `q` in query (string, max length 200, optional).
 - `rating` in query (number, min 1, max 5, optional).
+- `sortBy` in query (`"createdAt"`, `"name"`, `"price"`, `"rating"`, `"relevance"`, optional).
+- `sortOrder` in query (`"asc"`, `"desc"`, optional).
 
 Responses:
 
@@ -62,7 +64,7 @@ Get search filters
 
 Parameters:
 
-- `q` in query (string, required).
+- `q` in query (string, optional).
 
 Responses:
 

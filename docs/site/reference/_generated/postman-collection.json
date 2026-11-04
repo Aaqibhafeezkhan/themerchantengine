@@ -166,7 +166,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"eventType\": {},\n  \"sessionId\": \"sessionId\",\n  \"userId\": \"userId\",\n  \"productId\": \"productId\",\n  \"orderId\": \"orderId\",\n  \"data\": {},\n  \"locale\": \"locale\"\n}",
+                  "raw": "{\n  \"eventType\": \"add_payment_info\",\n  \"sessionId\": \"sessionId\",\n  \"userId\": \"userId\",\n  \"productId\": \"productId\",\n  \"orderId\": \"orderId\",\n  \"data\": {},\n  \"locale\": \"locale\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -601,7 +601,7 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{baseUrl}}/v1/categories/:slug/products?page=page&pageSize=pageSize",
+                  "raw": "{{baseUrl}}/v1/categories/:slug/products",
                   "host": [
                     "{{baseUrl}}"
                   ],
@@ -615,16 +615,6 @@
                     {
                       "key": "slug",
                       "value": ""
-                    }
-                  ],
-                  "query": [
-                    {
-                      "key": "page",
-                      "value": "page"
-                    },
-                    {
-                      "key": "pageSize",
-                      "value": "pageSize"
                     }
                   ]
                 }
@@ -899,7 +889,7 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{baseUrl}}/v1/newsletter/unsubscribe?token=token",
+                  "raw": "{{baseUrl}}/v1/newsletter/unsubscribe",
                   "host": [
                     "{{baseUrl}}"
                   ],
@@ -907,12 +897,6 @@
                     "v1",
                     "newsletter",
                     "unsubscribe"
-                  ],
-                  "query": [
-                    {
-                      "key": "token",
-                      "value": "token"
-                    }
                   ]
                 }
               }
@@ -1137,7 +1121,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"items\": [\n    {\n      \"orderItemId\": \"orderItemId\",\n      \"quantity\": 1,\n      \"exchangeVariantId\": \"exchangeVariantId\"\n    }\n  ],\n  \"reason\": {},\n  \"reasonDetail\": \"reasonDetail\",\n  \"photoAssetIds\": [\n    \"photoAssetIds\"\n  ],\n  \"refundMethod\": {}\n}",
+                  "raw": "{\n  \"items\": [\n    {\n      \"orderItemId\": \"orderItemId\",\n      \"quantity\": 1,\n      \"exchangeVariantId\": \"exchangeVariantId\"\n    }\n  ],\n  \"reason\": \"CHANGED_MIND\",\n  \"reasonDetail\": \"reasonDetail\",\n  \"photoAssetIds\": [\n    \"photoAssetIds\"\n  ],\n  \"refundMethod\": \"EXCHANGE\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -2009,7 +1993,7 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{baseUrl}}/v1/search/filters?q=q",
+                  "raw": "{{baseUrl}}/v1/search/filters",
                   "host": [
                     "{{baseUrl}}"
                   ],
@@ -2017,12 +2001,6 @@
                     "v1",
                     "search",
                     "filters"
-                  ],
-                  "query": [
-                    {
-                      "key": "q",
-                      "value": "q"
-                    }
                   ]
                 }
               }
@@ -2458,19 +2436,13 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{baseUrl}}/v1/unsubscribe?token=token",
+                  "raw": "{{baseUrl}}/v1/unsubscribe",
                   "host": [
                     "{{baseUrl}}"
                   ],
                   "path": [
                     "v1",
                     "unsubscribe"
-                  ],
-                  "query": [
-                    {
-                      "key": "token",
-                      "value": "token"
-                    }
                   ]
                 }
               }
@@ -3092,7 +3064,7 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{baseUrl}}/v1/admin/analytics/timeseries",
+                  "raw": "{{baseUrl}}/v1/admin/analytics/timeseries?metric=orders",
                   "host": [
                     "{{baseUrl}}"
                   ],
@@ -3101,6 +3073,12 @@
                     "admin",
                     "analytics",
                     "timeseries"
+                  ],
+                  "query": [
+                    {
+                      "key": "metric",
+                      "value": "orders"
+                    }
                   ]
                 }
               }
@@ -3295,7 +3273,7 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{baseUrl}}/v1/admin/attributes?page=page&pageSize=pageSize&productTypeId=productTypeId",
+                  "raw": "{{baseUrl}}/v1/admin/attributes",
                   "host": [
                     "{{baseUrl}}"
                   ],
@@ -3303,20 +3281,6 @@
                     "v1",
                     "admin",
                     "attributes"
-                  ],
-                  "query": [
-                    {
-                      "key": "page",
-                      "value": "page"
-                    },
-                    {
-                      "key": "pageSize",
-                      "value": "pageSize"
-                    },
-                    {
-                      "key": "productTypeId",
-                      "value": "productTypeId"
-                    }
                   ]
                 }
               }
@@ -4337,7 +4301,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"guestCheckoutEnabled\": true,\n  \"requiredFields\": \"billingAddress\",\n  \"termsOfServiceUrl\": \"termsOfServiceUrl\",\n  \"postPurchaseRedirectUrl\": \"postPurchaseRedirectUrl\",\n  \"checkoutMessage\": \"checkoutMessage\"\n}",
+                  "raw": "{\n  \"guestCheckoutEnabled\": true,\n  \"requiredFields\": [\n    \"billingAddress\"\n  ],\n  \"termsOfServiceUrl\": \"termsOfServiceUrl\",\n  \"postPurchaseRedirectUrl\": \"postPurchaseRedirectUrl\",\n  \"checkoutMessage\": \"checkoutMessage\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -4401,7 +4365,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"enabled\": \"AE\",\n  \"defaultCode\": \"AE\"\n}",
+                  "raw": "{\n  \"enabled\": [\n    \"AE\"\n  ],\n  \"defaultCode\": \"AE\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -4465,7 +4429,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"enabled\": \"AED\",\n  \"defaultCode\": \"AED\"\n}",
+                  "raw": "{\n  \"enabled\": [\n    \"AED\"\n  ],\n  \"defaultCode\": \"AED\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -5003,7 +4967,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"variantId\": \"variantId\",\n  \"locationId\": \"locationId\",\n  \"quantity\": 1,\n  \"setTo\": 1,\n  \"expectedOnHand\": 1,\n  \"reason\": {},\n  \"notes\": \"notes\"\n}",
+                  "raw": "{\n  \"variantId\": \"variantId\",\n  \"locationId\": \"locationId\",\n  \"quantity\": 1,\n  \"setTo\": 1,\n  \"expectedOnHand\": 1,\n  \"reason\": \"CORRECTION\",\n  \"notes\": \"notes\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -5023,7 +4987,7 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{baseUrl}}/v1/admin/inventory/alerts?page=page&pageSize=pageSize",
+                  "raw": "{{baseUrl}}/v1/admin/inventory/alerts",
                   "host": [
                     "{{baseUrl}}"
                   ],
@@ -5032,16 +4996,6 @@
                     "admin",
                     "inventory",
                     "alerts"
-                  ],
-                  "query": [
-                    {
-                      "key": "page",
-                      "value": "page"
-                    },
-                    {
-                      "key": "pageSize",
-                      "value": "pageSize"
-                    }
                   ]
                 }
               }
@@ -5057,7 +5011,7 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{baseUrl}}/v1/admin/inventory/locations?page=page&pageSize=pageSize",
+                  "raw": "{{baseUrl}}/v1/admin/inventory/locations",
                   "host": [
                     "{{baseUrl}}"
                   ],
@@ -5066,16 +5020,6 @@
                     "admin",
                     "inventory",
                     "locations"
-                  ],
-                  "query": [
-                    {
-                      "key": "page",
-                      "value": "page"
-                    },
-                    {
-                      "key": "pageSize",
-                      "value": "pageSize"
-                    }
                   ]
                 }
               }
@@ -6148,7 +6092,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"carrier\": \"carrier\",\n  \"trackingNumber\": \"trackingNumber\",\n  \"status\": {}\n}",
+                  "raw": "{\n  \"carrier\": \"carrier\",\n  \"trackingNumber\": \"trackingNumber\",\n  \"status\": \"DELIVERED\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -6192,7 +6136,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"status\": {}\n}",
+                  "raw": "{\n  \"status\": \"CANCELLED\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -6304,7 +6248,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"slug\": \"slug\",\n  \"type\": {},\n  \"title\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"content\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"isPublished\": true,\n  \"metaTitle\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"metaDescription\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"sortOrder\": 1,\n  \"showInNavigation\": true,\n  \"template\": \"template\"\n}",
+                  "raw": "{\n  \"slug\": \"slug\",\n  \"type\": \"LANDING\",\n  \"title\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"content\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"isPublished\": true,\n  \"metaTitle\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"metaDescription\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"sortOrder\": 1,\n  \"showInNavigation\": true,\n  \"template\": \"template\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -6635,7 +6579,7 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{baseUrl}}/v1/admin/product-types?page=page&pageSize=pageSize",
+                  "raw": "{{baseUrl}}/v1/admin/product-types",
                   "host": [
                     "{{baseUrl}}"
                   ],
@@ -6643,16 +6587,6 @@
                     "v1",
                     "admin",
                     "product-types"
-                  ],
-                  "query": [
-                    {
-                      "key": "page",
-                      "value": "page"
-                    },
-                    {
-                      "key": "pageSize",
-                      "value": "pageSize"
-                    }
                   ]
                 }
               }
@@ -6821,7 +6755,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"name\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"slug\": \"slug\",\n  \"description\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"shortDescription\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"status\": {},\n  \"productTypeId\": \"productTypeId\",\n  \"brand\": \"brand\",\n  \"tags\": [\n    \"tags\"\n  ],\n  \"isFeatured\": true,\n  \"isDigital\": true,\n  \"sortOrder\": 1,\n  \"metaTitle\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"metaDescription\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"categoryIds\": [\n    \"categoryIds\"\n  ],\n  \"assetIds\": [\n    \"assetIds\"\n  ],\n  \"variants\": [\n    {\n      \"sku\": \"sku\",\n      \"price\": 1,\n      \"compareAtPrice\": 1,\n      \"costPrice\": 1,\n      \"weight\": 1,\n      \"length\": 1,\n      \"width\": 1,\n      \"height\": 1,\n      \"barcode\": \"barcode\",\n      \"isDefault\": true,\n      \"isActive\": true,\n      \"maxDownloads\": 1,\n      \"downloadExpiryDays\": 1,\n      \"licenseKey\": \"licenseKey\",\n      \"attributeValueIds\": [\n        \"attributeValueIds\"\n      ]\n    }\n  ]\n}",
+                  "raw": "{\n  \"name\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"slug\": \"slug\",\n  \"description\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"shortDescription\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"status\": \"ACTIVE\",\n  \"productTypeId\": \"productTypeId\",\n  \"brand\": \"brand\",\n  \"tags\": [\n    \"tags\"\n  ],\n  \"isFeatured\": true,\n  \"isDigital\": true,\n  \"sortOrder\": 1,\n  \"metaTitle\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"metaDescription\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"categoryIds\": [\n    \"categoryIds\"\n  ],\n  \"assetIds\": [\n    \"assetIds\"\n  ],\n  \"variants\": [\n    {\n      \"sku\": \"sku\",\n      \"price\": 1,\n      \"compareAtPrice\": 1,\n      \"costPrice\": 1,\n      \"weight\": 1,\n      \"length\": 1,\n      \"width\": 1,\n      \"height\": 1,\n      \"barcode\": \"barcode\",\n      \"isDefault\": true,\n      \"isActive\": true,\n      \"maxDownloads\": 1,\n      \"downloadExpiryDays\": 1,\n      \"licenseKey\": \"licenseKey\",\n      \"attributeValueIds\": [\n        \"attributeValueIds\"\n      ]\n    }\n  ]\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -7408,7 +7342,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"productIds\": [\n    \"productIds\"\n  ],\n  \"status\": {}\n}",
+                  "raw": "{\n  \"productIds\": [\n    \"productIds\"\n  ],\n  \"status\": \"ACTIVE\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -7472,7 +7406,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"name\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"description\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"type\": {},\n  \"applicationMethod\": {},\n  \"couponCode\": \"couponCode\",\n  \"value\": 1,\n  \"minimumOrderAmount\": 1,\n  \"maximumDiscount\": 1,\n  \"usageLimit\": 1,\n  \"usageLimitPerUser\": 1,\n  \"isExclusive\": true,\n  \"priority\": 1,\n  \"buyQuantity\": 1,\n  \"getQuantity\": 1,\n  \"tierConfig\": {},\n  \"startsAt\": \"startsAt\",\n  \"endsAt\": \"endsAt\",\n  \"isActive\": true,\n  \"eligibleProductIds\": [\n    \"eligibleProductIds\"\n  ],\n  \"eligibleCategoryIds\": [\n    \"eligibleCategoryIds\"\n  ]\n}",
+                  "raw": "{\n  \"name\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"description\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"type\": \"BUY_X_GET_Y\",\n  \"applicationMethod\": \"AUTOMATIC\",\n  \"couponCode\": \"couponCode\",\n  \"value\": 1,\n  \"minimumOrderAmount\": 1,\n  \"maximumDiscount\": 1,\n  \"usageLimit\": 1,\n  \"usageLimitPerUser\": 1,\n  \"isExclusive\": true,\n  \"priority\": 1,\n  \"buyQuantity\": 1,\n  \"getQuantity\": 1,\n  \"tierConfig\": {},\n  \"startsAt\": \"startsAt\",\n  \"endsAt\": \"endsAt\",\n  \"isActive\": true,\n  \"eligibleProductIds\": [\n    \"eligibleProductIds\"\n  ],\n  \"eligibleCategoryIds\": [\n    \"eligibleCategoryIds\"\n  ]\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -7886,7 +7820,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"items\": [\n    {\n      \"returnItemId\": \"returnItemId\",\n      \"restockDecision\": {},\n      \"notes\": \"notes\"\n    }\n  ]\n}",
+                  "raw": "{\n  \"items\": [\n    {\n      \"returnItemId\": \"returnItemId\",\n      \"restockDecision\": \"DAMAGED\",\n      \"notes\": \"notes\"\n    }\n  ]\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -7934,7 +7868,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"refundMethod\": {},\n  \"notes\": \"notes\"\n}",
+                  "raw": "{\n  \"refundMethod\": \"EXCHANGE\",\n  \"notes\": \"notes\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -8103,7 +8037,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"rating\": 1,\n  \"title\": \"title\",\n  \"body\": \"body\",\n  \"assetIds\": [\n    \"assetIds\"\n  ],\n  \"status\": {},\n  \"reason\": \"reason\"\n}",
+                  "raw": "{\n  \"rating\": 1,\n  \"title\": \"title\",\n  \"body\": \"body\",\n  \"assetIds\": [\n    \"assetIds\"\n  ],\n  \"status\": \"HIDDEN\",\n  \"reason\": \"reason\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -8242,7 +8176,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"name\": \"name\",\n  \"description\": \"description\",\n  \"permissions\": \"admin_users:create\"\n}",
+                  "raw": "{\n  \"name\": \"name\",\n  \"description\": \"description\",\n  \"permissions\": [\n    \"admin_users:create\"\n  ]\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -8285,7 +8219,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"permissions\": \"admin_users:create\"\n}",
+                  "raw": "{\n  \"permissions\": [\n    \"admin_users:create\"\n  ]\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -8571,7 +8505,7 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{baseUrl}}/v1/admin/search/zero-results?period=period&page=page&pageSize=pageSize",
+                  "raw": "{{baseUrl}}/v1/admin/search/zero-results",
                   "host": [
                     "{{baseUrl}}"
                   ],
@@ -8580,20 +8514,6 @@
                     "admin",
                     "search",
                     "zero-results"
-                  ],
-                  "query": [
-                    {
-                      "key": "period",
-                      "value": "period"
-                    },
-                    {
-                      "key": "page",
-                      "value": "page"
-                    },
-                    {
-                      "key": "pageSize",
-                      "value": "pageSize"
-                    }
                   ]
                 }
               }
@@ -8776,7 +8696,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"fromPath\": \"fromPath\",\n  \"toPath\": \"toPath\",\n  \"type\": {}\n}",
+                  "raw": "{\n  \"fromPath\": \"fromPath\",\n  \"toPath\": \"toPath\",\n  \"type\": \"FOUND\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -8872,7 +8792,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"url\": \"url\",\n  \"productIds\": [\n    \"productIds\"\n  ],\n  \"sitemap\": true,\n  \"engines\": \"bing\",\n  \"dryRun\": true\n}",
+                  "raw": "{\n  \"url\": \"url\",\n  \"productIds\": [\n    \"productIds\"\n  ],\n  \"sitemap\": true,\n  \"engines\": [\n    \"bing\"\n  ],\n  \"dryRun\": true\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -9087,7 +9007,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"zoneId\": \"zoneId\",\n  \"name\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"type\": {},\n  \"price\": 1,\n  \"weightRanges\": [\n    {\n      \"minKg\": 1,\n      \"maxKg\": 1,\n      \"price\": 1\n    }\n  ],\n  \"priceRanges\": [\n    {\n      \"minAmount\": 1,\n      \"maxAmount\": 1,\n      \"price\": 1\n    }\n  ],\n  \"freeAbove\": 1,\n  \"estimatedDaysMin\": 1,\n  \"estimatedDaysMax\": 1,\n  \"isActive\": true,\n  \"isDefault\": true,\n  \"sortOrder\": 1\n}",
+                  "raw": "{\n  \"zoneId\": \"zoneId\",\n  \"name\": {\n    \"fr\": \"fr\",\n    \"en\": \"en\",\n    \"ar\": \"ar\",\n    \"default\": \"default\"\n  },\n  \"type\": \"CARRIER_CALCULATED\",\n  \"price\": 1,\n  \"weightRanges\": [\n    {\n      \"minKg\": 1,\n      \"maxKg\": 1,\n      \"price\": 1\n    }\n  ],\n  \"priceRanges\": [\n    {\n      \"minAmount\": 1,\n      \"maxAmount\": 1,\n      \"price\": 1\n    }\n  ],\n  \"freeAbove\": 1,\n  \"estimatedDaysMin\": 1,\n  \"estimatedDaysMax\": 1,\n  \"isActive\": true,\n  \"isDefault\": true,\n  \"sortOrder\": 1\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -10037,7 +9957,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"url\": \"url\",\n  \"events\": [\n    {}\n  ],\n  \"secret\": \"secret\"\n}",
+                  "raw": "{\n  \"url\": \"url\",\n  \"events\": [\n    \"cart.abandoned\"\n  ],\n  \"secret\": \"secret\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"

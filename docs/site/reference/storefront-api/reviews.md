@@ -2,7 +2,7 @@
 title: "Reviews (storefront API)"
 description: "The 3 storefront routes of the reviews module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "storefront api reviews ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -52,7 +52,6 @@ Parameters:
 Responses:
 
 - `200`: Marked helpful.
-- `201`: no description.
 - `401`: Unauthorized.
 - `404`: Review not found.
 
@@ -63,4 +62,4 @@ Responses:
 - `rating` (number, min 1, max 5, optional).
 - `title` (string, max length 200, optional).
 - `body` (string, max length 5000, optional).
-- `assetIds` (array of string, optional).
+- `assetIds` (array of string, uuid, optional).

@@ -18,7 +18,7 @@ import { ALLOWED_SECTION_TYPES, type AllowedSectionType } from './configs';
 export class CreateSectionAdminDto {
   /**
    * pageSlug is injected by the controller from the URL path parameter
-   * (`POST /v1/admin/storefront/pages/:pageSlug(*)/sections`) — it must NOT
+   * (`POST /v1/admin/storefront/pages/:pageSlug/sections`) — it must NOT
    * be present in the request body (docs/admin-api-reference.md §POST sections).
    * Marked optional so the global ValidationPipe does not reject requests
    * that omit it from the body.

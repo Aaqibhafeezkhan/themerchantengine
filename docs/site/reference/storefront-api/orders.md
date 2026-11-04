@@ -2,7 +2,7 @@
 title: "Orders (storefront API)"
 description: "The 8 storefront routes of the orders module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "storefront api orders ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -18,6 +18,7 @@ Parameters:
 
 - `page` in query (number, min 1, optional).
 - `pageSize` in query (number, min 1, optional).
+- `status` in query (`"CANCELLED"`, `"COMPLETED"`, `"CONFIRMED"`, `"DELIVERED"`, `"ON_HOLD"`, `"PENDING"`, `"PROCESSING"`, `"RETURNED"`, `"RETURN_REQUESTED"`, `"SHIPPED"`, optional).
 
 Responses:
 
@@ -139,11 +140,11 @@ Responses:
 - `city` (string, required).
 - `state` (string, optional).
 - `postalCode` (string, optional).
-- `country` (string, pattern `/^[A-Z]{2}$/`, required).
+- `country` (string, pattern `^[A-Z]{2}$`, required).
 
 ### CreateOrderDto
 
-- `guestEmail` (string, optional).
+- `guestEmail` (string, email, optional).
 - `shippingAddressId` (string, optional).
 - `shippingAddress` ([AddressDto](#addressdto), optional).
 - `billingAddressId` (string, optional).
@@ -151,16 +152,16 @@ Responses:
 - `shippingMethodId` (string, optional).
 - `paymentMethodCode` (string, optional).
 - `notes` (string, optional).
-- `giftCardCode` (string, pattern `/^[A-Z0-9]{8,20}$/`, optional).
+- `giftCardCode` (string, pattern `^[A-Z0-9]{8,20}$`, optional).
 - `couponCode` (string, optional).
 
 ### CreateReturnDto
 
 - `items` (array of [ReturnItemDto](#returnitemdto), required).
-- `reason` (object, required).
+- `reason` (`"CHANGED_MIND"`, `"DEFECTIVE"`, `"NOT_AS_DESCRIBED"`, `"OTHER"`, `"WRONG_SIZE"`, required).
 - `reasonDetail` (string, max length 1000, optional).
 - `photoAssetIds` (array of string, optional).
-- `refundMethod` (object, optional).
+- `refundMethod` (`"EXCHANGE"`, `"ORIGINAL_PAYMENT"`, `"STORE_CREDIT"`, optional).
 
 ### ReturnItemDto
 
@@ -170,5 +171,5 @@ Responses:
 
 ### TrackOrderDto
 
-- `orderNumber` (string, pattern `/^[A-Z0-9-]+$/`, max length 32, required).
-- `email` (string, max length 254, required).
+- `orderNumber` (string, pattern `^[A-Z0-9-]+$`, max length 32, required).
+- `email` (string, email, max length 254, required).

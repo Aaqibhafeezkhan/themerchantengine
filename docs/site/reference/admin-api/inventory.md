@@ -2,7 +2,7 @@
 title: "Inventory (admin API)"
 description: "The 10 admin routes of the inventory module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api inventory ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -19,6 +19,9 @@ Parameters:
 - `locationId` in query (string, optional).
 - `page` in query (number, min 1, optional).
 - `pageSize` in query (number, min 1, max 100, optional).
+- `sortBy` in query (`"onHand"`, `"reserved"`, `"updatedAt"`, optional).
+- `sortOrder` in query (`"asc"`, `"desc"`, optional).
+- `stockStatus` in query (`"IN_STOCK"`, `"LOW_STOCK"`, `"OUT_OF_STOCK"`, optional).
 - `variantId` in query (string, optional).
 
 Responses:
@@ -47,8 +50,8 @@ List low/out-of-stock alerts
 
 Parameters:
 
-- `page` in query (string, required).
-- `pageSize` in query (string, required).
+- `page` in query (string, optional).
+- `pageSize` in query (string, optional).
 
 Responses:
 
@@ -62,8 +65,8 @@ List inventory locations
 
 Parameters:
 
-- `page` in query (string, required).
-- `pageSize` in query (string, required).
+- `page` in query (string, optional).
+- `pageSize` in query (string, optional).
 
 Responses:
 
@@ -129,6 +132,9 @@ Parameters:
 - `locationId` in query (string, optional).
 - `page` in query (number, min 1, optional).
 - `pageSize` in query (number, min 1, max 100, optional).
+- `sortBy` in query (`"createdAt"`, `"quantity"`, `"type"`, optional).
+- `sortOrder` in query (`"asc"`, `"desc"`, optional).
+- `type` in query (`"ADJUSTMENT"`, `"RESERVATION"`, `"RESERVATION_RELEASE"`, `"RETURN"`, `"SALE"`, `"TRANSFER"`, optional).
 - `variantId` in query (string, optional).
 
 Responses:
@@ -175,13 +181,13 @@ Responses:
 - `quantity` (number, optional).
 - `setTo` (number, min 0, optional).
 - `expectedOnHand` (number, min 0, optional).
-- `reason` (object, required).
+- `reason` (`"CORRECTION"`, `"DAMAGE"`, `"OTHER"`, `"RECEIVED"`, `"RECOUNT"`, `"RETURN_DAMAGED"`, `"RETURN_RESTOCK"`, `"SHRINKAGE"`, required).
 - `notes` (string, max length 500, optional).
 
 ### CreateInventoryLocationAdminDto
 
 - `name` (string, max length 100, required).
-- `code` (string, pattern `/^[A-Z0-9_-]{1,20}$/`, required).
+- `code` (string, pattern `^[A-Z0-9_-]{1,20}$`, required).
 - `isActive` (boolean, optional).
 
 ### TransferInventoryAdminDto

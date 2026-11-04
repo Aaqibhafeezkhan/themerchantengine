@@ -2,7 +2,7 @@
 title: "Categories (storefront API)"
 description: "The 3 storefront routes of the categories module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "storefront api categories ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -38,8 +38,8 @@ Get products in category
 Parameters:
 
 - `slug` in path (string, required).
-- `page` in query (string, required).
-- `pageSize` in query (string, required).
+- `page` in query (string, optional).
+- `pageSize` in query (string, optional).
 
 Responses:
 

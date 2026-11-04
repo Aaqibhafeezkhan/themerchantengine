@@ -2,7 +2,7 @@
 title: "Countries (admin API)"
 description: "The 2 admin routes of the countries module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api countries ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -33,5 +33,5 @@ Responses:
 
 ### UpdateEnabledCountriesDto
 
-- `enabled` (`"QA"`, `"AE"`, `"SA"`, `"KW"`, `"BH"`, `"OM"`, `"EG"`, `"JO"`, `"LB"`, `"MA"`, `"LY"`, `"TN"`, `"GB"`, `"DE"`, `"FR"`, `"IT"`, `"ES"`, `"NL"`, `"SE"`, `"US"`, `"CA"`, `"MX"`, `"BR"`, `"IN"`, `"PK"`, `"ID"`, `"MY"`, `"SG"`, `"AU"`, `"JP"`, `"KR"`, required).
-- `defaultCode` (`"QA"`, `"AE"`, `"SA"`, `"KW"`, `"BH"`, `"OM"`, `"EG"`, `"JO"`, `"LB"`, `"MA"`, `"LY"`, `"TN"`, `"GB"`, `"DE"`, `"FR"`, `"IT"`, `"ES"`, `"NL"`, `"SE"`, `"US"`, `"CA"`, `"MX"`, `"BR"`, `"IN"`, `"PK"`, `"ID"`, `"MY"`, `"SG"`, `"AU"`, `"JP"`, `"KR"`, optional).
+- `enabled` (array of `"AE"`, `"AU"`, `"BH"`, `"BR"`, `"CA"`, `"DE"`, `"EG"`, `"ES"`, `"FR"`, `"GB"`, `"ID"`, `"IN"`, `"IT"`, `"JO"`, `"JP"`, `"KR"`, `"KW"`, `"LB"`, `"LY"`, `"MA"`, `"MX"`, `"MY"`, `"NL"`, `"OM"`, `"PK"`, `"QA"`, `"SA"`, `"SE"`, `"SG"`, `"TN"`, `"US"`, required).
+- `defaultCode` (`"AE"`, `"AU"`, `"BH"`, `"BR"`, `"CA"`, `"DE"`, `"EG"`, `"ES"`, `"FR"`, `"GB"`, `"ID"`, `"IN"`, `"IT"`, `"JO"`, `"JP"`, `"KR"`, `"KW"`, `"LB"`, `"LY"`, `"MA"`, `"MX"`, `"MY"`, `"NL"`, `"OM"`, `"PK"`, `"QA"`, `"SA"`, `"SE"`, `"SG"`, `"TN"`, `"US"`, optional).

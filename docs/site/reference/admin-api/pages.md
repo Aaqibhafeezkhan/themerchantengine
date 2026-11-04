@@ -2,7 +2,7 @@
 title: "Pages (admin API)"
 description: "The 4 admin routes of the pages module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api pages ecommerce"
-updated: 2026-10-15
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -63,8 +63,8 @@ Responses:
 
 ### CreatePageAdminDto
 
-- `slug` (string, pattern `/^(?:\/[a-z0-9-]+)+$/`, max length 200, required).
-- `type` (object, required).
+- `slug` (string, pattern `^(?:\/[a-z0-9-]+)+$`, max length 200, required).
+- `type` (`"LANDING"`, `"POLICY"`, `"STATIC"`, required).
 - `title` ([TranslatableDto](#translatabledto), required).
 - `content` ([TranslatableDto](#translatabledto), required).
 - `isPublished` (boolean, optional).

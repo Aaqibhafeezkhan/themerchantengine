@@ -2,7 +2,7 @@
 title: "Campaigns (admin API)"
 description: "The 9 admin routes of the campaigns module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api campaigns ecommerce"
-updated: 2026-10-18
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -19,7 +19,7 @@ Parameters:
 - `kind` in query (`"BROADCAST"`, `"WINBACK"`, optional).
 - `page` in query (number, min 1, optional).
 - `pageSize` in query (number, min 1, optional).
-- `status` in query (`"DRAFT"`, `"SCHEDULED"`, `"SENDING"`, `"SENT"`, `"CANCELLED"`, `"FAILED"`, optional).
+- `status` in query (`"CANCELLED"`, `"DRAFT"`, `"FAILED"`, `"SCHEDULED"`, `"SENDING"`, `"SENT"`, optional).
 
 Responses:
 
@@ -150,7 +150,7 @@ Responses:
 - `name` (string, min length 1, max length 200, required).
 - `subject` ([CampaignTranslatableDto](#campaigntranslatabledto), required).
 - `body` ([CampaignTranslatableDto](#campaigntranslatabledto), required).
-- `segment` (`"ALL_CONFIRMED"`, `"NEW"`, `"ACTIVE"`, `"LOYAL"`, `"AT_RISK"`, `"CHURNED"`, `"LAPSED"`, required).
+- `segment` (`"ACTIVE"`, `"ALL_CONFIRMED"`, `"AT_RISK"`, `"CHURNED"`, `"LAPSED"`, `"LOYAL"`, `"NEW"`, required).
 - `couponCode` (string, max length 100, nullable, optional).
 - `scheduledAt` (string, nullable, optional).
 
@@ -162,13 +162,13 @@ Responses:
 
 ### SendTestCampaignDto
 
-- `locale` (`"fr"`, `"en"`, `"ar"`, optional).
+- `locale` (`"ar"`, `"en"`, `"fr"`, optional).
 
 ### UpdateCampaignDto
 
 - `name` (string, min length 1, max length 200, optional).
 - `subject` ([CampaignTranslatableDto](#campaigntranslatabledto), optional).
 - `body` ([CampaignTranslatableDto](#campaigntranslatabledto), optional).
-- `segment` (`"ALL_CONFIRMED"`, `"NEW"`, `"ACTIVE"`, `"LOYAL"`, `"AT_RISK"`, `"CHURNED"`, `"LAPSED"`, optional).
+- `segment` (`"ACTIVE"`, `"ALL_CONFIRMED"`, `"AT_RISK"`, `"CHURNED"`, `"LAPSED"`, `"LOYAL"`, `"NEW"`, optional).
 - `couponCode` (string, max length 100, nullable, optional).
 - `scheduledAt` (string, nullable, optional).

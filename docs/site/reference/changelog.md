@@ -2,7 +2,7 @@
 title: "Changelog"
 description: "What each release of themerchantengine changed, from the CHANGELOG file in the repository."
 primaryQuery: "themerchantengine changelog"
-updated: 2026-10-27
+updated: 2026-11-04
 schema: TechArticle
 ---
 

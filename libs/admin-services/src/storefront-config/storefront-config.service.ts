@@ -30,7 +30,7 @@ const STOREFRONT = ADMIN_API_ROUTES.storefrontConfig;
 /**
  * `/v1/admin/storefront/*` — dynamic page sections (hero, banners, grids…).
  *
- * The backend uses wildcard route params (`:pageSlug(*)`) so slug values may
+ * The backend uses wildcard route params (`:pageSlug`) so slug values may
  * include `/` (e.g. `collections/summer`). We encode the slug segment-by-segment
  * to preserve this structure rather than `encodeURIComponent`-ing the slashes.
  */
@@ -54,7 +54,7 @@ export class StorefrontConfigService {
     const params = new HttpParams({ fromObject: toParams(parsed as never) });
     return this.http
       .get<unknown>(
-        `${this.apiBase}/${adminRoute(STOREFRONT.base, STOREFRONT.pageSections.replace(':pageSlug(*)', this.encodeSlug(slug)))}`,
+        `${this.apiBase}/${adminRoute(STOREFRONT.base, STOREFRONT.pageSections.replace(':pageSlug', this.encodeSlug(slug)))}`,
         {
           params,
           withCredentials: true,
@@ -69,7 +69,7 @@ export class StorefrontConfigService {
     const body = reorderSectionsRequestSchema.parse(input);
     return this.http
       .patch<void>(
-        `${this.apiBase}/${adminRoute(STOREFRONT.base, STOREFRONT.sectionsReorder.replace(':pageSlug(*)', this.encodeSlug(slug)))}`,
+        `${this.apiBase}/${adminRoute(STOREFRONT.base, STOREFRONT.sectionsReorder.replace(':pageSlug', this.encodeSlug(slug)))}`,
         body,
         { withCredentials: true, context: rawLocaleContext() },
       )
@@ -83,7 +83,7 @@ export class StorefrontConfigService {
     // the controller's server-side override), so echo it into the body.
     return this.http
       .post<unknown>(
-        `${this.apiBase}/${adminRoute(STOREFRONT.base, STOREFRONT.pageSections.replace(':pageSlug(*)', this.encodeSlug(slug)))}`,
+        `${this.apiBase}/${adminRoute(STOREFRONT.base, STOREFRONT.pageSections.replace(':pageSlug', this.encodeSlug(slug)))}`,
         { ...body, pageSlug: slug },
         { withCredentials: true, context: rawLocaleContext() },
       )

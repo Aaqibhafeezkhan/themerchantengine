@@ -29,9 +29,11 @@ export default {
   // eager CommonJS binding emit broke Nest `forwardRef()` decorator-metadata
   // on the assets ↔ storefront-config circular pair; ts-jest's TS-style
   // export-getter emit keeps the cycle resolvable.
+  // Nest 12 ships ESM only. Jest runs CommonJS, so ts-jest compiles @nestjs/* too.
+  transformIgnorePatterns: ['/node_modules/(?!@nestjs/)'],
   transform: {
     '^.+\\.(t|j)s$': [
-      'ts-jest',
+      '<rootDir>/jest-nest-esm.transformer.js',
       {
         tsconfig: '<rootDir>/tsconfig.spec.json',
         isolatedModules: true,

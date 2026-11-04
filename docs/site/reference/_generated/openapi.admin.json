@@ -5,7 +5,6 @@
     "/v1/admin/analytics/customers": {
       "get": {
         "operationId": "AnalyticsAdminController_getCustomerAnalytics",
-        "summary": "Get customer acquisition and retention metrics",
         "parameters": [
           {
             "name": "from",
@@ -36,6 +35,7 @@
             }
           }
         },
+        "summary": "Get customer acquisition and retention metrics",
         "tags": [
           "analytics"
         ]
@@ -44,13 +44,13 @@
     "/v1/admin/analytics/dashboard": {
       "get": {
         "operationId": "AnalyticsAdminController_getDashboard",
-        "summary": "Get overview dashboard metrics for today, week and month",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
+        "summary": "Get overview dashboard metrics for today, week and month",
         "tags": [
           "analytics"
         ]
@@ -59,7 +59,6 @@
     "/v1/admin/analytics/funnel": {
       "get": {
         "operationId": "AnalyticsAdminController_getFunnel",
-        "summary": "Get conversion funnel counts and drop-off rates",
         "parameters": [
           {
             "name": "from",
@@ -93,6 +92,7 @@
             }
           }
         },
+        "summary": "Get conversion funnel counts and drop-off rates",
         "tags": [
           "analytics"
         ]
@@ -101,20 +101,19 @@
     "/v1/admin/analytics/pixels": {
       "get": {
         "operationId": "AnalyticsAdminController_getPixels",
-        "summary": "Get tracking pixel configuration",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
+        "summary": "Get tracking pixel configuration",
         "tags": [
           "analytics"
         ]
       },
       "patch": {
         "operationId": "AnalyticsAdminController_updatePixels",
-        "summary": "Update tracking pixel configuration",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -131,6 +130,7 @@
             "description": ""
           }
         },
+        "summary": "Update tracking pixel configuration",
         "tags": [
           "analytics"
         ]
@@ -139,7 +139,6 @@
     "/v1/admin/analytics/products": {
       "get": {
         "operationId": "AnalyticsAdminController_getProductAnalytics",
-        "summary": "Get per-product performance metrics",
         "parameters": [
           {
             "name": "from",
@@ -173,6 +172,7 @@
             }
           }
         },
+        "summary": "Get per-product performance metrics",
         "tags": [
           "analytics"
         ]
@@ -181,7 +181,6 @@
     "/v1/admin/analytics/revenue": {
       "get": {
         "operationId": "AnalyticsAdminController_getRevenueAnalytics",
-        "summary": "Get revenue breakdown metrics",
         "parameters": [
           {
             "name": "from",
@@ -212,6 +211,7 @@
             }
           }
         },
+        "summary": "Get revenue breakdown metrics",
         "tags": [
           "analytics"
         ]
@@ -220,7 +220,6 @@
     "/v1/admin/analytics/search": {
       "get": {
         "operationId": "AnalyticsAdminController_getSearchAnalytics",
-        "summary": "Get search event counts and top query terms",
         "parameters": [
           {
             "name": "from",
@@ -251,6 +250,7 @@
             }
           }
         },
+        "summary": "Get search event counts and top query terms",
         "tags": [
           "analytics"
         ]
@@ -259,8 +259,33 @@
     "/v1/admin/analytics/timeseries": {
       "get": {
         "operationId": "AnalyticsAdminController_getTimeseries",
-        "summary": "Get bucketed time series for orders, revenue or sessions",
         "parameters": [
+          {
+            "name": "metric",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "orders",
+                "revenue",
+                "sessions"
+              ]
+            }
+          },
+          {
+            "name": "granularity",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "day",
+                "hour",
+                "week"
+              ]
+            }
+          },
           {
             "name": "from",
             "required": false,
@@ -283,6 +308,7 @@
             "description": ""
           }
         },
+        "summary": "Get bucketed time series for orders, revenue or sessions",
         "tags": [
           "analytics"
         ]
@@ -291,7 +317,6 @@
     "/v1/admin/assets": {
       "get": {
         "operationId": "AssetsController_list",
-        "summary": "List assets",
         "parameters": [
           {
             "name": "page",
@@ -310,6 +335,34 @@
               "minimum": 1,
               "maximum": 100,
               "type": "number"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "AUDIO",
+                "DOCUMENT",
+                "IMAGE",
+                "VIDEO"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "FAILED",
+                "PENDING",
+                "PROCESSING",
+                "READY"
+              ]
             }
           },
           {
@@ -334,20 +387,20 @@
             "description": "Assets retrieved"
           }
         },
-        "tags": [
-          "assets"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List assets",
+        "tags": [
+          "assets"
         ]
       }
     },
     "/v1/admin/assets/upload": {
       "post": {
         "operationId": "AssetsController_uploadAsset",
-        "summary": "Upload asset file",
         "parameters": [],
         "responses": {
           "201": {
@@ -363,20 +416,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "assets"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Upload asset file",
+        "tags": [
+          "assets"
         ]
       }
     },
     "/v1/admin/assets/{id}": {
       "get": {
         "operationId": "AssetsController_findOne",
-        "summary": "Get asset with usage counts",
         "parameters": [
           {
             "name": "id",
@@ -395,18 +448,18 @@
             "description": "Asset not found"
           }
         },
-        "tags": [
-          "assets"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get asset with usage counts",
+        "tags": [
+          "assets"
         ]
       },
       "delete": {
         "operationId": "AssetsController_remove",
-        "summary": "Delete asset (hard delete, refused while referenced)",
         "parameters": [
           {
             "name": "id",
@@ -428,20 +481,20 @@
             "description": "Asset has references"
           }
         },
-        "tags": [
-          "assets"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Delete asset (hard delete, refused while referenced)",
+        "tags": [
+          "assets"
         ]
       }
     },
     "/v1/admin/assets/{id}/original-url": {
       "get": {
         "operationId": "AssetsController_getOriginalUrl",
-        "summary": "Get a short-TTL signed URL for the original (asset-variant-serving)",
         "parameters": [
           {
             "name": "id",
@@ -466,20 +519,20 @@
             "description": "Asset missing or original deleted"
           }
         },
-        "tags": [
-          "assets"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get a short-TTL signed URL for the original (asset-variant-serving)",
+        "tags": [
+          "assets"
         ]
       }
     },
     "/v1/admin/assets/{id}/references": {
       "get": {
         "operationId": "AssetsController_getReferences",
-        "summary": "List entities that reference this asset",
         "parameters": [
           {
             "name": "id",
@@ -487,6 +540,22 @@
             "in": "path",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "category",
+                "product",
+                "return",
+                "review",
+                "section",
+                "variant"
+              ]
             }
           },
           {
@@ -520,24 +589,24 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "assets"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List entities that reference this asset",
+        "tags": [
+          "assets"
         ]
       }
     },
     "/v1/admin/attributes": {
       "get": {
         "operationId": "ProductsAdminController_listAttributes",
-        "summary": "List product attributes",
         "parameters": [
           {
             "name": "page",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -545,7 +614,7 @@
           },
           {
             "name": "pageSize",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -553,7 +622,7 @@
           },
           {
             "name": "productTypeId",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -571,18 +640,18 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List product attributes",
+        "tags": [
+          "admin-products"
         ]
       },
       "post": {
         "operationId": "ProductsAdminController_createAttribute",
-        "summary": "Create new attribute",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -608,20 +677,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create new attribute",
+        "tags": [
+          "admin-products"
         ]
       }
     },
     "/v1/admin/attributes/{id}": {
       "patch": {
         "operationId": "ProductsAdminController_updateAttribute",
-        "summary": "Update attribute",
         "parameters": [
           {
             "name": "id",
@@ -659,18 +728,18 @@
             "description": "Attribute not found"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update attribute",
+        "tags": [
+          "admin-products"
         ]
       },
       "delete": {
         "operationId": "ProductsAdminController_deleteAttribute",
-        "summary": "Delete attribute",
         "parameters": [
           {
             "name": "id",
@@ -698,20 +767,20 @@
             "description": "Attribute in use"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Delete attribute",
+        "tags": [
+          "admin-products"
         ]
       }
     },
     "/v1/admin/attributes/{id}/values": {
       "post": {
         "operationId": "ProductsAdminController_createAttributeValue",
-        "summary": "Create attribute value",
         "parameters": [
           {
             "name": "id",
@@ -749,20 +818,20 @@
             "description": "Attribute not found"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create attribute value",
+        "tags": [
+          "admin-products"
         ]
       }
     },
     "/v1/admin/attributes/{id}/values/{valueId}": {
       "patch": {
         "operationId": "ProductsAdminController_updateAttributeValue",
-        "summary": "Update attribute value",
         "parameters": [
           {
             "name": "id",
@@ -808,18 +877,18 @@
             "description": "Value not found"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update attribute value",
+        "tags": [
+          "admin-products"
         ]
       },
       "delete": {
         "operationId": "ProductsAdminController_deleteAttributeValue",
-        "summary": "Delete attribute value",
         "parameters": [
           {
             "name": "id",
@@ -855,20 +924,20 @@
             "description": "Value in use"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Delete attribute value",
+        "tags": [
+          "admin-products"
         ]
       }
     },
     "/v1/admin/audit-log": {
       "get": {
         "operationId": "AuditLogAdminController_list",
-        "summary": "Search audit log entries",
         "parameters": [
           {
             "name": "userId",
@@ -944,6 +1013,7 @@
             "description": ""
           }
         },
+        "summary": "Search audit log entries",
         "tags": [
           "auditlog"
         ]
@@ -952,7 +1022,6 @@
     "/v1/admin/audit-log/{entityType}/{entityId}": {
       "get": {
         "operationId": "AuditLogAdminController_getByEntity",
-        "summary": "List audit log entries for one entity",
         "parameters": [
           {
             "name": "entityType",
@@ -1044,6 +1113,7 @@
             "description": ""
           }
         },
+        "summary": "List audit log entries for one entity",
         "tags": [
           "auditlog"
         ]
@@ -1052,7 +1122,6 @@
     "/v1/admin/campaigns": {
       "get": {
         "operationId": "CampaignsController_list",
-        "summary": "List marketing campaigns",
         "parameters": [
           {
             "name": "page",
@@ -1077,15 +1146,15 @@
             "required": false,
             "in": "query",
             "schema": {
+              "type": "string",
               "enum": [
+                "CANCELLED",
                 "DRAFT",
+                "FAILED",
                 "SCHEDULED",
                 "SENDING",
-                "SENT",
-                "CANCELLED",
-                "FAILED"
-              ],
-              "type": "string"
+                "SENT"
+              ]
             }
           },
           {
@@ -1093,11 +1162,11 @@
             "required": false,
             "in": "query",
             "schema": {
+              "type": "string",
               "enum": [
                 "BROADCAST",
                 "WINBACK"
-              ],
-              "type": "string"
+              ]
             }
           }
         ],
@@ -1106,18 +1175,18 @@
             "description": "Campaigns retrieved"
           }
         },
-        "tags": [
-          "campaigns-admin"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List marketing campaigns",
+        "tags": [
+          "campaigns-admin"
         ]
       },
       "post": {
         "operationId": "CampaignsController_create",
-        "summary": "Create a marketing campaign",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1137,20 +1206,20 @@
             "description": "Invalid input / invalid coupon"
           }
         },
-        "tags": [
-          "campaigns-admin"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create a marketing campaign",
+        "tags": [
+          "campaigns-admin"
         ]
       }
     },
     "/v1/admin/campaigns/{id}": {
       "get": {
         "operationId": "CampaignsController_findOne",
-        "summary": "Get a campaign",
         "parameters": [
           {
             "name": "id",
@@ -1169,18 +1238,18 @@
             "description": "Campaign not found"
           }
         },
-        "tags": [
-          "campaigns-admin"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get a campaign",
+        "tags": [
+          "campaigns-admin"
         ]
       },
       "patch": {
         "operationId": "CampaignsController_update",
-        "summary": "Update a draft / scheduled campaign",
         "parameters": [
           {
             "name": "id",
@@ -1215,18 +1284,18 @@
             "description": "Campaign is not editable"
           }
         },
-        "tags": [
-          "campaigns-admin"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update a draft / scheduled campaign",
+        "tags": [
+          "campaigns-admin"
         ]
       },
       "delete": {
         "operationId": "CampaignsController_remove",
-        "summary": "Soft-delete a campaign",
         "parameters": [
           {
             "name": "id",
@@ -1245,20 +1314,20 @@
             "description": "Campaign not found"
           }
         },
-        "tags": [
-          "campaigns-admin"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Soft-delete a campaign",
+        "tags": [
+          "campaigns-admin"
         ]
       }
     },
     "/v1/admin/campaigns/{id}/preview": {
       "post": {
         "operationId": "CampaignsController_preview",
-        "summary": "Render a draft campaign for every enabled locale (no send, no persist)",
         "parameters": [
           {
             "name": "id",
@@ -1287,20 +1356,20 @@
             "description": "Campaign not found"
           }
         },
-        "tags": [
-          "campaigns-admin"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Render a draft campaign for every enabled locale (no send, no persist)",
+        "tags": [
+          "campaigns-admin"
         ]
       }
     },
     "/v1/admin/campaigns/{id}/send": {
       "post": {
         "operationId": "CampaignsController_send",
-        "summary": "Send / start a campaign on the isolated campaign queue",
         "parameters": [
           {
             "name": "id",
@@ -1322,20 +1391,20 @@
             "description": "Campaign is not sendable"
           }
         },
-        "tags": [
-          "campaigns-admin"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Send / start a campaign on the isolated campaign queue",
+        "tags": [
+          "campaigns-admin"
         ]
       }
     },
     "/v1/admin/campaigns/{id}/stats": {
       "get": {
         "operationId": "CampaignsController_stats",
-        "summary": "Per-status send counts for a campaign",
         "parameters": [
           {
             "name": "id",
@@ -1351,20 +1420,20 @@
             "description": "Stats retrieved"
           }
         },
-        "tags": [
-          "campaigns-admin"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Per-status send counts for a campaign",
+        "tags": [
+          "campaigns-admin"
         ]
       }
     },
     "/v1/admin/campaigns/{id}/test": {
       "post": {
         "operationId": "CampaignsController_sendTest",
-        "summary": "Send a test of this campaign to your own inbox",
         "parameters": [
           {
             "name": "id",
@@ -1396,20 +1465,20 @@
             "description": "Campaign not found"
           }
         },
-        "tags": [
-          "campaigns-admin"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Send a test of this campaign to your own inbox",
+        "tags": [
+          "campaigns-admin"
         ]
       }
     },
     "/v1/admin/carriers": {
       "get": {
         "operationId": "CarriersController_list",
-        "summary": "List carriers",
         "parameters": [
           {
             "name": "page",
@@ -1435,14 +1504,14 @@
             "required": false,
             "in": "query",
             "schema": {
+              "type": "string",
               "enum": [
+                "aramex",
                 "dhl",
                 "fedex",
-                "ups",
-                "aramex",
-                "manual"
-              ],
-              "type": "string"
+                "manual",
+                "ups"
+              ]
             }
           },
           {
@@ -1459,18 +1528,18 @@
             "description": "Carriers retrieved"
           }
         },
-        "tags": [
-          "carriers"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List carriers",
+        "tags": [
+          "carriers"
         ]
       },
       "post": {
         "operationId": "CarriersController_create",
-        "summary": "Create carrier",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1490,20 +1559,20 @@
             "description": "Code already in use"
           }
         },
-        "tags": [
-          "carriers"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create carrier",
+        "tags": [
+          "carriers"
         ]
       }
     },
     "/v1/admin/carriers/{id}": {
       "get": {
         "operationId": "CarriersController_findOne",
-        "summary": "Get carrier",
         "parameters": [
           {
             "name": "id",
@@ -1522,18 +1591,18 @@
             "description": "Not found"
           }
         },
-        "tags": [
-          "carriers"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get carrier",
+        "tags": [
+          "carriers"
         ]
       },
       "patch": {
         "operationId": "CarriersController_update",
-        "summary": "Update carrier",
         "parameters": [
           {
             "name": "id",
@@ -1562,18 +1631,18 @@
             "description": "Not found"
           }
         },
-        "tags": [
-          "carriers"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update carrier",
+        "tags": [
+          "carriers"
         ]
       },
       "delete": {
         "operationId": "CarriersController_remove",
-        "summary": "Soft-delete carrier",
         "parameters": [
           {
             "name": "id",
@@ -1592,20 +1661,20 @@
             "description": "Not found"
           }
         },
-        "tags": [
-          "carriers"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Soft-delete carrier",
+        "tags": [
+          "carriers"
         ]
       }
     },
     "/v1/admin/categories": {
       "get": {
         "operationId": "CategoriesController_adminGetTree",
-        "summary": "Get category tree (admin)",
         "parameters": [],
         "responses": {
           "200": {
@@ -1618,18 +1687,18 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "categories"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get category tree (admin)",
+        "tags": [
+          "categories"
         ]
       },
       "post": {
         "operationId": "CategoriesController_create",
-        "summary": "Create category",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1655,20 +1724,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "categories"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create category",
+        "tags": [
+          "categories"
         ]
       }
     },
     "/v1/admin/categories/reorder": {
       "patch": {
         "operationId": "CategoriesController_reorder",
-        "summary": "Reorder categories",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1694,20 +1763,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "categories"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Reorder categories",
+        "tags": [
+          "categories"
         ]
       }
     },
     "/v1/admin/categories/{id}": {
       "patch": {
         "operationId": "CategoriesController_update",
-        "summary": "Update category",
         "parameters": [
           {
             "name": "id",
@@ -1745,18 +1814,18 @@
             "description": "Category not found"
           }
         },
-        "tags": [
-          "categories"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update category",
+        "tags": [
+          "categories"
         ]
       },
       "delete": {
         "operationId": "CategoriesController_delete",
-        "summary": "Delete category",
         "parameters": [
           {
             "name": "id",
@@ -1784,38 +1853,38 @@
             "description": "Category has products"
           }
         },
-        "tags": [
-          "categories"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Delete category",
+        "tags": [
+          "categories"
         ]
       }
     },
     "/v1/admin/checkout/settings": {
       "get": {
         "operationId": "CheckoutController_getSettings",
-        "summary": "Get checkout settings",
         "parameters": [],
         "responses": {
           "200": {
             "description": "Settings retrieved"
           }
         },
-        "tags": [
-          "checkout"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get checkout settings",
+        "tags": [
+          "checkout"
         ]
       },
       "patch": {
         "operationId": "CheckoutController_updateSettings",
-        "summary": "Update checkout settings",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1835,38 +1904,38 @@
             "description": "Invalid input"
           }
         },
-        "tags": [
-          "checkout"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update checkout settings",
+        "tags": [
+          "checkout"
         ]
       }
     },
     "/v1/admin/countries": {
       "get": {
         "operationId": "CountriesController_list",
-        "summary": "List countries with enabled/default flags",
         "parameters": [],
         "responses": {
           "200": {
             "description": "Countries retrieved"
           }
         },
-        "tags": [
-          "countries"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List countries with enabled/default flags",
+        "tags": [
+          "countries"
         ]
       },
       "patch": {
         "operationId": "CountriesController_update",
-        "summary": "Bulk update enabled countries + default",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1886,38 +1955,38 @@
             "description": "Empty enabled list or default not in enabled set"
           }
         },
-        "tags": [
-          "countries"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Bulk update enabled countries + default",
+        "tags": [
+          "countries"
         ]
       }
     },
     "/v1/admin/currencies": {
       "get": {
         "operationId": "CurrenciesController_list",
-        "summary": "List currencies with enabled/default flags",
         "parameters": [],
         "responses": {
           "200": {
             "description": "Currencies retrieved"
           }
         },
-        "tags": [
-          "currencies"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List currencies with enabled/default flags",
+        "tags": [
+          "currencies"
         ]
       },
       "patch": {
         "operationId": "CurrenciesController_update",
-        "summary": "Bulk update enabled currencies + default",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1937,20 +2006,20 @@
             "description": "Empty enabled list or default not in enabled set"
           }
         },
-        "tags": [
-          "currencies"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Bulk update enabled currencies + default",
+        "tags": [
+          "currencies"
         ]
       }
     },
     "/v1/admin/currencies/store": {
       "get": {
         "operationId": "CurrenciesController_getStore",
-        "summary": "Store display currency + enabled set (any staff role)",
         "parameters": [],
         "responses": {
           "200": {
@@ -1960,20 +2029,20 @@
             "description": "Customer session — not a staff role"
           }
         },
-        "tags": [
-          "currencies"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Store display currency + enabled set (any staff role)",
+        "tags": [
+          "currencies"
         ]
       }
     },
     "/v1/admin/customers": {
       "get": {
         "operationId": "UsersController_listCustomers",
-        "summary": "List all customers",
         "parameters": [
           {
             "name": "page",
@@ -2010,16 +2079,16 @@
             "required": false,
             "in": "query",
             "schema": {
+              "type": "string",
               "enum": [
-                "NEW",
                 "ACTIVE",
-                "LOYAL",
                 "AT_RISK",
                 "CHURNED",
                 "HIGH_VALUE",
+                "LOYAL",
+                "NEW",
                 "VIP"
-              ],
-              "type": "string"
+              ]
             }
           }
         ],
@@ -2034,20 +2103,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "users"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List all customers",
+        "tags": [
+          "users"
         ]
       }
     },
     "/v1/admin/customers/segments": {
       "get": {
         "operationId": "UsersController_listCustomerSegments",
-        "summary": "List customer segments with counts",
         "parameters": [],
         "responses": {
           "200": {
@@ -2060,20 +2129,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "users"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List customer segments with counts",
+        "tags": [
+          "users"
         ]
       }
     },
     "/v1/admin/customers/{id}": {
       "get": {
         "operationId": "UsersController_getCustomer",
-        "summary": "Get customer by ID",
         "parameters": [
           {
             "name": "id",
@@ -2098,18 +2167,18 @@
             "description": "Customer not found"
           }
         },
-        "tags": [
-          "users"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get customer by ID",
+        "tags": [
+          "users"
         ]
       },
       "patch": {
         "operationId": "UsersController_updateCustomer",
-        "summary": "Update customer",
         "parameters": [
           {
             "name": "id",
@@ -2147,26 +2216,27 @@
             "description": "Customer not found"
           }
         },
-        "tags": [
-          "users"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update customer",
+        "tags": [
+          "users"
         ]
       }
     },
     "/v1/admin/geo/ai-readiness": {
       "get": {
         "operationId": "GeoAdminController_getAiReadiness",
-        "summary": "Get AI-readiness score across active products",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
+        "summary": "Get AI-readiness score across active products",
         "tags": [
           "geo"
         ]
@@ -2175,7 +2245,6 @@
     "/v1/admin/geo/products/{productId}/faqs/accept": {
       "post": {
         "operationId": "GeoAdminController_acceptFaqSuggestions",
-        "summary": "Accept FAQ suggestions as product FAQs",
         "parameters": [
           {
             "name": "productId",
@@ -2201,6 +2270,7 @@
             "description": ""
           }
         },
+        "summary": "Accept FAQ suggestions as product FAQs",
         "tags": [
           "geo"
         ]
@@ -2209,7 +2279,6 @@
     "/v1/admin/geo/products/{productId}/faqs/suggestions": {
       "get": {
         "operationId": "GeoAdminController_getFaqSuggestions",
-        "summary": "Get generic FAQ suggestions for a product",
         "parameters": [
           {
             "name": "productId",
@@ -2225,6 +2294,7 @@
             "description": ""
           }
         },
+        "summary": "Get generic FAQ suggestions for a product",
         "tags": [
           "geo"
         ]
@@ -2233,7 +2303,6 @@
     "/v1/admin/gift-cards": {
       "get": {
         "operationId": "GiftCardsController_list",
-        "summary": "List gift cards",
         "parameters": [
           {
             "name": "page",
@@ -2284,6 +2353,18 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
           }
         ],
         "responses": {
@@ -2297,18 +2378,18 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "gift-cards"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List gift cards",
+        "tags": [
+          "gift-cards"
         ]
       },
       "post": {
         "operationId": "GiftCardsController_issue",
-        "summary": "Issue gift card",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2334,20 +2415,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "gift-cards"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Issue gift card",
+        "tags": [
+          "gift-cards"
         ]
       }
     },
     "/v1/admin/gift-cards/{id}": {
       "get": {
         "operationId": "GiftCardsController_findOne",
-        "summary": "Get gift card by ID",
         "parameters": [
           {
             "name": "id",
@@ -2372,18 +2453,18 @@
             "description": "Gift card not found"
           }
         },
-        "tags": [
-          "gift-cards"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get gift card by ID",
+        "tags": [
+          "gift-cards"
         ]
       },
       "patch": {
         "operationId": "GiftCardsController_update",
-        "summary": "Update gift card",
         "parameters": [
           {
             "name": "id",
@@ -2421,20 +2502,20 @@
             "description": "Gift card not found"
           }
         },
-        "tags": [
-          "gift-cards"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update gift card",
+        "tags": [
+          "gift-cards"
         ]
       }
     },
     "/v1/admin/gift-cards/{id}/adjust": {
       "post": {
         "operationId": "GiftCardsController_adjustBalance",
-        "summary": "Adjust gift card balance",
         "parameters": [
           {
             "name": "id",
@@ -2459,16 +2540,6 @@
           "200": {
             "description": "Balance adjusted"
           },
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
           "400": {
             "description": "Invalid input (zero delta, overdraw, inactive)"
           },
@@ -2482,20 +2553,20 @@
             "description": "Gift card not found"
           }
         },
-        "tags": [
-          "gift-cards"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Adjust gift card balance",
+        "tags": [
+          "gift-cards"
         ]
       }
     },
     "/v1/admin/gift-cards/{id}/resend": {
       "post": {
         "operationId": "GiftCardsController_resendEmail",
-        "summary": "Resend gift card email",
         "parameters": [
           {
             "name": "id",
@@ -2523,20 +2594,20 @@
             "description": "Gift card not found"
           }
         },
-        "tags": [
-          "gift-cards"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Resend gift card email",
+        "tags": [
+          "gift-cards"
         ]
       }
     },
     "/v1/admin/inventory": {
       "get": {
         "operationId": "InventoryController_listStockLevels",
-        "summary": "List stock levels",
         "parameters": [
           {
             "name": "page",
@@ -2574,6 +2645,44 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "stockStatus",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "IN_STOCK",
+                "LOW_STOCK",
+                "OUT_OF_STOCK"
+              ]
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "onHand",
+                "reserved",
+                "updatedAt"
+              ]
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
           }
         ],
         "responses": {
@@ -2587,20 +2696,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "inventory"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List stock levels",
+        "tags": [
+          "inventory"
         ]
       }
     },
     "/v1/admin/inventory/adjust": {
       "patch": {
         "operationId": "InventoryController_adjustInventory",
-        "summary": "Adjust inventory stock",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2629,24 +2738,24 @@
             "description": "Variant not found"
           }
         },
-        "tags": [
-          "inventory"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Adjust inventory stock",
+        "tags": [
+          "inventory"
         ]
       }
     },
     "/v1/admin/inventory/alerts": {
       "get": {
         "operationId": "InventoryController_listAlerts",
-        "summary": "List low/out-of-stock alerts",
         "parameters": [
           {
             "name": "page",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -2654,7 +2763,7 @@
           },
           {
             "name": "pageSize",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -2672,24 +2781,24 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "inventory"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List low/out-of-stock alerts",
+        "tags": [
+          "inventory"
         ]
       }
     },
     "/v1/admin/inventory/locations": {
       "get": {
         "operationId": "InventoryController_listLocations",
-        "summary": "List inventory locations",
         "parameters": [
           {
             "name": "page",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -2697,7 +2806,7 @@
           },
           {
             "name": "pageSize",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -2715,18 +2824,18 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "inventory"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List inventory locations",
+        "tags": [
+          "inventory"
         ]
       },
       "post": {
         "operationId": "InventoryController_createLocation",
-        "summary": "Create inventory location",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2752,20 +2861,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "inventory"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create inventory location",
+        "tags": [
+          "inventory"
         ]
       }
     },
     "/v1/admin/inventory/locations/{id}": {
       "patch": {
         "operationId": "InventoryController_updateLocation",
-        "summary": "Update inventory location",
         "parameters": [
           {
             "name": "id",
@@ -2803,18 +2912,18 @@
             "description": "Location not found"
           }
         },
-        "tags": [
-          "inventory"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update inventory location",
+        "tags": [
+          "inventory"
         ]
       },
       "delete": {
         "operationId": "InventoryController_deleteLocation",
-        "summary": "Delete inventory location",
         "parameters": [
           {
             "name": "id",
@@ -2842,20 +2951,20 @@
             "description": "Location has stock"
           }
         },
-        "tags": [
-          "inventory"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Delete inventory location",
+        "tags": [
+          "inventory"
         ]
       }
     },
     "/v1/admin/inventory/movements": {
       "get": {
         "operationId": "InventoryController_listMovements",
-        "summary": "List inventory movements",
         "parameters": [
           {
             "name": "page",
@@ -2895,6 +3004,22 @@
             }
           },
           {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ADJUSTMENT",
+                "RESERVATION",
+                "RESERVATION_RELEASE",
+                "RETURN",
+                "SALE",
+                "TRANSFER"
+              ]
+            }
+          },
+          {
             "name": "dateFrom",
             "required": false,
             "in": "query",
@@ -2909,6 +3034,31 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "quantity",
+                "type"
+              ]
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
           }
         ],
         "responses": {
@@ -2922,20 +3072,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "inventory"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List inventory movements",
+        "tags": [
+          "inventory"
         ]
       }
     },
     "/v1/admin/inventory/transfer": {
       "post": {
         "operationId": "InventoryController_transferInventory",
-        "summary": "Transfer inventory between locations",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2964,20 +3114,20 @@
             "description": "Location or variant not found"
           }
         },
-        "tags": [
-          "inventory"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Transfer inventory between locations",
+        "tags": [
+          "inventory"
         ]
       }
     },
     "/v1/admin/inventory/variant/{variantId}": {
       "get": {
         "operationId": "InventoryController_getVariantStock",
-        "summary": "Get variant stock levels",
         "parameters": [
           {
             "name": "variantId",
@@ -3002,20 +3152,20 @@
             "description": "Variant not found"
           }
         },
-        "tags": [
-          "inventory"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get variant stock levels",
+        "tags": [
+          "inventory"
         ]
       }
     },
     "/v1/admin/notifications": {
       "get": {
         "operationId": "NotificationsAdminController_list",
-        "summary": "List notifications for the current admin user",
         "parameters": [
           {
             "name": "isRead",
@@ -3050,6 +3200,7 @@
             "description": ""
           }
         },
+        "summary": "List notifications for the current admin user",
         "tags": [
           "notifications"
         ]
@@ -3058,7 +3209,6 @@
     "/v1/admin/notifications/log": {
       "get": {
         "operationId": "NotificationTemplatesController_listLog",
-        "summary": "List notification send-log entries",
         "parameters": [
           {
             "name": "page",
@@ -3084,12 +3234,12 @@
             "required": false,
             "in": "query",
             "schema": {
+              "type": "string",
               "enum": [
                 "email",
-                "sms",
-                "push"
-              ],
-              "type": "string"
+                "push",
+                "sms"
+              ]
             }
           },
           {
@@ -3097,18 +3247,18 @@
             "required": false,
             "in": "query",
             "schema": {
+              "type": "string",
               "enum": [
-                "queued",
-                "sent",
-                "delivered",
                 "bounced",
                 "complained",
+                "delivered",
+                "enqueue-failed",
                 "failed",
-                "suppressed",
+                "queued",
+                "sent",
                 "skipped",
-                "enqueue-failed"
-              ],
-              "type": "string"
+                "suppressed"
+              ]
             }
           },
           {
@@ -3149,20 +3299,20 @@
             "description": "Log retrieved"
           }
         },
-        "tags": [
-          "notifications-admin"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List notification send-log entries",
+        "tags": [
+          "notifications-admin"
         ]
       }
     },
     "/v1/admin/notifications/log/{id}/resend": {
       "post": {
         "operationId": "NotificationTemplatesController_resend",
-        "summary": "Resend a notification log entry",
         "parameters": [
           {
             "name": "id",
@@ -3181,26 +3331,27 @@
             "description": "Log entry not found"
           }
         },
-        "tags": [
-          "notifications-admin"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Resend a notification log entry",
+        "tags": [
+          "notifications-admin"
         ]
       }
     },
     "/v1/admin/notifications/read-all": {
       "patch": {
         "operationId": "NotificationsAdminController_markAllRead",
-        "summary": "Mark all notifications as read",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
+        "summary": "Mark all notifications as read",
         "tags": [
           "notifications"
         ]
@@ -3209,7 +3360,6 @@
     "/v1/admin/notifications/templates": {
       "get": {
         "operationId": "NotificationTemplatesController_listTemplates",
-        "summary": "List notification templates",
         "parameters": [
           {
             "name": "page",
@@ -3235,12 +3385,12 @@
             "required": false,
             "in": "query",
             "schema": {
+              "type": "string",
               "enum": [
                 "email",
-                "sms",
-                "push"
-              ],
-              "type": "string"
+                "push",
+                "sms"
+              ]
             }
           },
           {
@@ -3265,18 +3415,18 @@
             "description": "Templates retrieved"
           }
         },
-        "tags": [
-          "notifications-admin"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List notification templates",
+        "tags": [
+          "notifications-admin"
         ]
       },
       "post": {
         "operationId": "NotificationTemplatesController_create",
-        "summary": "Create notification template",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -3299,20 +3449,20 @@
             "description": "Code already in use"
           }
         },
-        "tags": [
-          "notifications-admin"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create notification template",
+        "tags": [
+          "notifications-admin"
         ]
       }
     },
     "/v1/admin/notifications/templates/{id}": {
       "get": {
         "operationId": "NotificationTemplatesController_findOne",
-        "summary": "Get template",
         "parameters": [
           {
             "name": "id",
@@ -3331,18 +3481,18 @@
             "description": "Template not found"
           }
         },
-        "tags": [
-          "notifications-admin"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get template",
+        "tags": [
+          "notifications-admin"
         ]
       },
       "patch": {
         "operationId": "NotificationTemplatesController_update",
-        "summary": "Update notification template",
         "parameters": [
           {
             "name": "id",
@@ -3374,18 +3524,18 @@
             "description": "Template not found"
           }
         },
-        "tags": [
-          "notifications-admin"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update notification template",
+        "tags": [
+          "notifications-admin"
         ]
       },
       "delete": {
         "operationId": "NotificationTemplatesController_remove",
-        "summary": "Delete notification template",
         "parameters": [
           {
             "name": "id",
@@ -3404,20 +3554,20 @@
             "description": "Template not found"
           }
         },
-        "tags": [
-          "notifications-admin"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Delete notification template",
+        "tags": [
+          "notifications-admin"
         ]
       }
     },
     "/v1/admin/notifications/templates/{id}/preview": {
       "post": {
         "operationId": "NotificationTemplatesController_preview",
-        "summary": "Render a draft template for every enabled locale (no send, no persist)",
         "parameters": [
           {
             "name": "id",
@@ -3449,20 +3599,20 @@
             "description": "Template not found"
           }
         },
-        "tags": [
-          "notifications-admin"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Render a draft template for every enabled locale (no send, no persist)",
+        "tags": [
+          "notifications-admin"
         ]
       }
     },
     "/v1/admin/notifications/templates/{id}/send-test": {
       "post": {
         "operationId": "NotificationTemplatesController_sendTest",
-        "summary": "Send a test of this template to your own inbox",
         "parameters": [
           {
             "name": "id",
@@ -3494,26 +3644,27 @@
             "description": "Template not found"
           }
         },
-        "tags": [
-          "notifications-admin"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Send a test of this template to your own inbox",
+        "tags": [
+          "notifications-admin"
         ]
       }
     },
     "/v1/admin/notifications/unread-count": {
       "get": {
         "operationId": "NotificationsAdminController_getUnreadCount",
-        "summary": "Get unread notification count",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
+        "summary": "Get unread notification count",
         "tags": [
           "notifications"
         ]
@@ -3522,7 +3673,6 @@
     "/v1/admin/notifications/{id}/read": {
       "patch": {
         "operationId": "NotificationsAdminController_markRead",
-        "summary": "Mark one notification as read",
         "parameters": [
           {
             "name": "id",
@@ -3538,6 +3688,7 @@
             "description": ""
           }
         },
+        "summary": "Mark one notification as read",
         "tags": [
           "notifications"
         ]
@@ -3546,7 +3697,6 @@
     "/v1/admin/orders": {
       "post": {
         "operationId": "OrdersAdminController_createOrder",
-        "summary": "Create order (admin manual)",
         "parameters": [
           {
             "name": "accept-language",
@@ -3581,18 +3731,18 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create order (admin manual)",
+        "tags": [
+          "orders"
         ]
       },
       "get": {
         "operationId": "OrdersAdminController_listOrders",
-        "summary": "List orders (admin)",
         "parameters": [
           {
             "name": "page",
@@ -3610,6 +3760,43 @@
             "schema": {
               "minimum": 1,
               "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CANCELLED",
+                "COMPLETED",
+                "CONFIRMED",
+                "DELIVERED",
+                "ON_HOLD",
+                "PENDING",
+                "PROCESSING",
+                "RETURNED",
+                "RETURN_REQUESTED",
+                "SHIPPED"
+              ]
+            }
+          },
+          {
+            "name": "paymentStatus",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "AUTHORIZED",
+                "CANCELLED",
+                "CAPTURED",
+                "FAILED",
+                "PARTIALLY_REFUNDED",
+                "PENDING",
+                "REFUNDED"
+              ]
             }
           },
           {
@@ -3634,6 +3821,19 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "pattern": "^(asc|desc)$",
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
             }
           },
           {
@@ -3664,20 +3864,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List orders (admin)",
+        "tags": [
+          "orders"
         ]
       }
     },
     "/v1/admin/orders/export": {
       "get": {
         "operationId": "OrdersAdminController_exportCsv",
-        "summary": "Export orders to CSV",
         "parameters": [
           {
             "name": "page",
@@ -3695,6 +3895,43 @@
             "schema": {
               "minimum": 1,
               "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CANCELLED",
+                "COMPLETED",
+                "CONFIRMED",
+                "DELIVERED",
+                "ON_HOLD",
+                "PENDING",
+                "PROCESSING",
+                "RETURNED",
+                "RETURN_REQUESTED",
+                "SHIPPED"
+              ]
+            }
+          },
+          {
+            "name": "paymentStatus",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "AUTHORIZED",
+                "CANCELLED",
+                "CAPTURED",
+                "FAILED",
+                "PARTIALLY_REFUNDED",
+                "PENDING",
+                "REFUNDED"
+              ]
             }
           },
           {
@@ -3719,6 +3956,19 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "pattern": "^(asc|desc)$",
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
             }
           },
           {
@@ -3749,20 +3999,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Export orders to CSV",
+        "tags": [
+          "orders"
         ]
       }
     },
     "/v1/admin/orders/stats": {
       "get": {
         "operationId": "OrdersAdminController_getStats",
-        "summary": "Get orders statistics",
         "parameters": [],
         "responses": {
           "200": {
@@ -3775,20 +4025,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get orders statistics",
+        "tags": [
+          "orders"
         ]
       }
     },
     "/v1/admin/orders/{id}": {
       "get": {
         "operationId": "OrdersAdminController_findOne",
-        "summary": "Get order by ID (admin)",
         "parameters": [
           {
             "name": "id",
@@ -3813,18 +4063,18 @@
             "description": "Order not found"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get order by ID (admin)",
+        "tags": [
+          "orders"
         ]
       },
       "patch": {
         "operationId": "OrdersAdminController_editOrder",
-        "summary": "Edit order",
         "parameters": [
           {
             "name": "id",
@@ -3870,20 +4120,20 @@
             "description": "Order not found"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Edit order",
+        "tags": [
+          "orders"
         ]
       }
     },
     "/v1/admin/orders/{id}/invoice": {
       "get": {
         "operationId": "OrdersAdminController_getInvoice",
-        "summary": "Get order invoice (admin)",
         "parameters": [
           {
             "name": "id",
@@ -3908,20 +4158,20 @@
             "description": "Order not found"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get order invoice (admin)",
+        "tags": [
+          "orders"
         ]
       }
     },
     "/v1/admin/orders/{id}/invoice/pdf": {
       "get": {
         "operationId": "OrdersAdminController_getInvoicePdf",
-        "summary": "Download order invoice as a branded PDF (admin)",
         "parameters": [
           {
             "name": "id",
@@ -3954,20 +4204,20 @@
             "description": "Order not found or invoice not ready"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Download order invoice as a branded PDF (admin)",
+        "tags": [
+          "orders"
         ]
       }
     },
     "/v1/admin/orders/{id}/notes": {
       "post": {
         "operationId": "OrdersAdminController_addNote",
-        "summary": "Add order note",
         "parameters": [
           {
             "name": "id",
@@ -4005,20 +4255,20 @@
             "description": "Order not found"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Add order note",
+        "tags": [
+          "orders"
         ]
       }
     },
     "/v1/admin/orders/{id}/payment/cancel": {
       "post": {
         "operationId": "OrdersAdminController_cancelPayment",
-        "summary": "Cancel the order payment through its provider",
         "parameters": [
           {
             "name": "id",
@@ -4046,20 +4296,20 @@
             "description": "Transition not allowed or no payment session"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Cancel the order payment through its provider",
+        "tags": [
+          "orders"
         ]
       }
     },
     "/v1/admin/orders/{id}/payment/capture": {
       "post": {
         "operationId": "OrdersAdminController_capturePayment",
-        "summary": "Capture the order payment through its provider",
         "parameters": [
           {
             "name": "id",
@@ -4087,20 +4337,20 @@
             "description": "Transition not allowed or no payment session"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Capture the order payment through its provider",
+        "tags": [
+          "orders"
         ]
       }
     },
     "/v1/admin/orders/{id}/payment/refund": {
       "post": {
         "operationId": "OrdersAdminController_refundPayment",
-        "summary": "Refund the full order payment through its provider",
         "parameters": [
           {
             "name": "id",
@@ -4128,20 +4378,20 @@
             "description": "Transition not allowed or no payment session"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Refund the full order payment through its provider",
+        "tags": [
+          "orders"
         ]
       }
     },
     "/v1/admin/orders/{id}/shipments": {
       "post": {
         "operationId": "OrdersAdminController_createShipment",
-        "summary": "Create shipment",
         "parameters": [
           {
             "name": "id",
@@ -4179,20 +4429,20 @@
             "description": "Order not found"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create shipment",
+        "tags": [
+          "orders"
         ]
       }
     },
     "/v1/admin/orders/{id}/shipments/{sid}": {
       "patch": {
         "operationId": "OrdersAdminController_updateShipment",
-        "summary": "Update shipment",
         "parameters": [
           {
             "name": "id",
@@ -4238,20 +4488,20 @@
             "description": "Shipment not found"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update shipment",
+        "tags": [
+          "orders"
         ]
       }
     },
     "/v1/admin/orders/{id}/status": {
       "patch": {
         "operationId": "OrdersAdminController_updateStatus",
-        "summary": "Update order status",
         "parameters": [
           {
             "name": "id",
@@ -4289,20 +4539,20 @@
             "description": "Order not found"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update order status",
+        "tags": [
+          "orders"
         ]
       }
     },
     "/v1/admin/pages": {
       "get": {
         "operationId": "CmsAdminController_adminGetPages",
-        "summary": "List all CMS pages including unpublished",
         "parameters": [
           {
             "name": "page",
@@ -4330,11 +4580,14 @@
           "200": {
             "description": ""
           }
-        }
+        },
+        "summary": "List all CMS pages including unpublished",
+        "tags": [
+          "CmsAdmin"
+        ]
       },
       "post": {
         "operationId": "CmsAdminController_createPage",
-        "summary": "Create new CMS page",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4350,13 +4603,16 @@
           "201": {
             "description": ""
           }
-        }
+        },
+        "summary": "Create new CMS page",
+        "tags": [
+          "CmsAdmin"
+        ]
       }
     },
     "/v1/admin/pages/{id}": {
       "patch": {
         "operationId": "CmsAdminController_updatePage",
-        "summary": "Update CMS page",
         "parameters": [
           {
             "name": "id",
@@ -4381,11 +4637,14 @@
           "200": {
             "description": ""
           }
-        }
+        },
+        "summary": "Update CMS page",
+        "tags": [
+          "CmsAdmin"
+        ]
       },
       "delete": {
         "operationId": "CmsAdminController_deletePage",
-        "summary": "Soft-delete CMS page",
         "parameters": [
           {
             "name": "id",
@@ -4400,13 +4659,16 @@
           "204": {
             "description": ""
           }
-        }
+        },
+        "summary": "Soft-delete CMS page",
+        "tags": [
+          "CmsAdmin"
+        ]
       }
     },
     "/v1/admin/payment-methods": {
       "get": {
         "operationId": "PaymentMethodsController_list",
-        "summary": "List payment methods",
         "parameters": [
           {
             "name": "page",
@@ -4432,14 +4694,14 @@
             "required": false,
             "in": "query",
             "schema": {
+              "type": "string",
               "enum": [
                 "cod",
+                "gift_card",
                 "manual",
-                "stripe",
                 "paypal",
-                "gift_card"
-              ],
-              "type": "string"
+                "stripe"
+              ]
             }
           },
           {
@@ -4462,18 +4724,18 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "payment-methods"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List payment methods",
+        "tags": [
+          "payment-methods"
         ]
       },
       "post": {
         "operationId": "PaymentMethodsController_create",
-        "summary": "Create payment method",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4496,20 +4758,20 @@
             "description": "Code already in use"
           }
         },
-        "tags": [
-          "payment-methods"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create payment method",
+        "tags": [
+          "payment-methods"
         ]
       }
     },
     "/v1/admin/payment-methods/reorder": {
       "post": {
         "operationId": "PaymentMethodsController_reorder",
-        "summary": "Reorder payment methods",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4532,20 +4794,20 @@
             "description": "One or more ids unknown"
           }
         },
-        "tags": [
-          "payment-methods"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Reorder payment methods",
+        "tags": [
+          "payment-methods"
         ]
       }
     },
     "/v1/admin/payment-methods/{id}": {
       "get": {
         "operationId": "PaymentMethodsController_findOne",
-        "summary": "Get payment method",
         "parameters": [
           {
             "name": "id",
@@ -4564,18 +4826,18 @@
             "description": "Not found"
           }
         },
-        "tags": [
-          "payment-methods"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get payment method",
+        "tags": [
+          "payment-methods"
         ]
       },
       "patch": {
         "operationId": "PaymentMethodsController_update",
-        "summary": "Update payment method",
         "parameters": [
           {
             "name": "id",
@@ -4607,18 +4869,18 @@
             "description": "Not found"
           }
         },
-        "tags": [
-          "payment-methods"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update payment method",
+        "tags": [
+          "payment-methods"
         ]
       },
       "delete": {
         "operationId": "PaymentMethodsController_remove",
-        "summary": "Soft-delete payment method",
         "parameters": [
           {
             "name": "id",
@@ -4637,20 +4899,20 @@
             "description": "Not found"
           }
         },
-        "tags": [
-          "payment-methods"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Soft-delete payment method",
+        "tags": [
+          "payment-methods"
         ]
       }
     },
     "/v1/admin/product-specs/labels": {
       "get": {
         "operationId": "ProductsAdminController_listSpecLabels",
-        "summary": "List distinct product specification labels",
         "parameters": [
           {
             "name": "search",
@@ -4694,24 +4956,24 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List distinct product specification labels",
+        "tags": [
+          "admin-products"
         ]
       }
     },
     "/v1/admin/product-types": {
       "get": {
         "operationId": "ProductsAdminController_listProductTypes",
-        "summary": "List all product types",
         "parameters": [
           {
             "name": "page",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -4719,7 +4981,7 @@
           },
           {
             "name": "pageSize",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -4737,18 +4999,18 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List all product types",
+        "tags": [
+          "admin-products"
         ]
       },
       "post": {
         "operationId": "ProductsAdminController_createProductType",
-        "summary": "Create new product type",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4774,20 +5036,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create new product type",
+        "tags": [
+          "admin-products"
         ]
       }
     },
     "/v1/admin/product-types/{id}": {
       "patch": {
         "operationId": "ProductsAdminController_updateProductType",
-        "summary": "Update product type",
         "parameters": [
           {
             "name": "id",
@@ -4825,18 +5087,18 @@
             "description": "Product type not found"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update product type",
+        "tags": [
+          "admin-products"
         ]
       },
       "delete": {
         "operationId": "ProductsAdminController_deleteProductType",
-        "summary": "Delete product type",
         "parameters": [
           {
             "name": "id",
@@ -4864,20 +5126,20 @@
             "description": "Product type in use"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Delete product type",
+        "tags": [
+          "admin-products"
         ]
       }
     },
     "/v1/admin/products": {
       "get": {
         "operationId": "ProductsAdminController_adminListProducts",
-        "summary": "List all products (admin)",
         "parameters": [
           {
             "name": "page",
@@ -4904,6 +5166,31 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "ARCHIVED",
+                "DRAFT"
+              ]
             }
           },
           {
@@ -4958,18 +5245,18 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List all products (admin)",
+        "tags": [
+          "admin-products"
         ]
       },
       "post": {
         "operationId": "ProductsAdminController_createProduct",
-        "summary": "Create new product",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4995,20 +5282,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create new product",
+        "tags": [
+          "admin-products"
         ]
       }
     },
     "/v1/admin/products/bulk/prices": {
       "patch": {
         "operationId": "ProductsAdminController_bulkUpdatePrices",
-        "summary": "Bulk update variant prices",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -5034,20 +5321,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Bulk update variant prices",
+        "tags": [
+          "admin-products"
         ]
       }
     },
     "/v1/admin/products/bulk/status": {
       "patch": {
         "operationId": "ProductsAdminController_bulkUpdateStatus",
-        "summary": "Bulk update product statuses",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -5073,20 +5360,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Bulk update product statuses",
+        "tags": [
+          "admin-products"
         ]
       }
     },
     "/v1/admin/products/{id}": {
       "get": {
         "operationId": "ProductsAdminController_adminGetProduct",
-        "summary": "Get product by ID (admin)",
         "parameters": [
           {
             "name": "id",
@@ -5111,18 +5398,18 @@
             "description": "Product not found"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get product by ID (admin)",
+        "tags": [
+          "admin-products"
         ]
       },
       "patch": {
         "operationId": "ProductsAdminController_updateProduct",
-        "summary": "Update product",
         "parameters": [
           {
             "name": "id",
@@ -5160,18 +5447,18 @@
             "description": "Product not found"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update product",
+        "tags": [
+          "admin-products"
         ]
       },
       "delete": {
         "operationId": "ProductsAdminController_deleteProduct",
-        "summary": "Delete product",
         "parameters": [
           {
             "name": "id",
@@ -5196,20 +5483,20 @@
             "description": "Product not found"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Delete product",
+        "tags": [
+          "admin-products"
         ]
       }
     },
     "/v1/admin/products/{id}/assets": {
       "patch": {
         "operationId": "ProductsAdminController_updateAssets",
-        "summary": "Update product assets",
         "parameters": [
           {
             "name": "id",
@@ -5247,20 +5534,20 @@
             "description": "Product not found"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update product assets",
+        "tags": [
+          "admin-products"
         ]
       }
     },
     "/v1/admin/products/{id}/faqs": {
       "post": {
         "operationId": "ProductsAdminController_createFaq",
-        "summary": "Create product FAQ",
         "parameters": [
           {
             "name": "id",
@@ -5298,20 +5585,20 @@
             "description": "Product not found"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create product FAQ",
+        "tags": [
+          "admin-products"
         ]
       }
     },
     "/v1/admin/products/{id}/faqs/{faqId}": {
       "patch": {
         "operationId": "ProductsAdminController_updateFaq",
-        "summary": "Update product FAQ",
         "parameters": [
           {
             "name": "id",
@@ -5357,18 +5644,18 @@
             "description": "FAQ not found"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update product FAQ",
+        "tags": [
+          "admin-products"
         ]
       },
       "delete": {
         "operationId": "ProductsAdminController_deleteFaq",
-        "summary": "Delete product FAQ",
         "parameters": [
           {
             "name": "id",
@@ -5401,20 +5688,20 @@
             "description": "FAQ not found"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Delete product FAQ",
+        "tags": [
+          "admin-products"
         ]
       }
     },
     "/v1/admin/products/{id}/restore": {
       "patch": {
         "operationId": "ProductsAdminController_restoreProduct",
-        "summary": "Restore archived product",
         "parameters": [
           {
             "name": "id",
@@ -5439,20 +5726,20 @@
             "description": "Product not found"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Restore archived product",
+        "tags": [
+          "admin-products"
         ]
       }
     },
     "/v1/admin/products/{id}/specs": {
       "put": {
         "operationId": "ProductsAdminController_replaceSpecs",
-        "summary": "Replace product specifications",
         "parameters": [
           {
             "name": "id",
@@ -5490,20 +5777,20 @@
             "description": "Product not found"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Replace product specifications",
+        "tags": [
+          "admin-products"
         ]
       }
     },
     "/v1/admin/products/{id}/stock": {
       "get": {
         "operationId": "ProductsAdminController_getProductStock",
-        "summary": "Stock for every variant of a product",
         "parameters": [
           {
             "name": "id",
@@ -5528,20 +5815,20 @@
             "description": "Product not found"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Stock for every variant of a product",
+        "tags": [
+          "admin-products"
         ]
       }
     },
     "/v1/admin/products/{id}/variants": {
       "post": {
         "operationId": "ProductsAdminController_createVariant",
-        "summary": "Create product variant",
         "parameters": [
           {
             "name": "id",
@@ -5579,20 +5866,20 @@
             "description": "Product not found"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create product variant",
+        "tags": [
+          "admin-products"
         ]
       }
     },
     "/v1/admin/products/{id}/variants/{variantId}": {
       "patch": {
         "operationId": "ProductsAdminController_updateVariant",
-        "summary": "Update product variant",
         "parameters": [
           {
             "name": "id",
@@ -5638,18 +5925,18 @@
             "description": "Variant not found"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update product variant",
+        "tags": [
+          "admin-products"
         ]
       },
       "delete": {
         "operationId": "ProductsAdminController_deleteVariant",
-        "summary": "Delete product variant",
         "parameters": [
           {
             "name": "id",
@@ -5685,20 +5972,20 @@
             "description": "Cannot delete last variant"
           }
         },
-        "tags": [
-          "admin-products"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Delete product variant",
+        "tags": [
+          "admin-products"
         ]
       }
     },
     "/v1/admin/promotions": {
       "get": {
         "operationId": "PromotionsController_list",
-        "summary": "List promotions",
         "parameters": [
           {
             "name": "page",
@@ -5717,6 +6004,34 @@
               "minimum": 1,
               "maximum": 100,
               "type": "number"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "BUY_X_GET_Y",
+                "FIXED_AMOUNT",
+                "FREE_SHIPPING",
+                "PERCENTAGE",
+                "TIERED_PRICE",
+                "VOLUME_DISCOUNT"
+              ]
+            }
+          },
+          {
+            "name": "applicationMethod",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "AUTOMATIC",
+                "COUPON"
+              ]
             }
           },
           {
@@ -5739,18 +6054,18 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "promotions"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List promotions",
+        "tags": [
+          "promotions"
         ]
       },
       "post": {
         "operationId": "PromotionsController_create",
-        "summary": "Create promotion",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -5776,20 +6091,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "promotions"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create promotion",
+        "tags": [
+          "promotions"
         ]
       }
     },
     "/v1/admin/promotions/{id}": {
       "get": {
         "operationId": "PromotionsController_findOne",
-        "summary": "Get promotion",
         "parameters": [
           {
             "name": "id",
@@ -5814,18 +6129,18 @@
             "description": "Promotion not found"
           }
         },
-        "tags": [
-          "promotions"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get promotion",
+        "tags": [
+          "promotions"
         ]
       },
       "patch": {
         "operationId": "PromotionsController_update",
-        "summary": "Update promotion",
         "parameters": [
           {
             "name": "id",
@@ -5863,18 +6178,18 @@
             "description": "Promotion not found"
           }
         },
-        "tags": [
-          "promotions"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update promotion",
+        "tags": [
+          "promotions"
         ]
       },
       "delete": {
         "operationId": "PromotionsController_deactivate",
-        "summary": "Deactivate promotion",
         "parameters": [
           {
             "name": "id",
@@ -5899,20 +6214,20 @@
             "description": "Promotion not found"
           }
         },
-        "tags": [
-          "promotions"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Deactivate promotion",
+        "tags": [
+          "promotions"
         ]
       }
     },
     "/v1/admin/questions": {
       "get": {
         "operationId": "ReviewsAdminController_listQuestions",
-        "summary": "List questions (admin)",
         "parameters": [
           {
             "name": "page",
@@ -5934,6 +6249,19 @@
             }
           },
           {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "HIDDEN",
+                "PENDING",
+                "PUBLISHED"
+              ]
+            }
+          },
+          {
             "name": "productId",
             "required": false,
             "in": "query",
@@ -5948,6 +6276,31 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "helpfulCount",
+                "updatedAt"
+              ]
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
           }
         ],
         "responses": {
@@ -5961,20 +6314,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "reviews"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List questions (admin)",
+        "tags": [
+          "reviews"
         ]
       }
     },
     "/v1/admin/questions/{id}/answer": {
       "post": {
         "operationId": "ReviewsAdminController_answerQuestion",
-        "summary": "Answer product question (admin)",
         "parameters": [
           {
             "name": "id",
@@ -5999,16 +6352,6 @@
           "200": {
             "description": "Answer added"
           },
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
           "400": {
             "description": "Invalid input"
           },
@@ -6022,20 +6365,20 @@
             "description": "Question not found"
           }
         },
-        "tags": [
-          "reviews"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Answer product question (admin)",
+        "tags": [
+          "reviews"
         ]
       }
     },
     "/v1/admin/questions/{id}/approve": {
       "patch": {
         "operationId": "ReviewsAdminController_approveQuestion",
-        "summary": "Approve question",
         "parameters": [
           {
             "name": "id",
@@ -6060,20 +6403,20 @@
             "description": "Question not found"
           }
         },
-        "tags": [
-          "reviews"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Approve question",
+        "tags": [
+          "reviews"
         ]
       }
     },
     "/v1/admin/questions/{id}/reject": {
       "patch": {
         "operationId": "ReviewsAdminController_rejectQuestion",
-        "summary": "Reject question",
         "parameters": [
           {
             "name": "id",
@@ -6111,20 +6454,20 @@
             "description": "Question not found"
           }
         },
-        "tags": [
-          "reviews"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Reject question",
+        "tags": [
+          "reviews"
         ]
       }
     },
     "/v1/admin/returns": {
       "get": {
         "operationId": "ReturnsAdminController_listReturns",
-        "summary": "List returns (admin)",
         "parameters": [
           {
             "name": "page",
@@ -6145,6 +6488,37 @@
             }
           },
           {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "APPROVED",
+                "CLOSED",
+                "ITEM_RECEIVED",
+                "REFUND_PROCESSED",
+                "REJECTED",
+                "REQUESTED"
+              ]
+            }
+          },
+          {
+            "name": "reason",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CHANGED_MIND",
+                "DEFECTIVE",
+                "NOT_AS_DESCRIBED",
+                "OTHER",
+                "WRONG_SIZE"
+              ]
+            }
+          },
+          {
             "name": "customerId",
             "required": false,
             "in": "query",
@@ -6158,6 +6532,19 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "pattern": "^(asc|desc)$",
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
             }
           },
           {
@@ -6188,20 +6575,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "returns"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List returns (admin)",
+        "tags": [
+          "returns"
         ]
       }
     },
     "/v1/admin/returns/analytics": {
       "get": {
         "operationId": "ReturnsAdminController_getAnalytics",
-        "summary": "Get returns analytics",
         "parameters": [
           {
             "name": "dateFrom",
@@ -6231,20 +6618,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "returns"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get returns analytics",
+        "tags": [
+          "returns"
         ]
       }
     },
     "/v1/admin/returns/{id}": {
       "get": {
         "operationId": "ReturnsAdminController_findOne",
-        "summary": "Get return by ID (admin)",
         "parameters": [
           {
             "name": "id",
@@ -6269,20 +6656,20 @@
             "description": "Return not found"
           }
         },
-        "tags": [
-          "returns"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get return by ID (admin)",
+        "tags": [
+          "returns"
         ]
       }
     },
     "/v1/admin/returns/{id}/approve": {
       "patch": {
         "operationId": "ReturnsAdminController_approveReturn",
-        "summary": "Approve return",
         "parameters": [
           {
             "name": "id",
@@ -6307,20 +6694,20 @@
             "description": "Return not found"
           }
         },
-        "tags": [
-          "returns"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Approve return",
+        "tags": [
+          "returns"
         ]
       }
     },
     "/v1/admin/returns/{id}/close": {
       "patch": {
         "operationId": "ReturnsAdminController_closeReturn",
-        "summary": "Close return",
         "parameters": [
           {
             "name": "id",
@@ -6345,20 +6732,20 @@
             "description": "Return not found"
           }
         },
-        "tags": [
-          "returns"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Close return",
+        "tags": [
+          "returns"
         ]
       }
     },
     "/v1/admin/returns/{id}/receive": {
       "patch": {
         "operationId": "ReturnsAdminController_receiveReturn",
-        "summary": "Receive return",
         "parameters": [
           {
             "name": "id",
@@ -6396,20 +6783,20 @@
             "description": "Return not found"
           }
         },
-        "tags": [
-          "returns"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Receive return",
+        "tags": [
+          "returns"
         ]
       }
     },
     "/v1/admin/returns/{id}/refund": {
       "patch": {
         "operationId": "ReturnsAdminController_processRefund",
-        "summary": "Process return refund",
         "parameters": [
           {
             "name": "id",
@@ -6447,20 +6834,20 @@
             "description": "Return not found"
           }
         },
-        "tags": [
-          "returns"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Process return refund",
+        "tags": [
+          "returns"
         ]
       }
     },
     "/v1/admin/returns/{id}/reject": {
       "patch": {
         "operationId": "ReturnsAdminController_rejectReturn",
-        "summary": "Reject return",
         "parameters": [
           {
             "name": "id",
@@ -6498,20 +6885,20 @@
             "description": "Return not found"
           }
         },
-        "tags": [
-          "returns"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Reject return",
+        "tags": [
+          "returns"
         ]
       }
     },
     "/v1/admin/reviews": {
       "get": {
         "operationId": "ReviewsAdminController_listReviews",
-        "summary": "List reviews (admin)",
         "parameters": [
           {
             "name": "page",
@@ -6530,6 +6917,19 @@
               "minimum": 1,
               "maximum": 100,
               "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "HIDDEN",
+                "PENDING",
+                "PUBLISHED"
+              ]
             }
           },
           {
@@ -6557,6 +6957,32 @@
               "maximum": 5,
               "type": "number"
             }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "helpfulCount",
+                "rating",
+                "updatedAt"
+              ]
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
           }
         ],
         "responses": {
@@ -6570,20 +6996,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "reviews"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List reviews (admin)",
+        "tags": [
+          "reviews"
         ]
       }
     },
     "/v1/admin/reviews/{id}": {
       "patch": {
         "operationId": "ReviewsAdminController_adminUpdateReview",
-        "summary": "Update review (admin)",
         "parameters": [
           {
             "name": "id",
@@ -6621,18 +7047,18 @@
             "description": "Review not found"
           }
         },
-        "tags": [
-          "reviews"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update review (admin)",
+        "tags": [
+          "reviews"
         ]
       },
       "delete": {
         "operationId": "ReviewsAdminController_adminDeleteReview",
-        "summary": "Delete review (admin)",
         "parameters": [
           {
             "name": "id",
@@ -6657,20 +7083,20 @@
             "description": "Review not found"
           }
         },
-        "tags": [
-          "reviews"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Delete review (admin)",
+        "tags": [
+          "reviews"
         ]
       }
     },
     "/v1/admin/reviews/{id}/approve": {
       "patch": {
         "operationId": "ReviewsAdminController_approveReview",
-        "summary": "Approve review",
         "parameters": [
           {
             "name": "id",
@@ -6695,20 +7121,20 @@
             "description": "Review not found"
           }
         },
-        "tags": [
-          "reviews"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Approve review",
+        "tags": [
+          "reviews"
         ]
       }
     },
     "/v1/admin/reviews/{id}/reject": {
       "patch": {
         "operationId": "ReviewsAdminController_rejectReview",
-        "summary": "Reject review",
         "parameters": [
           {
             "name": "id",
@@ -6746,20 +7172,20 @@
             "description": "Review not found"
           }
         },
-        "tags": [
-          "reviews"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Reject review",
+        "tags": [
+          "reviews"
         ]
       }
     },
     "/v1/admin/roles": {
       "get": {
         "operationId": "UsersController_listRoles",
-        "summary": "List all roles",
         "parameters": [],
         "responses": {
           "200": {
@@ -6772,18 +7198,18 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "users"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List all roles",
+        "tags": [
+          "users"
         ]
       },
       "post": {
         "operationId": "UsersController_createRole",
-        "summary": "Create new role",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -6809,20 +7235,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "users"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create new role",
+        "tags": [
+          "users"
         ]
       }
     },
     "/v1/admin/roles/{id}": {
       "patch": {
         "operationId": "UsersController_updateRolePermissions",
-        "summary": "Update role permissions",
         "parameters": [
           {
             "name": "id",
@@ -6860,20 +7286,20 @@
             "description": "Role not found"
           }
         },
-        "tags": [
-          "users"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update role permissions",
+        "tags": [
+          "users"
         ]
       }
     },
     "/v1/admin/search": {
       "get": {
         "operationId": "GlobalSearchController_search",
-        "summary": "Cross-entity admin search",
         "parameters": [
           {
             "name": "q",
@@ -6889,13 +7315,18 @@
             "required": false,
             "in": "query",
             "schema": {
-              "enum": [
-                "product",
-                "order",
-                "customer",
-                "cms"
-              ],
-              "type": "string"
+              "maxItems": 4,
+              "uniqueItems": true,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "cms",
+                  "customer",
+                  "order",
+                  "product"
+                ]
+              }
             }
           },
           {
@@ -6914,20 +7345,20 @@
             "description": "Grouped search results"
           }
         },
-        "tags": [
-          "search-admin"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Cross-entity admin search",
+        "tags": [
+          "search-admin"
         ]
       }
     },
     "/v1/admin/search/analytics": {
       "get": {
         "operationId": "SearchAdminController_getAnalytics",
-        "summary": "Get search analytics",
         "parameters": [
           {
             "name": "period",
@@ -6935,12 +7366,12 @@
             "in": "query",
             "schema": {
               "default": 30,
+              "type": "number",
               "enum": [
                 7,
                 30,
                 90
-              ],
-              "type": "number"
+              ]
             }
           },
           {
@@ -6976,20 +7407,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "search"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get search analytics",
+        "tags": [
+          "search"
         ]
       }
     },
     "/v1/admin/search/merchandising": {
       "post": {
         "operationId": "SearchAdminController_createMerchandisingRule",
-        "summary": "Create merchandising rule",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -7012,18 +7443,18 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "search"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create merchandising rule",
+        "tags": [
+          "search"
         ]
       },
       "get": {
         "operationId": "SearchAdminController_listMerchandisingRules",
-        "summary": "List merchandising rules",
         "parameters": [
           {
             "name": "page",
@@ -7058,20 +7489,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "search"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List merchandising rules",
+        "tags": [
+          "search"
         ]
       }
     },
     "/v1/admin/search/merchandising/{id}": {
       "delete": {
         "operationId": "SearchAdminController_deleteMerchandisingRule",
-        "summary": "Delete merchandising rule",
         "parameters": [
           {
             "name": "id",
@@ -7093,20 +7524,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "search"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Delete merchandising rule",
+        "tags": [
+          "search"
         ]
       }
     },
     "/v1/admin/search/reindex": {
       "post": {
         "operationId": "SearchAdminController_reindex",
-        "summary": "Reindex search",
         "parameters": [],
         "responses": {
           "200": {
@@ -7119,20 +7550,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "search"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Reindex search",
+        "tags": [
+          "search"
         ]
       }
     },
     "/v1/admin/search/synonyms": {
       "post": {
         "operationId": "SearchAdminController_createSynonym",
-        "summary": "Create search synonym",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -7155,18 +7586,18 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "search"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create search synonym",
+        "tags": [
+          "search"
         ]
       },
       "get": {
         "operationId": "SearchAdminController_listSynonyms",
-        "summary": "List search synonyms",
         "parameters": [
           {
             "name": "page",
@@ -7201,20 +7632,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "search"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List search synonyms",
+        "tags": [
+          "search"
         ]
       }
     },
     "/v1/admin/search/synonyms/{id}": {
       "delete": {
         "operationId": "SearchAdminController_deleteSynonym",
-        "summary": "Delete search synonym",
         "parameters": [
           {
             "name": "id",
@@ -7236,24 +7667,24 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "search"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Delete search synonym",
+        "tags": [
+          "search"
         ]
       }
     },
     "/v1/admin/search/zero-results": {
       "get": {
         "operationId": "SearchAdminController_getZeroResults",
-        "summary": "List queries that returned zero results",
         "parameters": [
           {
             "name": "period",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -7261,7 +7692,7 @@
           },
           {
             "name": "page",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -7269,7 +7700,7 @@
           },
           {
             "name": "pageSize",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -7287,32 +7718,32 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "search"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List queries that returned zero results",
+        "tags": [
+          "search"
         ]
       }
     },
     "/v1/admin/seo/analytics": {
       "get": {
         "operationId": "SeoAdminController_getAnalytics",
-        "summary": "Get Google Search Console analytics rollup",
         "parameters": [
           {
             "name": "range",
             "required": false,
             "in": "query",
             "schema": {
+              "type": "string",
               "enum": [
-                "7d",
                 "28d",
+                "7d",
                 "90d"
-              ],
-              "type": "string"
+              ]
             }
           }
         ],
@@ -7328,6 +7759,7 @@
             }
           }
         },
+        "summary": "Get Google Search Console analytics rollup",
         "tags": [
           "seo"
         ]
@@ -7336,7 +7768,6 @@
     "/v1/admin/seo/coverage": {
       "get": {
         "operationId": "SeoAdminController_getCoverage",
-        "summary": "Get per-engine sitemap coverage",
         "parameters": [],
         "responses": {
           "200": {
@@ -7350,6 +7781,7 @@
             }
           }
         },
+        "summary": "Get per-engine sitemap coverage",
         "tags": [
           "seo"
         ]
@@ -7358,13 +7790,13 @@
     "/v1/admin/seo/health": {
       "get": {
         "operationId": "SeoAdminController_getHealth",
-        "summary": "Get SEO health check report",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
+        "summary": "Get SEO health check report",
         "tags": [
           "seo"
         ]
@@ -7373,7 +7805,6 @@
     "/v1/admin/seo/health/recheck": {
       "post": {
         "operationId": "SeoAdminController_recheckHealth",
-        "summary": "Re-check live search engine submission health",
         "parameters": [],
         "responses": {
           "200": {
@@ -7387,6 +7818,7 @@
             }
           }
         },
+        "summary": "Re-check live search engine submission health",
         "tags": [
           "seo"
         ]
@@ -7395,7 +7827,6 @@
     "/v1/admin/seo/quota": {
       "get": {
         "operationId": "SeoAdminController_getQuota",
-        "summary": "Get search engine submission quota readout",
         "parameters": [],
         "responses": {
           "200": {
@@ -7409,6 +7840,7 @@
             }
           }
         },
+        "summary": "Get search engine submission quota readout",
         "tags": [
           "seo"
         ]
@@ -7417,7 +7849,6 @@
     "/v1/admin/seo/redirects": {
       "get": {
         "operationId": "SeoAdminController_listRedirects",
-        "summary": "List SEO redirects",
         "parameters": [
           {
             "name": "page",
@@ -7444,12 +7875,12 @@
             "required": false,
             "in": "query",
             "schema": {
+              "type": "string",
               "enum": [
                 "createdAt",
-                "updatedAt",
-                "fromPath"
-              ],
-              "type": "string"
+                "fromPath",
+                "updatedAt"
+              ]
             }
           },
           {
@@ -7457,11 +7888,11 @@
             "required": false,
             "in": "query",
             "schema": {
+              "type": "string",
               "enum": [
                 "asc",
                 "desc"
-              ],
-              "type": "string"
+              ]
             }
           },
           {
@@ -7486,13 +7917,13 @@
             "description": ""
           }
         },
+        "summary": "List SEO redirects",
         "tags": [
           "seo"
         ]
       },
       "post": {
         "operationId": "SeoAdminController_createRedirect",
-        "summary": "Create new SEO redirect",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -7509,6 +7940,7 @@
             "description": ""
           }
         },
+        "summary": "Create new SEO redirect",
         "tags": [
           "seo"
         ]
@@ -7517,7 +7949,6 @@
     "/v1/admin/seo/redirects/{id}": {
       "delete": {
         "operationId": "SeoAdminController_deleteRedirect",
-        "summary": "Delete SEO redirect",
         "parameters": [
           {
             "name": "id",
@@ -7533,6 +7964,7 @@
             "description": ""
           }
         },
+        "summary": "Delete SEO redirect",
         "tags": [
           "seo"
         ]
@@ -7541,7 +7973,6 @@
     "/v1/admin/seo/submissions": {
       "get": {
         "operationId": "SeoAdminController_listSubmissions",
-        "summary": "List search engine submission history",
         "parameters": [
           {
             "name": "page",
@@ -7568,10 +7999,10 @@
             "required": false,
             "in": "query",
             "schema": {
+              "type": "string",
               "enum": [
                 "createdAt"
-              ],
-              "type": "string"
+              ]
             }
           },
           {
@@ -7579,11 +8010,11 @@
             "required": false,
             "in": "query",
             "schema": {
+              "type": "string",
               "enum": [
                 "asc",
                 "desc"
-              ],
-              "type": "string"
+              ]
             }
           },
           {
@@ -7591,12 +8022,12 @@
             "required": false,
             "in": "query",
             "schema": {
+              "type": "string",
               "enum": [
-                "indexnow",
+                "bing",
                 "gsc",
-                "bing"
-              ],
-              "type": "string"
+                "indexnow"
+              ]
             }
           },
           {
@@ -7604,12 +8035,12 @@
             "required": false,
             "in": "query",
             "schema": {
+              "type": "string",
               "enum": [
-                "manual",
                 "auto-regen",
-                "cron"
-              ],
-              "type": "string"
+                "cron",
+                "manual"
+              ]
             }
           },
           {
@@ -7617,12 +8048,12 @@
             "required": false,
             "in": "query",
             "schema": {
+              "type": "string",
               "enum": [
-                "url",
                 "products",
-                "sitemap"
-              ],
-              "type": "string"
+                "sitemap",
+                "url"
+              ]
             }
           },
           {
@@ -7655,6 +8086,7 @@
             "description": ""
           }
         },
+        "summary": "List search engine submission history",
         "tags": [
           "seo"
         ]
@@ -7663,7 +8095,6 @@
     "/v1/admin/seo/submit": {
       "post": {
         "operationId": "SeoAdminController_submitSeo",
-        "summary": "Submit URLs or sitemap to search engines for reindexing",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -7687,6 +8118,7 @@
             }
           }
         },
+        "summary": "Submit URLs or sitemap to search engines for reindexing",
         "tags": [
           "seo"
         ]
@@ -7695,14 +8127,18 @@
     "/v1/admin/seo/url-inspection": {
       "get": {
         "operationId": "SeoAdminController_inspectUrl",
-        "summary": "Get Google index state for one URL",
         "parameters": [
           {
             "name": "locale",
             "required": false,
             "in": "query",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "ar",
+                "en",
+                "fr"
+              ]
             }
           },
           {
@@ -7710,6 +8146,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "format": "uri",
               "type": "string"
             }
           },
@@ -7734,6 +8171,7 @@
             }
           }
         },
+        "summary": "Get Google index state for one URL",
         "tags": [
           "seo"
         ]
@@ -7742,7 +8180,6 @@
     "/v1/admin/settings": {
       "get": {
         "operationId": "SettingsController_getAll",
-        "summary": "Get all settings grouped by section",
         "parameters": [],
         "responses": {
           "200": {
@@ -7756,13 +8193,13 @@
             }
           }
         },
+        "summary": "Get all settings grouped by section",
         "tags": [
           "settings"
         ]
       },
       "patch": {
         "operationId": "SettingsController_update",
-        "summary": "Update one or more settings",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -7786,6 +8223,7 @@
             }
           }
         },
+        "summary": "Update one or more settings",
         "tags": [
           "settings"
         ]
@@ -7794,20 +8232,19 @@
     "/v1/admin/settings/locales": {
       "get": {
         "operationId": "SettingsController_getLocales",
-        "summary": "Get supported locales and default locale",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
+        "summary": "Get supported locales and default locale",
         "tags": [
           "settings"
         ]
       },
       "patch": {
         "operationId": "SettingsController_updateLocales",
-        "summary": "Update supported locales and default locale",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -7824,6 +8261,7 @@
             "description": ""
           }
         },
+        "summary": "Update supported locales and default locale",
         "tags": [
           "settings"
         ]
@@ -7832,7 +8270,6 @@
     "/v1/admin/shipping/methods": {
       "get": {
         "operationId": "ShippingController_listMethods",
-        "summary": "List shipping methods",
         "parameters": [
           {
             "name": "page",
@@ -7860,6 +8297,18 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
           }
         ],
         "responses": {
@@ -7873,18 +8322,18 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "shipping"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List shipping methods",
+        "tags": [
+          "shipping"
         ]
       },
       "post": {
         "operationId": "ShippingController_createMethod",
-        "summary": "Create shipping method",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -7910,20 +8359,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "shipping"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create shipping method",
+        "tags": [
+          "shipping"
         ]
       }
     },
     "/v1/admin/shipping/methods/{id}": {
       "patch": {
         "operationId": "ShippingController_updateMethod",
-        "summary": "Update shipping method",
         "parameters": [
           {
             "name": "id",
@@ -7961,18 +8410,18 @@
             "description": "Method not found"
           }
         },
-        "tags": [
-          "shipping"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update shipping method",
+        "tags": [
+          "shipping"
         ]
       },
       "delete": {
         "operationId": "ShippingController_deleteMethod",
-        "summary": "Delete shipping method",
         "parameters": [
           {
             "name": "id",
@@ -7997,20 +8446,20 @@
             "description": "Method not found"
           }
         },
-        "tags": [
-          "shipping"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Delete shipping method",
+        "tags": [
+          "shipping"
         ]
       }
     },
     "/v1/admin/shipping/zones": {
       "get": {
         "operationId": "ShippingController_listZones",
-        "summary": "List shipping zones",
         "parameters": [
           {
             "name": "page",
@@ -8043,18 +8492,18 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "shipping"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List shipping zones",
+        "tags": [
+          "shipping"
         ]
       },
       "post": {
         "operationId": "ShippingController_createZone",
-        "summary": "Create shipping zone",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -8080,20 +8529,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "shipping"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create shipping zone",
+        "tags": [
+          "shipping"
         ]
       }
     },
     "/v1/admin/shipping/zones/{id}": {
       "patch": {
         "operationId": "ShippingController_updateZone",
-        "summary": "Update shipping zone",
         "parameters": [
           {
             "name": "id",
@@ -8131,20 +8580,20 @@
             "description": "Zone not found"
           }
         },
-        "tags": [
-          "shipping"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update shipping zone",
+        "tags": [
+          "shipping"
         ]
       }
     },
     "/v1/admin/staff": {
       "get": {
         "operationId": "UsersController_listStaff",
-        "summary": "List all staff members",
         "parameters": [
           {
             "name": "page",
@@ -8172,13 +8621,13 @@
             "required": false,
             "in": "query",
             "schema": {
+              "type": "string",
               "enum": [
-                "SUPER_ADMIN",
                 "ADMIN",
                 "MANAGER",
+                "SUPER_ADMIN",
                 "SUPPORT"
-              ],
-              "type": "string"
+              ]
             }
           }
         ],
@@ -8193,18 +8642,18 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "users"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List all staff members",
+        "tags": [
+          "users"
         ]
       },
       "post": {
         "operationId": "UsersController_createStaff",
-        "summary": "Create new staff member",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -8230,20 +8679,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "users"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create new staff member",
+        "tags": [
+          "users"
         ]
       }
     },
     "/v1/admin/staff/{id}": {
       "patch": {
         "operationId": "UsersController_updateStaff",
-        "summary": "Update staff member",
         "parameters": [
           {
             "name": "id",
@@ -8281,18 +8730,18 @@
             "description": "Staff member not found"
           }
         },
-        "tags": [
-          "users"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update staff member",
+        "tags": [
+          "users"
         ]
       },
       "delete": {
         "operationId": "UsersController_deactivateStaff",
-        "summary": "Deactivate staff member",
         "parameters": [
           {
             "name": "id",
@@ -8317,20 +8766,20 @@
             "description": "Staff member not found"
           }
         },
-        "tags": [
-          "users"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Deactivate staff member",
+        "tags": [
+          "users"
         ]
       }
     },
     "/v1/admin/storefront/pages": {
       "get": {
         "operationId": "StorefrontConfigAdminController_getPages",
-        "summary": "Get storefront pages",
         "parameters": [],
         "responses": {
           "200": {
@@ -8343,20 +8792,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "storefront-config"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get storefront pages",
+        "tags": [
+          "storefront-config"
         ]
       }
     },
     "/v1/admin/storefront/pages/{pageSlug}/sections": {
       "get": {
         "operationId": "StorefrontConfigAdminController_adminGetSections",
-        "summary": "Get page sections (admin)",
         "parameters": [
           {
             "name": "pageSlug",
@@ -8399,18 +8848,18 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "storefront-config"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get page sections (admin)",
+        "tags": [
+          "storefront-config"
         ]
       },
       "post": {
         "operationId": "StorefrontConfigAdminController_createSection",
-        "summary": "Create section",
         "parameters": [
           {
             "name": "pageSlug",
@@ -8445,20 +8894,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "storefront-config"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create section",
+        "tags": [
+          "storefront-config"
         ]
       }
     },
     "/v1/admin/storefront/pages/{pageSlug}/sections/reorder": {
       "patch": {
         "operationId": "StorefrontConfigAdminController_reorderSections",
-        "summary": "Reorder sections",
         "parameters": [
           {
             "name": "pageSlug",
@@ -8490,20 +8939,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "storefront-config"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Reorder sections",
+        "tags": [
+          "storefront-config"
         ]
       }
     },
     "/v1/admin/storefront/public-config": {
       "get": {
         "operationId": "StorefrontConfigAdminController_getPublicConfig",
-        "summary": "Public storefront origin and product URL shape",
         "parameters": [],
         "responses": {
           "200": {
@@ -8516,20 +8965,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "storefront-config"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Public storefront origin and product URL shape",
+        "tags": [
+          "storefront-config"
         ]
       }
     },
     "/v1/admin/storefront/sections/{id}": {
       "patch": {
         "operationId": "StorefrontConfigAdminController_updateSection",
-        "summary": "Update section",
         "parameters": [
           {
             "name": "id",
@@ -8567,18 +9016,18 @@
             "description": "Section not found"
           }
         },
-        "tags": [
-          "storefront-config"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update section",
+        "tags": [
+          "storefront-config"
         ]
       },
       "delete": {
         "operationId": "StorefrontConfigAdminController_deleteSection",
-        "summary": "Delete section",
         "parameters": [
           {
             "name": "id",
@@ -8603,20 +9052,20 @@
             "description": "Section not found"
           }
         },
-        "tags": [
-          "storefront-config"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Delete section",
+        "tags": [
+          "storefront-config"
         ]
       }
     },
     "/v1/admin/storefront/sections/{id}/visibility": {
       "patch": {
         "operationId": "StorefrontConfigAdminController_toggleVisibility",
-        "summary": "Toggle section visibility",
         "parameters": [
           {
             "name": "id",
@@ -8654,20 +9103,20 @@
             "description": "Section not found"
           }
         },
-        "tags": [
-          "storefront-config"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Toggle section visibility",
+        "tags": [
+          "storefront-config"
         ]
       }
     },
     "/v1/admin/subscribers": {
       "get": {
         "operationId": "SubscribersController_list",
-        "summary": "List newsletter subscribers",
         "parameters": [
           {
             "name": "page",
@@ -8692,12 +9141,12 @@
             "required": false,
             "in": "query",
             "schema": {
+              "type": "string",
               "enum": [
                 "confirmed",
                 "pending",
                 "unsubscribed"
-              ],
-              "type": "string"
+              ]
             }
           },
           {
@@ -8724,20 +9173,20 @@
             "description": "Subscribers retrieved"
           }
         },
-        "tags": [
-          "subscribers-admin"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List newsletter subscribers",
+        "tags": [
+          "subscribers-admin"
         ]
       }
     },
     "/v1/admin/subscribers/{id}": {
       "patch": {
         "operationId": "SubscribersController_update",
-        "summary": "Manually unsubscribe / re-activate a subscriber",
         "parameters": [
           {
             "name": "id",
@@ -8766,20 +9215,20 @@
             "description": "Subscriber not found"
           }
         },
-        "tags": [
-          "subscribers-admin"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Manually unsubscribe / re-activate a subscriber",
+        "tags": [
+          "subscribers-admin"
         ]
       }
     },
     "/v1/admin/tax/classes": {
       "get": {
         "operationId": "TaxController_listClasses",
-        "summary": "List tax classes",
         "parameters": [
           {
             "name": "page",
@@ -8820,18 +9269,18 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "tax"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List tax classes",
+        "tags": [
+          "tax"
         ]
       },
       "post": {
         "operationId": "TaxController_createClass",
-        "summary": "Create tax class",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -8857,20 +9306,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "tax"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create tax class",
+        "tags": [
+          "tax"
         ]
       }
     },
     "/v1/admin/tax/zones": {
       "get": {
         "operationId": "TaxController_listZones",
-        "summary": "List tax zones",
         "parameters": [
           {
             "name": "page",
@@ -8903,18 +9352,18 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "tax"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List tax zones",
+        "tags": [
+          "tax"
         ]
       },
       "post": {
         "operationId": "TaxController_createZone",
-        "summary": "Create tax zone",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -8940,20 +9389,20 @@
             "description": "Insufficient permissions"
           }
         },
-        "tags": [
-          "tax"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create tax zone",
+        "tags": [
+          "tax"
         ]
       }
     },
     "/v1/admin/tax/zones/{id}": {
       "get": {
         "operationId": "TaxController_getZone",
-        "summary": "Get tax zone",
         "parameters": [
           {
             "name": "id",
@@ -8978,18 +9427,18 @@
             "description": "Zone not found"
           }
         },
-        "tags": [
-          "tax"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get tax zone",
+        "tags": [
+          "tax"
         ]
       },
       "patch": {
         "operationId": "TaxController_updateZone",
-        "summary": "Update tax zone",
         "parameters": [
           {
             "name": "id",
@@ -9027,20 +9476,20 @@
             "description": "Zone not found"
           }
         },
-        "tags": [
-          "tax"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update tax zone",
+        "tags": [
+          "tax"
         ]
       }
     },
     "/v1/admin/webhooks": {
       "post": {
         "operationId": "WebhooksAdminController_create",
-        "summary": "Create new webhook subscription",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -9057,13 +9506,13 @@
             "description": ""
           }
         },
+        "summary": "Create new webhook subscription",
         "tags": [
           "webhooks"
         ]
       },
       "get": {
         "operationId": "WebhooksAdminController_list",
-        "summary": "List webhook subscriptions",
         "parameters": [
           {
             "name": "page",
@@ -9092,6 +9541,7 @@
             "description": ""
           }
         },
+        "summary": "List webhook subscriptions",
         "tags": [
           "webhooks"
         ]
@@ -9100,7 +9550,6 @@
     "/v1/admin/webhooks/{id}": {
       "get": {
         "operationId": "WebhooksAdminController_get",
-        "summary": "Get webhook subscription",
         "parameters": [
           {
             "name": "id",
@@ -9116,13 +9565,13 @@
             "description": ""
           }
         },
+        "summary": "Get webhook subscription",
         "tags": [
           "webhooks"
         ]
       },
       "patch": {
         "operationId": "WebhooksAdminController_update",
-        "summary": "Update webhook subscription",
         "parameters": [
           {
             "name": "id",
@@ -9148,13 +9597,13 @@
             "description": ""
           }
         },
+        "summary": "Update webhook subscription",
         "tags": [
           "webhooks"
         ]
       },
       "delete": {
         "operationId": "WebhooksAdminController_remove",
-        "summary": "Delete webhook subscription",
         "parameters": [
           {
             "name": "id",
@@ -9170,6 +9619,7 @@
             "description": ""
           }
         },
+        "summary": "Delete webhook subscription",
         "tags": [
           "webhooks"
         ]
@@ -9178,7 +9628,6 @@
     "/v1/admin/webhooks/{id}/deliveries": {
       "get": {
         "operationId": "WebhooksAdminController_deliveries",
-        "summary": "List deliveries for a webhook subscription",
         "parameters": [
           {
             "name": "id",
@@ -9215,6 +9664,7 @@
             "description": ""
           }
         },
+        "summary": "List deliveries for a webhook subscription",
         "tags": [
           "webhooks"
         ]
@@ -9223,7 +9673,6 @@
     "/v1/admin/webhooks/{id}/test": {
       "post": {
         "operationId": "WebhooksAdminController_test",
-        "summary": "Send a test event to a webhook subscription",
         "parameters": [
           {
             "name": "id",
@@ -9246,6 +9695,7 @@
             }
           }
         },
+        "summary": "Send a test event to a webhook subscription",
         "tags": [
           "webhooks"
         ]
@@ -9358,7 +9808,17 @@
             "minimum": 0
           },
           "reason": {
-            "type": "object"
+            "type": "string",
+            "enum": [
+              "CORRECTION",
+              "DAMAGE",
+              "OTHER",
+              "RECEIVED",
+              "RECOUNT",
+              "RETURN_DAMAGED",
+              "RETURN_RESTOCK",
+              "SHRINKAGE"
+            ]
           },
           "notes": {
             "type": "string",
@@ -9397,7 +9857,7 @@
           },
           "country": {
             "type": "string",
-            "pattern": "/^[A-Z]{2}$/"
+            "pattern": "^[A-Z]{2}$"
           }
         },
         "required": [
@@ -9443,11 +9903,17 @@
           "assetIds": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           },
           "status": {
-            "type": "object"
+            "type": "string",
+            "enum": [
+              "HIDDEN",
+              "PENDING",
+              "PUBLISHED"
+            ]
           },
           "reason": {
             "type": "string",
@@ -9495,18 +9961,15 @@
         "type": "object",
         "properties": {
           "primary": {
-            "type": "string",
-            "pattern": "HEX_COLOR"
+            "type": "string"
           },
           "secondary": {
             "type": "string",
-            "nullable": true,
-            "pattern": "HEX_COLOR"
+            "nullable": true
           },
           "accent": {
             "type": "string",
-            "nullable": true,
-            "pattern": "HEX_COLOR"
+            "nullable": true
           }
         },
         "required": [
@@ -9535,6 +9998,7 @@
         "type": "object",
         "properties": {
           "items": {
+            "minItems": 1,
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/BulkPriceItemDto"
@@ -9549,13 +10013,19 @@
         "type": "object",
         "properties": {
           "productIds": {
+            "minItems": 1,
             "type": "array",
             "items": {
               "type": "string"
             }
           },
           "status": {
-            "type": "object"
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "ARCHIVED",
+              "DRAFT"
+            ]
           }
         },
         "required": [
@@ -9607,6 +10077,7 @@
             "type": "string"
           },
           "items": {
+            "minItems": 1,
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/AdminOrderItemDto"
@@ -9644,7 +10115,7 @@
           },
           "code": {
             "type": "string",
-            "pattern": "/^[a-z0-9]+(?:[_-][a-z0-9]+)*$/"
+            "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$"
           },
           "sortOrder": {
             "type": "number",
@@ -9665,7 +10136,7 @@
           },
           "code": {
             "type": "string",
-            "pattern": "/^[a-z0-9]+(?:[_-][a-z0-9]+)*$/"
+            "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$"
           },
           "sortOrder": {
             "type": "number",
@@ -9694,13 +10165,13 @@
           "segment": {
             "type": "string",
             "enum": [
-              "ALL_CONFIRMED",
-              "NEW",
               "ACTIVE",
-              "LOYAL",
+              "ALL_CONFIRMED",
               "AT_RISK",
               "CHURNED",
-              "LAPSED"
+              "LAPSED",
+              "LOYAL",
+              "NEW"
             ]
           },
           "couponCode": {
@@ -9727,7 +10198,7 @@
             "type": "string",
             "minLength": 2,
             "maxLength": 50,
-            "pattern": "/^[a-z0-9_]+$/"
+            "pattern": "^[a-z0-9_]+$"
           },
           "name": {
             "$ref": "#/components/schemas/CarrierTranslatableDto"
@@ -9735,24 +10206,28 @@
           "provider": {
             "type": "string",
             "enum": [
+              "aramex",
               "dhl",
               "fedex",
-              "ups",
-              "aramex",
-              "manual"
+              "manual",
+              "ups"
             ]
           },
           "services": {
+            "uniqueItems": true,
+            "maxItems": 50,
             "type": "array",
             "items": {
               "type": "string"
             }
           },
           "zones": {
+            "uniqueItems": true,
+            "maxItems": 250,
             "type": "array",
             "items": {
               "type": "string",
-              "pattern": "/^[A-Z]{2}$/"
+              "pattern": "^[A-Z]{2}$"
             }
           },
           "isActive": {
@@ -9763,7 +10238,8 @@
             "minimum": 0
           },
           "config": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": true
           }
         },
         "required": [
@@ -9780,7 +10256,7 @@
           },
           "slug": {
             "type": "string",
-            "pattern": "/^[a-z0-9]+(?:-[a-z0-9]+)*$/"
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
           },
           "description": {
             "$ref": "#/components/schemas/OptionalContentTranslatableDto"
@@ -9819,14 +10295,15 @@
           },
           "currency": {
             "type": "string",
-            "pattern": "/^[A-Z]{3}$/"
+            "pattern": "^[A-Z]{3}$"
           },
           "code": {
             "type": "string",
-            "pattern": "/^[A-Z0-9]{8,20}$/"
+            "pattern": "^[A-Z0-9]{8,20}$"
           },
           "recipientEmail": {
-            "type": "string"
+            "type": "string",
+            "format": "email"
           },
           "recipientName": {
             "type": "string",
@@ -9859,7 +10336,7 @@
           },
           "code": {
             "type": "string",
-            "pattern": "/^[A-Z0-9_-]{1,20}$/"
+            "pattern": "^[A-Z0-9_-]{1,20}$"
           },
           "isActive": {
             "type": "boolean"
@@ -9891,7 +10368,8 @@
             "type": "number"
           },
           "config": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": true
           }
         },
         "required": [
@@ -9905,7 +10383,7 @@
             "type": "string",
             "minLength": 2,
             "maxLength": 100,
-            "pattern": "/^[a-z][a-z0-9_.]*$/"
+            "pattern": "^[a-z][a-z0-9_.]*$"
           },
           "subject": {
             "$ref": "#/components/schemas/OptionalTranslatableBodyDto"
@@ -9917,15 +10395,17 @@
             "type": "string",
             "enum": [
               "email",
-              "sms",
-              "push"
+              "push",
+              "sms"
             ]
           },
           "event": {
             "type": "string",
-            "pattern": "/^[a-z][a-z0-9_.]*$/"
+            "pattern": "^[a-z][a-z0-9_.]*$"
           },
           "variables": {
+            "uniqueItems": true,
+            "maxItems": 50,
             "type": "array",
             "items": {
               "type": "string"
@@ -9940,9 +10420,9 @@
           "category": {
             "type": "string",
             "enum": [
-              "TRANSACTIONAL",
               "LIFECYCLE",
-              "MARKETING"
+              "MARKETING",
+              "TRANSACTIONAL"
             ]
           }
         },
@@ -9959,10 +10439,15 @@
           "slug": {
             "type": "string",
             "maxLength": 200,
-            "pattern": "/^(?:\\/[a-z0-9-]+)+$/"
+            "pattern": "^(?:\\/[a-z0-9-]+)+$"
           },
           "type": {
-            "type": "object"
+            "type": "string",
+            "enum": [
+              "LANDING",
+              "POLICY",
+              "STATIC"
+            ]
           },
           "title": {
             "$ref": "#/components/schemas/TranslatableDto"
@@ -10005,7 +10490,7 @@
             "type": "string",
             "minLength": 2,
             "maxLength": 50,
-            "pattern": "/^[a-z0-9_]+$/"
+            "pattern": "^[a-z0-9_]+$"
           },
           "name": {
             "$ref": "#/components/schemas/PaymentTranslatableDto"
@@ -10017,10 +10502,10 @@
             "type": "string",
             "enum": [
               "cod",
+              "gift_card",
               "manual",
-              "stripe",
               "paypal",
-              "gift_card"
+              "stripe"
             ]
           },
           "isActive": {
@@ -10034,7 +10519,8 @@
             "minimum": 0
           },
           "config": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": true
           }
         },
         "required": [
@@ -10051,7 +10537,7 @@
           },
           "slug": {
             "type": "string",
-            "pattern": "/^[a-z0-9]+(?:-[a-z0-9]+)*$/"
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
           },
           "description": {
             "$ref": "#/components/schemas/OptionalContentTranslatableDto"
@@ -10060,7 +10546,12 @@
             "$ref": "#/components/schemas/OptionalContentTranslatableDto"
           },
           "status": {
-            "type": "object"
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "ARCHIVED",
+              "DRAFT"
+            ]
           },
           "productTypeId": {
             "type": "string"
@@ -10091,6 +10582,8 @@
             "$ref": "#/components/schemas/OptionalContentTranslatableDto"
           },
           "categoryIds": {
+            "uniqueItems": true,
+            "maxItems": 50,
             "type": "array",
             "items": {
               "type": "string"
@@ -10140,7 +10633,7 @@
           },
           "code": {
             "type": "string",
-            "pattern": "/^[a-z0-9]+(?:[_-][a-z0-9]+)*$/"
+            "pattern": "^[a-z0-9]+(?:[_-][a-z0-9]+)*$"
           },
           "taxClassId": {
             "type": "string"
@@ -10227,10 +10720,22 @@
             "$ref": "#/components/schemas/TranslatableDto"
           },
           "type": {
-            "type": "object"
+            "type": "string",
+            "enum": [
+              "BUY_X_GET_Y",
+              "FIXED_AMOUNT",
+              "FREE_SHIPPING",
+              "PERCENTAGE",
+              "TIERED_PRICE",
+              "VOLUME_DISCOUNT"
+            ]
           },
           "applicationMethod": {
-            "type": "object"
+            "type": "string",
+            "enum": [
+              "AUTOMATIC",
+              "COUPON"
+            ]
           },
           "couponCode": {
             "type": "string"
@@ -10306,15 +10811,17 @@
         "type": "object",
         "properties": {
           "fromPath": {
-            "type": "string",
-            "pattern": "PATH_REGEX"
+            "type": "string"
           },
           "toPath": {
-            "type": "string",
-            "pattern": "PATH_REGEX"
+            "type": "string"
           },
           "type": {
-            "type": "object"
+            "type": "string",
+            "enum": [
+              "FOUND",
+              "MOVED_PERMANENTLY"
+            ]
           }
         },
         "required": [
@@ -10334,134 +10841,139 @@
             "maxLength": 255
           },
           "permissions": {
-            "type": "string",
-            "enum": [
-              "admin_users:view",
-              "admin_users:create",
-              "admin_users:update",
-              "admin_users:delete",
-              "admin_users:manage",
-              "analytics:view",
-              "analytics:create",
-              "analytics:update",
-              "analytics:delete",
-              "analytics:manage",
-              "assets:view",
-              "assets:create",
-              "assets:update",
-              "assets:delete",
-              "assets:manage",
-              "audit_log:view",
-              "audit_log:create",
-              "audit_log:update",
-              "audit_log:delete",
-              "audit_log:manage",
-              "campaigns:view",
-              "campaigns:create",
-              "campaigns:update",
-              "campaigns:delete",
-              "campaigns:manage",
-              "carriers:view",
-              "carriers:create",
-              "carriers:update",
-              "carriers:delete",
-              "carriers:manage",
-              "categories:view",
-              "categories:create",
-              "categories:update",
-              "categories:delete",
-              "categories:manage",
-              "checkout:view",
-              "checkout:create",
-              "checkout:update",
-              "checkout:delete",
-              "checkout:manage",
-              "cms:view",
-              "cms:create",
-              "cms:update",
-              "cms:delete",
-              "cms:manage",
-              "customers:view",
-              "customers:create",
-              "customers:update",
-              "customers:delete",
-              "customers:manage",
-              "geo:view",
-              "geo:create",
-              "geo:update",
-              "geo:delete",
-              "geo:manage",
-              "gift_cards:view",
-              "gift_cards:create",
-              "gift_cards:update",
-              "gift_cards:delete",
-              "gift_cards:manage",
-              "inventory:view",
-              "inventory:create",
-              "inventory:update",
-              "inventory:delete",
-              "inventory:manage",
-              "notifications:view",
-              "notifications:create",
-              "notifications:update",
-              "notifications:delete",
-              "notifications:manage",
-              "orders:view",
-              "orders:create",
-              "orders:update",
-              "orders:delete",
-              "orders:manage",
-              "payment_methods:view",
-              "payment_methods:create",
-              "payment_methods:update",
-              "payment_methods:delete",
-              "payment_methods:manage",
-              "products:view",
-              "products:create",
-              "products:update",
-              "products:delete",
-              "products:manage",
-              "promotions:view",
-              "promotions:create",
-              "promotions:update",
-              "promotions:delete",
-              "promotions:manage",
-              "returns:view",
-              "returns:create",
-              "returns:update",
-              "returns:delete",
-              "returns:manage",
-              "reviews:view",
-              "reviews:create",
-              "reviews:update",
-              "reviews:delete",
-              "reviews:manage",
-              "search:view",
-              "search:create",
-              "search:update",
-              "search:delete",
-              "search:manage",
-              "seo:view",
-              "seo:create",
-              "seo:update",
-              "seo:delete",
-              "seo:manage",
-              "settings:view",
-              "settings:create",
-              "settings:update",
-              "settings:delete",
-              "settings:manage",
-              "shipping:view",
-              "shipping:create",
-              "shipping:update",
-              "shipping:delete",
-              "shipping:manage",
-              "storefront_config:view",
-              "storefront_config:create",
-              "storefront_config:update",
-              "storefront_config:delete",
-              "storefront_config:manage"
-            ]
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "admin_users:create",
+                "admin_users:delete",
+                "admin_users:manage",
+                "admin_users:update",
+                "admin_users:view",
+                "analytics:create",
+                "analytics:delete",
+                "analytics:manage",
+                "analytics:update",
+                "analytics:view",
+                "assets:create",
+                "assets:delete",
+                "assets:manage",
+                "assets:update",
+                "assets:view",
+                "audit_log:create",
+                "audit_log:delete",
+                "audit_log:manage",
+                "audit_log:update",
+                "audit_log:view",
+                "campaigns:create",
+                "campaigns:delete",
+                "campaigns:manage",
+                "campaigns:update",
+                "campaigns:view",
+                "carriers:create",
+                "carriers:delete",
+                "carriers:manage",
+                "carriers:update",
+                "carriers:view",
+                "categories:create",
+                "categories:delete",
+                "categories:manage",
+                "categories:update",
+                "categories:view",
+                "checkout:create",
+                "checkout:delete",
+                "checkout:manage",
+                "checkout:update",
+                "checkout:view",
+                "cms:create",
+                "cms:delete",
+                "cms:manage",
+                "cms:update",
+                "cms:view",
+                "customers:create",
+                "customers:delete",
+                "customers:manage",
+                "customers:update",
+                "customers:view",
+                "geo:create",
+                "geo:delete",
+                "geo:manage",
+                "geo:update",
+                "geo:view",
+                "gift_cards:create",
+                "gift_cards:delete",
+                "gift_cards:manage",
+                "gift_cards:update",
+                "gift_cards:view",
+                "inventory:create",
+                "inventory:delete",
+                "inventory:manage",
+                "inventory:update",
+                "inventory:view",
+                "notifications:create",
+                "notifications:delete",
+                "notifications:manage",
+                "notifications:update",
+                "notifications:view",
+                "orders:create",
+                "orders:delete",
+                "orders:manage",
+                "orders:update",
+                "orders:view",
+                "payment_methods:create",
+                "payment_methods:delete",
+                "payment_methods:manage",
+                "payment_methods:update",
+                "payment_methods:view",
+                "products:create",
+                "products:delete",
+                "products:manage",
+                "products:update",
+                "products:view",
+                "promotions:create",
+                "promotions:delete",
+                "promotions:manage",
+                "promotions:update",
+                "promotions:view",
+                "returns:create",
+                "returns:delete",
+                "returns:manage",
+                "returns:update",
+                "returns:view",
+                "reviews:create",
+                "reviews:delete",
+                "reviews:manage",
+                "reviews:update",
+                "reviews:view",
+                "search:create",
+                "search:delete",
+                "search:manage",
+                "search:update",
+                "search:view",
+                "seo:create",
+                "seo:delete",
+                "seo:manage",
+                "seo:update",
+                "seo:view",
+                "settings:create",
+                "settings:delete",
+                "settings:manage",
+                "settings:update",
+                "settings:view",
+                "shipping:create",
+                "shipping:delete",
+                "shipping:manage",
+                "shipping:update",
+                "shipping:view",
+                "storefront_config:create",
+                "storefront_config:delete",
+                "storefront_config:manage",
+                "storefront_config:update",
+                "storefront_config:view"
+              ]
+            }
           }
         },
         "required": [
@@ -10475,15 +10987,15 @@
           "pageSlug": {
             "type": "string",
             "maxLength": 200,
-            "pattern": "/^[a-z0-9-/]+$/"
+            "pattern": "^[a-z0-9-/]+$"
           },
           "type": {
             "type": "string",
             "enum": [
-              "HERO",
-              "PROMOTIONAL_BANNER",
               "CATEGORY_SHOWCASE",
               "FEATURED_PRODUCTS",
+              "HERO",
+              "PROMOTIONAL_BANNER",
               "TRUST_SIGNALS"
             ]
           },
@@ -10491,7 +11003,8 @@
             "$ref": "#/components/schemas/TranslatableDto"
           },
           "config": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": true
           },
           "sortOrder": {
             "type": "number",
@@ -10542,7 +11055,14 @@
             "$ref": "#/components/schemas/TranslatableDto"
           },
           "type": {
-            "type": "object"
+            "type": "string",
+            "enum": [
+              "CARRIER_CALCULATED",
+              "FLAT_RATE",
+              "FREE",
+              "PRICE_BASED",
+              "WEIGHT_BASED"
+            ]
           },
           "price": {
             "type": "number",
@@ -10629,13 +11149,14 @@
         "type": "object",
         "properties": {
           "email": {
-            "type": "string"
+            "type": "string",
+            "format": "email"
           },
           "password": {
             "type": "string",
             "minLength": 8,
             "maxLength": 128,
-            "pattern": "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)/"
+            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)"
           },
           "firstName": {
             "type": "string",
@@ -10669,6 +11190,7 @@
         "type": "object",
         "properties": {
           "terms": {
+            "minItems": 2,
             "type": "array",
             "items": {
               "type": "string",
@@ -10746,12 +11268,36 @@
         "properties": {
           "url": {
             "type": "string",
-            "pattern": "/^https:\\/\\//"
+            "pattern": "^https:\\/\\/"
           },
           "events": {
             "type": "array",
+            "minItems": 1,
             "items": {
-              "type": "object"
+              "type": "string",
+              "enum": [
+                "cart.abandoned",
+                "customer.created",
+                "customer.updated",
+                "inventory.low_stock",
+                "inventory.out_of_stock",
+                "inventory.restocked",
+                "order.cancelled",
+                "order.confirmed",
+                "order.created",
+                "order.delivered",
+                "order.shipped",
+                "order.status_changed",
+                "payment.received",
+                "payment.refunded",
+                "product.created",
+                "product.deleted",
+                "product.updated",
+                "return.approved",
+                "return.refunded",
+                "return.requested",
+                "review.submitted"
+              ]
             }
           },
           "secret": {
@@ -10768,7 +11314,7 @@
         "properties": {
           "code": {
             "type": "string",
-            "pattern": "/^[A-Z]{3}$/"
+            "pattern": "^[A-Z]{3}$"
           },
           "symbol": {
             "type": "string",
@@ -10810,7 +11356,7 @@
           },
           "country": {
             "type": "string",
-            "pattern": "/^[A-Z]{2}$/"
+            "pattern": "^[A-Z]{2}$"
           }
         },
         "required": [
@@ -10852,10 +11398,16 @@
         "type": "object",
         "properties": {
           "question": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
           },
           "answer": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
           },
           "sortOrder": {
             "type": "number",
@@ -10957,7 +11509,10 @@
             "$ref": "#/components/schemas/CampaignTranslatableDto"
           },
           "sampleVariables": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
           }
         }
       },
@@ -10971,13 +11526,18 @@
             "$ref": "#/components/schemas/OptionalTranslatableBodyDto"
           },
           "variables": {
+            "uniqueItems": true,
+            "maxItems": 50,
             "type": "array",
             "items": {
               "type": "string"
             }
           },
           "sampleVariables": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
           }
         }
       },
@@ -11022,6 +11582,7 @@
         "type": "object",
         "properties": {
           "items": {
+            "minItems": 1,
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ReceiveReturnItemDto"
@@ -11039,7 +11600,12 @@
             "type": "string"
           },
           "restockDecision": {
-            "type": "object"
+            "type": "string",
+            "enum": [
+              "DAMAGED",
+              "DISPOSE",
+              "RESTOCK"
+            ]
           },
           "notes": {
             "type": "string",
@@ -11055,7 +11621,12 @@
         "type": "object",
         "properties": {
           "refundMethod": {
-            "type": "object"
+            "type": "string",
+            "enum": [
+              "EXCHANGE",
+              "ORIGINAL_PAYMENT",
+              "STORE_CREDIT"
+            ]
           },
           "notes": {
             "type": "string",
@@ -11124,6 +11695,8 @@
         "type": "object",
         "properties": {
           "ids": {
+            "minItems": 1,
+            "maxItems": 100,
             "type": "array",
             "items": {
               "type": "string"
@@ -11138,6 +11711,7 @@
         "type": "object",
         "properties": {
           "orderedIds": {
+            "minItems": 1,
             "type": "array",
             "items": {
               "type": "string"
@@ -11152,6 +11726,7 @@
         "type": "object",
         "properties": {
           "specs": {
+            "maxItems": 50,
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProductSpecItemAdminDto"
@@ -11168,9 +11743,9 @@
           "locale": {
             "type": "string",
             "enum": [
-              "fr",
+              "ar",
               "en",
-              "ar"
+              "fr"
             ]
           }
         }
@@ -11181,13 +11756,16 @@
           "locale": {
             "type": "string",
             "enum": [
-              "fr",
+              "ar",
               "en",
-              "ar"
+              "fr"
             ]
           },
           "variables": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
           }
         }
       },
@@ -11232,9 +11810,12 @@
         "type": "object",
         "properties": {
           "url": {
-            "type": "string"
+            "type": "string",
+            "format": "uri"
           },
           "productIds": {
+            "minItems": 1,
+            "maxItems": 500,
             "type": "array",
             "items": {
               "type": "string"
@@ -11244,12 +11825,16 @@
             "type": "boolean"
           },
           "engines": {
-            "type": "string",
-            "enum": [
-              "indexnow",
-              "gsc",
-              "bing"
-            ]
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "bing",
+                "gsc",
+                "indexnow"
+              ]
+            }
           },
           "dryRun": {
             "type": "boolean"
@@ -11366,13 +11951,13 @@
           "segment": {
             "type": "string",
             "enum": [
-              "ALL_CONFIRMED",
-              "NEW",
               "ACTIVE",
-              "LOYAL",
+              "ALL_CONFIRMED",
               "AT_RISK",
               "CHURNED",
-              "LAPSED"
+              "LAPSED",
+              "LOYAL",
+              "NEW"
             ]
           },
           "couponCode": {
@@ -11393,16 +11978,20 @@
             "$ref": "#/components/schemas/OptionalTranslatableDto"
           },
           "services": {
+            "uniqueItems": true,
+            "maxItems": 50,
             "type": "array",
             "items": {
               "type": "string"
             }
           },
           "zones": {
+            "uniqueItems": true,
+            "maxItems": 250,
             "type": "array",
             "items": {
               "type": "string",
-              "pattern": "/^[A-Z]{2}$/"
+              "pattern": "^[A-Z]{2}$"
             }
           },
           "isActive": {
@@ -11413,7 +12002,8 @@
             "minimum": 0
           },
           "config": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": true
           }
         }
       },
@@ -11428,25 +12018,32 @@
             "type": "boolean"
           },
           "requiredFields": {
-            "type": "string",
-            "enum": [
-              "email",
-              "phone",
-              "shippingAddress",
-              "billingAddress",
-              "company",
-              "note"
-            ]
+            "type": "array",
+            "uniqueItems": true,
+            "maxItems": 6,
+            "items": {
+              "type": "string",
+              "enum": [
+                "billingAddress",
+                "company",
+                "email",
+                "note",
+                "phone",
+                "shippingAddress"
+              ]
+            }
           },
           "termsOfServiceUrl": {
             "type": "string",
             "nullable": true,
-            "maxLength": 500
+            "maxLength": 500,
+            "format": "uri"
           },
           "postPurchaseRedirectUrl": {
             "type": "string",
             "nullable": true,
-            "maxLength": 500
+            "maxLength": 500,
+            "format": "uri"
           },
           "checkoutMessage": {
             "type": "string",
@@ -11468,7 +12065,8 @@
           },
           "email": {
             "type": "string",
-            "maxLength": 254
+            "maxLength": 254,
+            "format": "email"
           },
           "phone": {
             "type": "string",
@@ -11483,75 +12081,79 @@
         "type": "object",
         "properties": {
           "enabled": {
-            "type": "string",
-            "enum": [
-              "QA",
-              "AE",
-              "SA",
-              "KW",
-              "BH",
-              "OM",
-              "EG",
-              "JO",
-              "LB",
-              "MA",
-              "LY",
-              "TN",
-              "GB",
-              "DE",
-              "FR",
-              "IT",
-              "ES",
-              "NL",
-              "SE",
-              "US",
-              "CA",
-              "MX",
-              "BR",
-              "IN",
-              "PK",
-              "ID",
-              "MY",
-              "SG",
-              "AU",
-              "JP",
-              "KR"
-            ]
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "AE",
+                "AU",
+                "BH",
+                "BR",
+                "CA",
+                "DE",
+                "EG",
+                "ES",
+                "FR",
+                "GB",
+                "ID",
+                "IN",
+                "IT",
+                "JO",
+                "JP",
+                "KR",
+                "KW",
+                "LB",
+                "LY",
+                "MA",
+                "MX",
+                "MY",
+                "NL",
+                "OM",
+                "PK",
+                "QA",
+                "SA",
+                "SE",
+                "SG",
+                "TN",
+                "US"
+              ]
+            }
           },
           "defaultCode": {
             "type": "string",
             "enum": [
-              "QA",
               "AE",
-              "SA",
-              "KW",
-              "BH",
-              "OM",
-              "EG",
-              "JO",
-              "LB",
-              "MA",
-              "LY",
-              "TN",
-              "GB",
-              "DE",
-              "FR",
-              "IT",
-              "ES",
-              "NL",
-              "SE",
-              "US",
-              "CA",
-              "MX",
-              "BR",
-              "IN",
-              "PK",
-              "ID",
-              "MY",
-              "SG",
               "AU",
+              "BH",
+              "BR",
+              "CA",
+              "DE",
+              "EG",
+              "ES",
+              "FR",
+              "GB",
+              "ID",
+              "IN",
+              "IT",
+              "JO",
               "JP",
-              "KR"
+              "KR",
+              "KW",
+              "LB",
+              "LY",
+              "MA",
+              "MX",
+              "MY",
+              "NL",
+              "OM",
+              "PK",
+              "QA",
+              "SA",
+              "SE",
+              "SG",
+              "TN",
+              "US"
             ]
           }
         },
@@ -11563,59 +12165,63 @@
         "type": "object",
         "properties": {
           "enabled": {
-            "type": "string",
-            "enum": [
-              "TND",
-              "LYD",
-              "QAR",
-              "AED",
-              "SAR",
-              "KWD",
-              "BHD",
-              "OMR",
-              "EGP",
-              "JOD",
-              "EUR",
-              "GBP",
-              "CHF",
-              "SEK",
-              "USD",
-              "CAD",
-              "MXN",
-              "BRL",
-              "JPY",
-              "CNY",
-              "INR",
-              "SGD",
-              "AUD"
-            ]
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "AED",
+                "AUD",
+                "BHD",
+                "BRL",
+                "CAD",
+                "CHF",
+                "CNY",
+                "EGP",
+                "EUR",
+                "GBP",
+                "INR",
+                "JOD",
+                "JPY",
+                "KWD",
+                "LYD",
+                "MXN",
+                "OMR",
+                "QAR",
+                "SAR",
+                "SEK",
+                "SGD",
+                "TND",
+                "USD"
+              ]
+            }
           },
           "defaultCode": {
             "type": "string",
             "enum": [
-              "TND",
-              "LYD",
-              "QAR",
               "AED",
-              "SAR",
-              "KWD",
+              "AUD",
               "BHD",
-              "OMR",
+              "BRL",
+              "CAD",
+              "CHF",
+              "CNY",
               "EGP",
-              "JOD",
               "EUR",
               "GBP",
-              "CHF",
-              "SEK",
-              "USD",
-              "CAD",
-              "MXN",
-              "BRL",
-              "JPY",
-              "CNY",
               "INR",
+              "JOD",
+              "JPY",
+              "KWD",
+              "LYD",
+              "MXN",
+              "OMR",
+              "QAR",
+              "SAR",
+              "SEK",
               "SGD",
-              "AUD"
+              "TND",
+              "USD"
             ]
           }
         },
@@ -11639,6 +12245,7 @@
         "type": "object",
         "properties": {
           "supportedLocales": {
+            "minItems": 1,
             "type": "array",
             "items": {
               "type": "string"
@@ -11669,6 +12276,8 @@
             "$ref": "#/components/schemas/OptionalTranslatableBodyDto"
           },
           "variables": {
+            "uniqueItems": true,
+            "maxItems": 50,
             "type": "array",
             "items": {
               "type": "string"
@@ -11683,9 +12292,9 @@
           "category": {
             "type": "string",
             "enum": [
-              "TRANSACTIONAL",
               "LIFECYCLE",
-              "MARKETING"
+              "MARKETING",
+              "TRANSACTIONAL"
             ]
           }
         }
@@ -11694,7 +12303,19 @@
         "type": "object",
         "properties": {
           "status": {
-            "type": "object"
+            "type": "string",
+            "enum": [
+              "CANCELLED",
+              "COMPLETED",
+              "CONFIRMED",
+              "DELIVERED",
+              "ON_HOLD",
+              "PENDING",
+              "PROCESSING",
+              "RETURNED",
+              "RETURN_REQUESTED",
+              "SHIPPED"
+            ]
           }
         },
         "required": [
@@ -11725,7 +12346,8 @@
             "minimum": 0
           },
           "config": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": true
           }
         }
       },
@@ -11735,22 +12357,22 @@
           "googleAnalyticsId": {
             "type": "string",
             "maxLength": 50,
-            "pattern": "/^[A-Za-z0-9\\-]*$/"
+            "pattern": "^[A-Za-z0-9\\-]*$"
           },
           "metaPixelId": {
             "type": "string",
             "maxLength": 50,
-            "pattern": "/^[0-9]*$/"
+            "pattern": "^[0-9]*$"
           },
           "tiktokPixelId": {
             "type": "string",
             "maxLength": 50,
-            "pattern": "/^[A-Za-z0-9]*$/"
+            "pattern": "^[A-Za-z0-9]*$"
           },
           "snapPixelId": {
             "type": "string",
             "maxLength": 50,
-            "pattern": "/^[A-Za-z0-9\\-]*$/"
+            "pattern": "^[A-Za-z0-9\\-]*$"
           }
         }
       },
@@ -11762,6 +12384,7 @@
         "type": "object",
         "properties": {
           "assets": {
+            "minItems": 1,
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/AssetAssignmentDto"
@@ -11792,134 +12415,139 @@
         "type": "object",
         "properties": {
           "permissions": {
-            "type": "string",
-            "enum": [
-              "admin_users:view",
-              "admin_users:create",
-              "admin_users:update",
-              "admin_users:delete",
-              "admin_users:manage",
-              "analytics:view",
-              "analytics:create",
-              "analytics:update",
-              "analytics:delete",
-              "analytics:manage",
-              "assets:view",
-              "assets:create",
-              "assets:update",
-              "assets:delete",
-              "assets:manage",
-              "audit_log:view",
-              "audit_log:create",
-              "audit_log:update",
-              "audit_log:delete",
-              "audit_log:manage",
-              "campaigns:view",
-              "campaigns:create",
-              "campaigns:update",
-              "campaigns:delete",
-              "campaigns:manage",
-              "carriers:view",
-              "carriers:create",
-              "carriers:update",
-              "carriers:delete",
-              "carriers:manage",
-              "categories:view",
-              "categories:create",
-              "categories:update",
-              "categories:delete",
-              "categories:manage",
-              "checkout:view",
-              "checkout:create",
-              "checkout:update",
-              "checkout:delete",
-              "checkout:manage",
-              "cms:view",
-              "cms:create",
-              "cms:update",
-              "cms:delete",
-              "cms:manage",
-              "customers:view",
-              "customers:create",
-              "customers:update",
-              "customers:delete",
-              "customers:manage",
-              "geo:view",
-              "geo:create",
-              "geo:update",
-              "geo:delete",
-              "geo:manage",
-              "gift_cards:view",
-              "gift_cards:create",
-              "gift_cards:update",
-              "gift_cards:delete",
-              "gift_cards:manage",
-              "inventory:view",
-              "inventory:create",
-              "inventory:update",
-              "inventory:delete",
-              "inventory:manage",
-              "notifications:view",
-              "notifications:create",
-              "notifications:update",
-              "notifications:delete",
-              "notifications:manage",
-              "orders:view",
-              "orders:create",
-              "orders:update",
-              "orders:delete",
-              "orders:manage",
-              "payment_methods:view",
-              "payment_methods:create",
-              "payment_methods:update",
-              "payment_methods:delete",
-              "payment_methods:manage",
-              "products:view",
-              "products:create",
-              "products:update",
-              "products:delete",
-              "products:manage",
-              "promotions:view",
-              "promotions:create",
-              "promotions:update",
-              "promotions:delete",
-              "promotions:manage",
-              "returns:view",
-              "returns:create",
-              "returns:update",
-              "returns:delete",
-              "returns:manage",
-              "reviews:view",
-              "reviews:create",
-              "reviews:update",
-              "reviews:delete",
-              "reviews:manage",
-              "search:view",
-              "search:create",
-              "search:update",
-              "search:delete",
-              "search:manage",
-              "seo:view",
-              "seo:create",
-              "seo:update",
-              "seo:delete",
-              "seo:manage",
-              "settings:view",
-              "settings:create",
-              "settings:update",
-              "settings:delete",
-              "settings:manage",
-              "shipping:view",
-              "shipping:create",
-              "shipping:update",
-              "shipping:delete",
-              "shipping:manage",
-              "storefront_config:view",
-              "storefront_config:create",
-              "storefront_config:update",
-              "storefront_config:delete",
-              "storefront_config:manage"
-            ]
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "admin_users:create",
+                "admin_users:delete",
+                "admin_users:manage",
+                "admin_users:update",
+                "admin_users:view",
+                "analytics:create",
+                "analytics:delete",
+                "analytics:manage",
+                "analytics:update",
+                "analytics:view",
+                "assets:create",
+                "assets:delete",
+                "assets:manage",
+                "assets:update",
+                "assets:view",
+                "audit_log:create",
+                "audit_log:delete",
+                "audit_log:manage",
+                "audit_log:update",
+                "audit_log:view",
+                "campaigns:create",
+                "campaigns:delete",
+                "campaigns:manage",
+                "campaigns:update",
+                "campaigns:view",
+                "carriers:create",
+                "carriers:delete",
+                "carriers:manage",
+                "carriers:update",
+                "carriers:view",
+                "categories:create",
+                "categories:delete",
+                "categories:manage",
+                "categories:update",
+                "categories:view",
+                "checkout:create",
+                "checkout:delete",
+                "checkout:manage",
+                "checkout:update",
+                "checkout:view",
+                "cms:create",
+                "cms:delete",
+                "cms:manage",
+                "cms:update",
+                "cms:view",
+                "customers:create",
+                "customers:delete",
+                "customers:manage",
+                "customers:update",
+                "customers:view",
+                "geo:create",
+                "geo:delete",
+                "geo:manage",
+                "geo:update",
+                "geo:view",
+                "gift_cards:create",
+                "gift_cards:delete",
+                "gift_cards:manage",
+                "gift_cards:update",
+                "gift_cards:view",
+                "inventory:create",
+                "inventory:delete",
+                "inventory:manage",
+                "inventory:update",
+                "inventory:view",
+                "notifications:create",
+                "notifications:delete",
+                "notifications:manage",
+                "notifications:update",
+                "notifications:view",
+                "orders:create",
+                "orders:delete",
+                "orders:manage",
+                "orders:update",
+                "orders:view",
+                "payment_methods:create",
+                "payment_methods:delete",
+                "payment_methods:manage",
+                "payment_methods:update",
+                "payment_methods:view",
+                "products:create",
+                "products:delete",
+                "products:manage",
+                "products:update",
+                "products:view",
+                "promotions:create",
+                "promotions:delete",
+                "promotions:manage",
+                "promotions:update",
+                "promotions:view",
+                "returns:create",
+                "returns:delete",
+                "returns:manage",
+                "returns:update",
+                "returns:view",
+                "reviews:create",
+                "reviews:delete",
+                "reviews:manage",
+                "reviews:update",
+                "reviews:view",
+                "search:create",
+                "search:delete",
+                "search:manage",
+                "search:update",
+                "search:view",
+                "seo:create",
+                "seo:delete",
+                "seo:manage",
+                "seo:update",
+                "seo:view",
+                "settings:create",
+                "settings:delete",
+                "settings:manage",
+                "settings:update",
+                "settings:view",
+                "shipping:create",
+                "shipping:delete",
+                "shipping:manage",
+                "shipping:update",
+                "shipping:view",
+                "storefront_config:create",
+                "storefront_config:delete",
+                "storefront_config:manage",
+                "storefront_config:update",
+                "storefront_config:view"
+              ]
+            }
           }
         },
         "required": [
@@ -11940,14 +12568,15 @@
             "type": "string"
           },
           "phone": {
-            "type": "string",
-            "pattern": "E164_OR_EMPTY"
+            "type": "string"
           },
           "address": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": true
           },
           "socialLinks": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": true
           },
           "supportedLocales": {
             "type": "array",
@@ -11959,8 +12588,7 @@
             "type": "string"
           },
           "timezone": {
-            "type": "string",
-            "pattern": "TIMEZONE"
+            "type": "string"
           },
           "rtlLocales": {
             "type": "array",
@@ -11970,7 +12598,7 @@
           },
           "brandName": {
             "type": "string",
-            "pattern": "/^[a-z0-9][a-z0-9-]{0,39}$/"
+            "pattern": "^[a-z0-9][a-z0-9-]{0,39}$"
           },
           "description": {
             "$ref": "#/components/schemas/SettingsTranslatableDto"
@@ -11981,23 +12609,25 @@
           "fontKit": {
             "type": "string",
             "enum": [
-              "latin-rounded",
-              "arabic-latin"
+              "arabic-latin",
+              "latin-rounded"
             ]
           },
           "logoAssetId": {
             "type": "string",
-            "nullable": true
+            "nullable": true,
+            "format": "uuid"
           },
           "faviconAssetId": {
             "type": "string",
-            "nullable": true
+            "nullable": true,
+            "format": "uuid"
           },
           "symbolPosition": {
             "type": "string",
             "enum": [
-              "before",
-              "after"
+              "after",
+              "before"
             ]
           },
           "decimalSeparator": {
@@ -12024,16 +12654,13 @@
             "maximum": 1
           },
           "storefront": {
-            "type": "string",
-            "pattern": "HTTPS_ORIGIN"
+            "type": "string"
           },
           "admin": {
-            "type": "string",
-            "pattern": "HTTPS_ORIGIN"
+            "type": "string"
           },
           "api": {
-            "type": "string",
-            "pattern": "HTTPS_ORIGIN"
+            "type": "string"
           },
           "currencyConfig": {
             "$ref": "#/components/schemas/CurrencyConfigDto"
@@ -12049,7 +12676,8 @@
             "type": "number"
           },
           "reservationSettings": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": true
           },
           "numberPrefix": {
             "type": "string"
@@ -12058,7 +12686,8 @@
             "type": "string"
           },
           "cancellationPolicy": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": true
           },
           "windowDays": {
             "type": "number"
@@ -12104,18 +12733,15 @@
             "maxLength": 20
           },
           "addressCountry": {
-            "type": "string",
-            "pattern": "COUNTRY_CODE"
+            "type": "string"
           },
           "logoUrl": {
             "type": "string",
-            "maxLength": 2048,
-            "pattern": "APPEARANCE_URL_PATTERN"
+            "maxLength": 2048
           },
           "faviconUrl": {
             "type": "string",
-            "maxLength": 2048,
-            "pattern": "APPEARANCE_URL_PATTERN"
+            "maxLength": 2048
           }
         }
       },
@@ -12129,7 +12755,12 @@
             "type": "string"
           },
           "status": {
-            "type": "object"
+            "type": "string",
+            "enum": [
+              "DELIVERED",
+              "PROCESSING",
+              "SHIPPED"
+            ]
           }
         }
       },

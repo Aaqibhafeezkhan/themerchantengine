@@ -2,7 +2,7 @@
 title: "Newsletter (storefront API)"
 description: "The 4 storefront routes of the newsletter module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "storefront api newsletter ecommerce"
-updated: 2026-10-15
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -21,7 +21,6 @@ Parameters:
 
 Responses:
 
-- `200`: no description.
 - `302`: Redirect to the storefront confirmation page.
 
 ## POST /v1/newsletter/subscribe
@@ -46,7 +45,6 @@ Parameters:
 
 Responses:
 
-- `200`: no description.
 - `302`: Redirect to the storefront confirmation page.
 
 ## POST /v1/newsletter/unsubscribe
@@ -55,7 +53,7 @@ One-click newsletter unsubscribe (RFC 8058)
 
 Parameters:
 
-- `token` in query (string, required).
+- `token` in query (string, optional).
 
 Responses:
 
@@ -66,4 +64,4 @@ Responses:
 ### SubscribeDto
 
 - `locale` (string, optional).
-- `email` (string, max length 254, required).
+- `email` (string, email, max length 254, required).

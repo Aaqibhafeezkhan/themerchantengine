@@ -22,6 +22,7 @@ import {
   renderPage,
   renderPostmanCollection,
   renderProperties,
+  sortEnums,
   sampleOf,
   scanEnforcedPermissions,
   scanErrorCodes,
@@ -794,5 +795,26 @@ describe('the committed reference tree', () => {
       warn: (line) => warnings.push(line),
     });
     expect(warnings).toEqual([]);
+  });
+});
+
+describe('sortEnums', () => {
+  it('sorts every string enum at any depth and leaves other arrays alone', () => {
+    const input = {
+      a: { enum: ['b', 'a', 'c'] },
+      list: [{ items: { enum: ['z', 'y'] } }],
+      numbers: { enum: [3, 1, 2] },
+      order: ['b', 'a'],
+    };
+    expect(sortEnums(input)).toEqual({
+      a: { enum: ['a', 'b', 'c'] },
+      list: [{ items: { enum: ['y', 'z'] } }],
+      numbers: { enum: [3, 1, 2] },
+      order: ['b', 'a'],
+    });
+  });
+
+  it('gives the same output for two orders of the same enum', () => {
+    expect(sortEnums({ enum: ['x', 'y'] })).toEqual(sortEnums({ enum: ['y', 'x'] }));
   });
 });

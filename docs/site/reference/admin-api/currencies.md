@@ -2,7 +2,7 @@
 title: "Currencies (admin API)"
 description: "The 3 admin routes of the currencies module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api currencies ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -42,5 +42,5 @@ Responses:
 
 ### UpdateEnabledCurrenciesDto
 
-- `enabled` (`"TND"`, `"LYD"`, `"QAR"`, `"AED"`, `"SAR"`, `"KWD"`, `"BHD"`, `"OMR"`, `"EGP"`, `"JOD"`, `"EUR"`, `"GBP"`, `"CHF"`, `"SEK"`, `"USD"`, `"CAD"`, `"MXN"`, `"BRL"`, `"JPY"`, `"CNY"`, `"INR"`, `"SGD"`, `"AUD"`, required).
-- `defaultCode` (`"TND"`, `"LYD"`, `"QAR"`, `"AED"`, `"SAR"`, `"KWD"`, `"BHD"`, `"OMR"`, `"EGP"`, `"JOD"`, `"EUR"`, `"GBP"`, `"CHF"`, `"SEK"`, `"USD"`, `"CAD"`, `"MXN"`, `"BRL"`, `"JPY"`, `"CNY"`, `"INR"`, `"SGD"`, `"AUD"`, optional).
+- `enabled` (array of `"AED"`, `"AUD"`, `"BHD"`, `"BRL"`, `"CAD"`, `"CHF"`, `"CNY"`, `"EGP"`, `"EUR"`, `"GBP"`, `"INR"`, `"JOD"`, `"JPY"`, `"KWD"`, `"LYD"`, `"MXN"`, `"OMR"`, `"QAR"`, `"SAR"`, `"SEK"`, `"SGD"`, `"TND"`, `"USD"`, required).
+- `defaultCode` (`"AED"`, `"AUD"`, `"BHD"`, `"BRL"`, `"CAD"`, `"CHF"`, `"CNY"`, `"EGP"`, `"EUR"`, `"GBP"`, `"INR"`, `"JOD"`, `"JPY"`, `"KWD"`, `"LYD"`, `"MXN"`, `"OMR"`, `"QAR"`, `"SAR"`, `"SEK"`, `"SGD"`, `"TND"`, `"USD"`, optional).

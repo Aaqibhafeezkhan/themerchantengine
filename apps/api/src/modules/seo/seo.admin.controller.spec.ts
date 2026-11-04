@@ -47,12 +47,12 @@ describe('SeoAdminController — decorator audit', () => {
   // ── submitSeo D2-specific decorators (quota + idempotency gates) ───────────
 
   describe('submitSeo decorators', () => {
-    // @nestjs/throttler v4 metadata keys (string literals — not exported).
+    // @nestjs/throttler v6 metadata keys (string literals, not exported). The ttl is in milliseconds.
     it('uses the tighter @RateLimit.SeoSubmit() group (10 / 60s), not Admin (200)', () => {
-      expect(Reflect.getMetadata('THROTTLER:LIMIT', proto.submitSeo)).toBe(10);
-      expect(Reflect.getMetadata('THROTTLER:TTL', proto.submitSeo)).toBe(60);
+      expect(Reflect.getMetadata('THROTTLER:LIMITdefault', proto.submitSeo)).toBe(10);
+      expect(Reflect.getMetadata('THROTTLER:TTLdefault', proto.submitSeo)).toBe(60_000);
       // Contrast: a read handler stays on the default Admin group (200/min).
-      expect(Reflect.getMetadata('THROTTLER:LIMIT', proto.listSubmissions)).toBe(200);
+      expect(Reflect.getMetadata('THROTTLER:LIMITdefault', proto.listSubmissions)).toBe(200);
     });
 
     it('returns 200 (action endpoint, not 201 resource-creation)', () => {
@@ -72,8 +72,8 @@ describe('SeoAdminController — decorator audit', () => {
 
   describe('recheckHealth decorators', () => {
     it('uses the dedicated @RateLimit.SeoHealthRecheck() group (1 / 5 min), not Admin', () => {
-      expect(Reflect.getMetadata('THROTTLER:LIMIT', proto.recheckHealth)).toBe(1);
-      expect(Reflect.getMetadata('THROTTLER:TTL', proto.recheckHealth)).toBe(300);
+      expect(Reflect.getMetadata('THROTTLER:LIMITdefault', proto.recheckHealth)).toBe(1);
+      expect(Reflect.getMetadata('THROTTLER:TTLdefault', proto.recheckHealth)).toBe(300_000);
     });
 
     it('returns 200 (action endpoint, not 201 resource-creation)', () => {
@@ -91,10 +91,10 @@ describe('SeoAdminController — decorator audit', () => {
 
   describe('coverage + quota + analytics + url-inspection decorators', () => {
     it('the read handlers stay on the Admin read group (200 / min)', () => {
-      expect(Reflect.getMetadata('THROTTLER:LIMIT', proto.getCoverage)).toBe(200);
-      expect(Reflect.getMetadata('THROTTLER:LIMIT', proto.getQuota)).toBe(200);
-      expect(Reflect.getMetadata('THROTTLER:LIMIT', proto.getAnalytics)).toBe(200);
-      expect(Reflect.getMetadata('THROTTLER:LIMIT', proto.inspectUrl)).toBe(200);
+      expect(Reflect.getMetadata('THROTTLER:LIMITdefault', proto.getCoverage)).toBe(200);
+      expect(Reflect.getMetadata('THROTTLER:LIMITdefault', proto.getQuota)).toBe(200);
+      expect(Reflect.getMetadata('THROTTLER:LIMITdefault', proto.getAnalytics)).toBe(200);
+      expect(Reflect.getMetadata('THROTTLER:LIMITdefault', proto.inspectUrl)).toBe(200);
     });
 
     it('getAnalytics is read-only — must not require seo:manage', () => {

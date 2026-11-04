@@ -37,12 +37,14 @@ export class CmsStorefrontController {
   /**
    * Returns a published page by slug.
    */
-  @Get(':slug(*)')
+  @Get('*slug')
   @Public()
   @RateLimit.StorefrontRead()
   @ApiOperation({ summary: 'Get a published CMS page by slug' })
-  getPageBySlug(@Param('slug') slug: string) {
-    return this.service.getPageBySlug(`/${slug}` || '/');
+  getPageBySlug(@Param('slug') slug: string | string[]) {
+    // path-to-regexp v8 hands a wildcard back as an array of segments.
+    const path = Array.isArray(slug) ? slug.join('/') : slug;
+    return this.service.getPageBySlug(`/${path}`);
   }
 }
 

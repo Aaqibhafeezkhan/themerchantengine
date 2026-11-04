@@ -2,7 +2,7 @@
 title: "Analytics (admin API)"
 description: "The 9 admin routes of the analytics module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api analytics ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -108,6 +108,8 @@ Get bucketed time series for orders, revenue or sessions
 Parameters:
 
 - `from` in query (string, optional).
+- `granularity` in query (`"day"`, `"hour"`, `"week"`, optional).
+- `metric` in query (`"orders"`, `"revenue"`, `"sessions"`, required).
 - `to` in query (string, optional).
 
 Responses:
@@ -118,7 +120,7 @@ Responses:
 
 ### UpdatePixelsAdminDto
 
-- `googleAnalyticsId` (string, pattern `/^[A-Za-z0-9\-]*$/`, max length 50, optional).
-- `metaPixelId` (string, pattern `/^[0-9]*$/`, max length 50, optional).
-- `tiktokPixelId` (string, pattern `/^[A-Za-z0-9]*$/`, max length 50, optional).
-- `snapPixelId` (string, pattern `/^[A-Za-z0-9\-]*$/`, max length 50, optional).
+- `googleAnalyticsId` (string, pattern `^[A-Za-z0-9\-]*$`, max length 50, optional).
+- `metaPixelId` (string, pattern `^[0-9]*$`, max length 50, optional).
+- `tiktokPixelId` (string, pattern `^[A-Za-z0-9]*$`, max length 50, optional).
+- `snapPixelId` (string, pattern `^[A-Za-z0-9\-]*$`, max length 50, optional).

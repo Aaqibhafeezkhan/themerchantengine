@@ -2,7 +2,7 @@
 title: "Staff (admin API)"
 description: "The 4 admin routes of the staff module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api staff ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -18,7 +18,7 @@ Parameters:
 
 - `page` in query (number, min 1, optional).
 - `pageSize` in query (number, min 1, max 100, optional).
-- `role` in query (`"SUPER_ADMIN"`, `"ADMIN"`, `"MANAGER"`, `"SUPPORT"`, optional).
+- `role` in query (`"ADMIN"`, `"MANAGER"`, `"SUPER_ADMIN"`, `"SUPPORT"`, optional).
 
 Responses:
 
@@ -76,8 +76,8 @@ Responses:
 
 ### CreateStaffDto
 
-- `email` (string, required).
-- `password` (string, pattern `/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/`, min length 8, max length 128, required).
+- `email` (string, email, required).
+- `password` (string, pattern `^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)`, min length 8, max length 128, required).
 - `firstName` (string, max length 100, required).
 - `lastName` (string, max length 100, required).
 - `role` (`"ADMIN"`, `"MANAGER"`, `"SUPPORT"`, required).

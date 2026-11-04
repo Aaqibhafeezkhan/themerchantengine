@@ -2,7 +2,7 @@
 title: "Attributes (admin API)"
 description: "The 7 admin routes of the attributes module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api attributes ecommerce"
-updated: 2026-10-15
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -16,9 +16,9 @@ List product attributes
 
 Parameters:
 
-- `page` in query (string, required).
-- `pageSize` in query (string, required).
-- `productTypeId` in query (string, required).
+- `page` in query (string, optional).
+- `pageSize` in query (string, optional).
+- `productTypeId` in query (string, optional).
 
 Responses:
 
@@ -133,13 +133,13 @@ Responses:
 
 - `productTypeId` (string, required).
 - `name` ([TranslatableDto](#translatabledto), required).
-- `code` (string, pattern `/^[a-z0-9]+(?:[_-][a-z0-9]+)*$/`, required).
+- `code` (string, pattern `^[a-z0-9]+(?:[_-][a-z0-9]+)*$`, required).
 - `sortOrder` (number, min 0, optional).
 
 ### CreateAttributeValueAdminDto
 
 - `value` ([TranslatableDto](#translatabledto), required).
-- `code` (string, pattern `/^[a-z0-9]+(?:[_-][a-z0-9]+)*$/`, required).
+- `code` (string, pattern `^[a-z0-9]+(?:[_-][a-z0-9]+)*$`, required).
 - `sortOrder` (number, min 0, optional).
 
 ### TranslatableDto

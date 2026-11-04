@@ -18,7 +18,7 @@ module.exports = {
   },
   transform: {
     '^.+\\.(ts|mjs|js|html)$': [
-      'jest-preset-angular',
+      '<rootDir>/jest-nest-esm.transformer.js',
       {
         tsconfig: '<rootDir>/tsconfig.spec.json',
         stringifyContentPathRegex: '\\.(html|svg)$',
@@ -26,7 +26,8 @@ module.exports = {
       },
     ],
   },
-  transformIgnorePatterns: ['node_modules/(?!.*\\.mjs$)'],
+  // Nest 12 is ESM only and shared-common re-exports Nest decorators.
+  transformIgnorePatterns: ['node_modules/(?!.*\\.mjs$|@nestjs/)'],
   moduleNameMapper: {
     // Better Auth's browser client is ESM-only and drags in an ESM-only
     // dependency tree Jest's CommonJS runtime cannot load. admin-ui never uses

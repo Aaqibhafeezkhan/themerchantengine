@@ -2,7 +2,7 @@
 title: "Wishlist (storefront API)"
 description: "The 4 storefront routes of the wishlist module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "storefront api wishlist ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -18,6 +18,8 @@ Parameters:
 
 - `page` in query (number, min 1, optional).
 - `pageSize` in query (number, min 1, max 100, optional).
+- `sortBy` in query (`"createdAt"`, `"price"`, `"productName"`, optional).
+- `sortOrder` in query (`"asc"`, `"desc"`, optional).
 
 Responses:
 

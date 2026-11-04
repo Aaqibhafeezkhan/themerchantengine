@@ -2,7 +2,7 @@
 title: "Gift cards (admin API)"
 description: "The 6 admin routes of the gift cards module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api gift cards ecommerce"
-updated: 2026-10-15
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -22,6 +22,7 @@ Parameters:
 - `purchasedBy` in query (string, optional).
 - `recipientEmail` in query (string, optional).
 - `sortBy` in query (string, optional).
+- `sortOrder` in query (`"asc"`, `"desc"`, optional).
 
 Responses:
 
@@ -88,7 +89,6 @@ Request body: [AdjustGiftCardBalanceDto](#adjustgiftcardbalancedto).
 Responses:
 
 - `200`: Balance adjusted.
-- `201`: no description. Body: object.
 - `400`: Invalid input (zero delta, overdraw, inactive).
 - `401`: Unauthorized.
 - `403`: Insufficient permissions.
@@ -121,9 +121,9 @@ Responses:
 ### CreateGiftCardAdminDto
 
 - `initialBalance` (number, min 1, required).
-- `currency` (string, pattern `/^[A-Z]{3}$/`, required).
-- `code` (string, pattern `/^[A-Z0-9]{8,20}$/`, optional).
-- `recipientEmail` (string, optional).
+- `currency` (string, pattern `^[A-Z]{3}$`, required).
+- `code` (string, pattern `^[A-Z0-9]{8,20}$`, optional).
+- `recipientEmail` (string, email, optional).
 - `recipientName` (string, max length 100, optional).
 - `personalMessage` ([TranslatableDto](#translatabledto), optional).
 - `purchasedBy` (string, optional).

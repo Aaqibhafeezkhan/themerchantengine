@@ -214,8 +214,8 @@ Every permission is `<module>:<action>`; 25 modules and 5 actions. A role is a s
 
 ### storefront_config
 
-- `storefront_config:view`: `GET /v1/admin/storefront/pages`, `GET /v1/admin/storefront/pages/:pageSlug(*)/sections`
+- `storefront_config:view`: `GET /v1/admin/storefront/pages`, `GET /v1/admin/storefront/pages/:pageSlug/sections`
 - `storefront_config:create` (no route checks it)
 - `storefront_config:update` (no route checks it)
 - `storefront_config:delete` (no route checks it)
-- `storefront_config:manage`: `DELETE /v1/admin/storefront/sections/:id`, `PATCH /v1/admin/storefront/pages/:pageSlug(*)/sections/reorder`, `PATCH /v1/admin/storefront/sections/:id`, `PATCH /v1/admin/storefront/sections/:id/visibility`, `POST /v1/admin/storefront/pages/:pageSlug(*)/sections`
+- `storefront_config:manage`: `DELETE /v1/admin/storefront/sections/:id`, `PATCH /v1/admin/storefront/pages/:pageSlug/sections/reorder`, `PATCH /v1/admin/storefront/sections/:id`, `PATCH /v1/admin/storefront/sections/:id/visibility`, `POST /v1/admin/storefront/pages/:pageSlug/sections`

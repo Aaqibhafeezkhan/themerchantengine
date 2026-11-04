@@ -2,7 +2,7 @@
 title: "Contact (storefront API)"
 description: "The 1 storefront route of the contact module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "storefront api contact ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -26,6 +26,6 @@ Responses:
 ### ContactFormDto
 
 - `fromName` (string, min length 1, max length 120, required).
-- `fromEmail` (string, max length 254, required).
+- `fromEmail` (string, email, max length 254, required).
 - `subjectLine` (string, min length 1, max length 200, required).
 - `message` (string, min length 1, max length 5000, required).

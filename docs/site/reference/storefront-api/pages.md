@@ -2,7 +2,7 @@
 title: "Pages (storefront API)"
 description: "The 2 storefront routes of the pages module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "storefront api pages ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -21,10 +21,6 @@ Responses:
 ## GET /v1/pages/{slug}
 
 Get a published CMS page by slug
-
-Parameters:
-
-- `slug` in path (string, required).
 
 Responses:
 

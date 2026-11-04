@@ -2,7 +2,7 @@
 title: "Payment methods (admin API)"
 description: "The 6 admin routes of the payment methods module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api payment methods ecommerce"
-updated: 2026-10-22
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -19,7 +19,7 @@ Parameters:
 - `isActive` in query (boolean, optional).
 - `page` in query (number, min 1, optional).
 - `pageSize` in query (number, min 1, max 100, optional).
-- `provider` in query (`"cod"`, `"manual"`, `"stripe"`, `"paypal"`, `"gift_card"`, optional).
+- `provider` in query (`"cod"`, `"gift_card"`, `"manual"`, `"paypal"`, `"stripe"`, optional).
 
 Responses:
 
@@ -97,10 +97,10 @@ Responses:
 
 ### CreatePaymentMethodDto
 
-- `code` (string, pattern `/^[a-z0-9_]+$/`, min length 2, max length 50, required).
+- `code` (string, pattern `^[a-z0-9_]+$`, min length 2, max length 50, required).
 - `name` ([PaymentTranslatableDto](#paymenttranslatabledto), required).
 - `description` ([OptionalTranslatableDto](#optionaltranslatabledto), optional).
-- `provider` (`"cod"`, `"manual"`, `"stripe"`, `"paypal"`, `"gift_card"`, required).
+- `provider` (`"cod"`, `"gift_card"`, `"manual"`, `"paypal"`, `"stripe"`, required).
 - `isActive` (boolean, optional).
 - `isTestMode` (boolean, optional).
 - `sortOrder` (number, min 0, optional).

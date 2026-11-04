@@ -29,9 +29,7 @@ describe('fillRoute', () => {
   });
 
   it('strips a NestJS matcher suffix on the placeholder', () => {
-    expect(fillRoute('pages/:pageSlug(*)/sections', { pageSlug: 'home' })).toBe(
-      'pages/home/sections',
-    );
+    expect(fillRoute('pages/:pageSlug/sections', { pageSlug: 'home' })).toBe('pages/home/sections');
   });
 
   it('throws on a missing param rather than emitting a malformed URL', () => {

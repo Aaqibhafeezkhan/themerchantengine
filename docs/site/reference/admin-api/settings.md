@@ -2,7 +2,7 @@
 title: "Settings (admin API)"
 description: "The 4 admin routes of the settings module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api settings ecommerce"
-updated: 2026-10-15
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -50,13 +50,13 @@ Responses:
 
 ### BaseColorsDto
 
-- `primary` (string, pattern `HEX_COLOR`, required).
-- `secondary` (string, pattern `HEX_COLOR`, nullable, required).
-- `accent` (string, pattern `HEX_COLOR`, nullable, required).
+- `primary` (string, required).
+- `secondary` (string, nullable, required).
+- `accent` (string, nullable, required).
 
 ### CurrencyConfigDto
 
-- `code` (string, pattern `/^[A-Z]{3}$/`, required).
+- `code` (string, pattern `^[A-Z]{3}$`, required).
 - `symbol` (string, max length 8, optional).
 - `decimalPlaces` (number, min 0, max 3, optional).
 
@@ -77,27 +77,27 @@ Responses:
 
 - `storeName` ([SettingsTranslatableDto](#settingstranslatabledto), optional).
 - `contactEmail` (string, optional).
-- `phone` (string, pattern `E164_OR_EMPTY`, optional).
+- `phone` (string, optional).
 - `address` (object, optional).
 - `socialLinks` (object, optional).
 - `supportedLocales` (array of string, optional).
 - `defaultLocale` (string, optional).
-- `timezone` (string, pattern `TIMEZONE`, optional).
+- `timezone` (string, optional).
 - `rtlLocales` (array of string, optional).
-- `brandName` (string, pattern `/^[a-z0-9][a-z0-9-]{0,39}$/`, optional).
+- `brandName` (string, pattern `^[a-z0-9][a-z0-9-]{0,39}$`, optional).
 - `description` ([SettingsTranslatableDto](#settingstranslatabledto), optional).
 - `baseColors` ([BaseColorsDto](#basecolorsdto), optional).
-- `fontKit` (`"latin-rounded"`, `"arabic-latin"`, optional).
-- `logoAssetId` (string, nullable, optional).
-- `faviconAssetId` (string, nullable, optional).
-- `symbolPosition` (`"before"`, `"after"`, optional).
+- `fontKit` (`"arabic-latin"`, `"latin-rounded"`, optional).
+- `logoAssetId` (string, uuid, nullable, optional).
+- `faviconAssetId` (string, uuid, nullable, optional).
+- `symbolPosition` (`"after"`, `"before"`, optional).
 - `decimalSeparator` (string, min length 1, max length 1, optional).
 - `thousandsSeparator` (string, min length 1, max length 1, optional).
 - `taxDisplay` (`"HT"`, `"TTC"`, `"none"`, optional).
 - `vatRate` (number, min 0, max 1, optional).
-- `storefront` (string, pattern `HTTPS_ORIGIN`, optional).
-- `admin` (string, pattern `HTTPS_ORIGIN`, optional).
-- `api` (string, pattern `HTTPS_ORIGIN`, optional).
+- `storefront` (string, optional).
+- `admin` (string, optional).
+- `api` (string, optional).
 - `currencyConfig` ([CurrencyConfigDto](#currencyconfigdto), optional).
 - `guestCheckoutEnabled` (boolean, optional).
 - `minimumOrderAmount` (number, min 0, optional).
@@ -119,6 +119,6 @@ Responses:
 - `addressLocality` (string, max length 120, optional).
 - `addressRegion` (string, max length 120, optional).
 - `postalCode` (string, max length 20, optional).
-- `addressCountry` (string, pattern `COUNTRY_CODE`, optional).
-- `logoUrl` (string, pattern `APPEARANCE_URL_PATTERN`, max length 2048, optional).
-- `faviconUrl` (string, pattern `APPEARANCE_URL_PATTERN`, max length 2048, optional).
+- `addressCountry` (string, optional).
+- `logoUrl` (string, max length 2048, optional).
+- `faviconUrl` (string, max length 2048, optional).

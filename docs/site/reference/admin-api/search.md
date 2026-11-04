@@ -2,7 +2,7 @@
 title: "Search (admin API)"
 description: "The 10 admin routes of the search module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api search ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -18,7 +18,7 @@ Parameters:
 
 - `limit` in query (number, min 1, max 20, optional).
 - `q` in query (string, min length 2, required).
-- `types` in query (`"product"`, `"order"`, `"customer"`, `"cms"`, optional).
+- `types` in query (array of `"cms"`, `"customer"`, `"order"`, `"product"`, optional).
 
 Responses:
 
@@ -138,9 +138,9 @@ List queries that returned zero results
 
 Parameters:
 
-- `page` in query (string, required).
-- `pageSize` in query (string, required).
-- `period` in query (string, required).
+- `page` in query (string, optional).
+- `pageSize` in query (string, optional).
+- `period` in query (string, optional).
 
 Responses:
 

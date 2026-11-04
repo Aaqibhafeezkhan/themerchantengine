@@ -2,7 +2,7 @@
 title: "Promotions (admin API)"
 description: "The 5 admin routes of the promotions module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api promotions ecommerce"
-updated: 2026-10-15
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -16,9 +16,11 @@ List promotions
 
 Parameters:
 
+- `applicationMethod` in query (`"AUTOMATIC"`, `"COUPON"`, optional).
 - `isActive` in query (boolean, optional).
 - `page` in query (number, min 1, optional).
 - `pageSize` in query (number, min 1, max 100, optional).
+- `type` in query (`"BUY_X_GET_Y"`, `"FIXED_AMOUNT"`, `"FREE_SHIPPING"`, `"PERCENTAGE"`, `"TIERED_PRICE"`, `"VOLUME_DISCOUNT"`, optional).
 
 Responses:
 
@@ -93,8 +95,8 @@ Responses:
 
 - `name` ([TranslatableDto](#translatabledto), required).
 - `description` ([TranslatableDto](#translatabledto), optional).
-- `type` (object, required).
-- `applicationMethod` (object, required).
+- `type` (`"BUY_X_GET_Y"`, `"FIXED_AMOUNT"`, `"FREE_SHIPPING"`, `"PERCENTAGE"`, `"TIERED_PRICE"`, `"VOLUME_DISCOUNT"`, required).
+- `applicationMethod` (`"AUTOMATIC"`, `"COUPON"`, required).
 - `couponCode` (string, optional).
 - `value` (number, min 0, required).
 - `minimumOrderAmount` (number, min 0, optional).

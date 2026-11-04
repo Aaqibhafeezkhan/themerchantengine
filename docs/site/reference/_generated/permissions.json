@@ -396,14 +396,14 @@
     ],
     "storefront_config:manage": [
       "DELETE /v1/admin/storefront/sections/:id",
-      "PATCH /v1/admin/storefront/pages/:pageSlug(*)/sections/reorder",
+      "PATCH /v1/admin/storefront/pages/:pageSlug/sections/reorder",
       "PATCH /v1/admin/storefront/sections/:id",
       "PATCH /v1/admin/storefront/sections/:id/visibility",
-      "POST /v1/admin/storefront/pages/:pageSlug(*)/sections"
+      "POST /v1/admin/storefront/pages/:pageSlug/sections"
     ],
     "storefront_config:view": [
       "GET /v1/admin/storefront/pages",
-      "GET /v1/admin/storefront/pages/:pageSlug(*)/sections"
+      "GET /v1/admin/storefront/pages/:pageSlug/sections"
     ]
   }
 }

@@ -2,7 +2,7 @@
 title: "Assets (admin API)"
 description: "The 6 admin routes of the assets module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api assets ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -19,7 +19,9 @@ Parameters:
 - `from` in query (string, optional).
 - `page` in query (number, min 1, optional).
 - `pageSize` in query (number, min 1, max 100, optional).
+- `status` in query (`"FAILED"`, `"PENDING"`, `"PROCESSING"`, `"READY"`, optional).
 - `to` in query (string, optional).
+- `type` in query (`"AUDIO"`, `"DOCUMENT"`, `"IMAGE"`, `"VIDEO"`, optional).
 
 Responses:
 
@@ -76,6 +78,7 @@ Parameters:
 - `id` in path (string, required).
 - `page` in query (number, min 1, optional).
 - `pageSize` in query (number, min 1, max 200, optional).
+- `type` in query (`"category"`, `"product"`, `"return"`, `"review"`, `"section"`, `"variant"`, optional).
 
 Responses:
 

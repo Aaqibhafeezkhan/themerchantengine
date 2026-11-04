@@ -2,7 +2,7 @@
 title: "Checkout (admin API)"
 description: "The 2 admin routes of the checkout module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api checkout ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -34,7 +34,7 @@ Responses:
 ### UpdateCheckoutSettingsDto
 
 - `guestCheckoutEnabled` (boolean, optional).
-- `requiredFields` (`"email"`, `"phone"`, `"shippingAddress"`, `"billingAddress"`, `"company"`, `"note"`, optional).
-- `termsOfServiceUrl` (string, max length 500, nullable, optional).
-- `postPurchaseRedirectUrl` (string, max length 500, nullable, optional).
+- `requiredFields` (array of `"billingAddress"`, `"company"`, `"email"`, `"note"`, `"phone"`, `"shippingAddress"`, optional).
+- `termsOfServiceUrl` (string, uri, max length 500, nullable, optional).
+- `postPurchaseRedirectUrl` (string, uri, max length 500, nullable, optional).
 - `checkoutMessage` (string, max length 500, nullable, optional).

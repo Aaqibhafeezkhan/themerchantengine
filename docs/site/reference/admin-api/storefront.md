@@ -2,7 +2,7 @@
 title: "Storefront (admin API)"
 description: "The 8 admin routes of the storefront module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api storefront ecommerce"
-updated: 2026-10-15
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -134,8 +134,8 @@ Responses:
 
 ### CreateSectionAdminDto
 
-- `pageSlug` (string, pattern `/^[a-z0-9-/]+$/`, max length 200, optional).
-- `type` (`"HERO"`, `"PROMOTIONAL_BANNER"`, `"CATEGORY_SHOWCASE"`, `"FEATURED_PRODUCTS"`, `"TRUST_SIGNALS"`, required).
+- `pageSlug` (string, pattern `^[a-z0-9-/]+$`, max length 200, optional).
+- `type` (`"CATEGORY_SHOWCASE"`, `"FEATURED_PRODUCTS"`, `"HERO"`, `"PROMOTIONAL_BANNER"`, `"TRUST_SIGNALS"`, required).
 - `title` ([TranslatableDto](#translatabledto), optional).
 - `config` (object, required).
 - `sortOrder` (number, min 0, optional).

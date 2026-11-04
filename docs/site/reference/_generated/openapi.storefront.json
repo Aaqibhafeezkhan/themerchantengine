@@ -5,7 +5,6 @@
     "/health": {
       "get": {
         "operationId": "HealthController_health",
-        "summary": "Health check",
         "parameters": [],
         "responses": {
           "200": {
@@ -23,13 +22,16 @@
               }
             }
           }
-        }
+        },
+        "summary": "Health check",
+        "tags": [
+          "Health"
+        ]
       }
     },
     "/v1/analytics/events": {
       "post": {
         "operationId": "AnalyticsStorefrontController_ingestEvent",
-        "summary": "Ingest a storefront analytics event",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -46,6 +48,7 @@
             "description": ""
           }
         },
+        "summary": "Ingest a storefront analytics event",
         "tags": [
           "analytics"
         ]
@@ -54,26 +57,26 @@
     "/v1/cart": {
       "get": {
         "operationId": "CartController_getCart",
-        "summary": "Get shopping cart",
         "parameters": [],
         "responses": {
           "200": {
             "description": "Cart retrieved"
           }
         },
+        "summary": "Get shopping cart",
         "tags": [
           "cart"
         ]
       },
       "delete": {
         "operationId": "CartController_clearCart",
-        "summary": "Clear shopping cart",
         "parameters": [],
         "responses": {
           "204": {
             "description": "Cart cleared"
           }
         },
+        "summary": "Clear shopping cart",
         "tags": [
           "cart"
         ]
@@ -82,7 +85,6 @@
     "/v1/cart/coupon": {
       "post": {
         "operationId": "CartController_applyCoupon",
-        "summary": "Apply coupon code",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -102,19 +104,20 @@
             "description": "Invalid coupon"
           }
         },
+        "summary": "Apply coupon code",
         "tags": [
           "cart"
         ]
       },
       "delete": {
         "operationId": "CartController_removeCoupon",
-        "summary": "Remove coupon from cart",
         "parameters": [],
         "responses": {
           "200": {
             "description": "Coupon removed"
           }
         },
+        "summary": "Remove coupon from cart",
         "tags": [
           "cart"
         ]
@@ -123,7 +126,6 @@
     "/v1/cart/estimate": {
       "get": {
         "operationId": "CartController_estimateShipping",
-        "summary": "Estimate shipping cost",
         "parameters": [
           {
             "name": "country",
@@ -132,7 +134,7 @@
             "schema": {
               "minLength": 2,
               "maxLength": 2,
-              "pattern": "/^[A-Z]{2}$/",
+              "pattern": "^[A-Z]{2}$",
               "type": "string"
             }
           },
@@ -155,6 +157,7 @@
             "description": "Invalid input"
           }
         },
+        "summary": "Estimate shipping cost",
         "tags": [
           "cart"
         ]
@@ -163,7 +166,6 @@
     "/v1/cart/gift-card": {
       "post": {
         "operationId": "CartController_applyGiftCard",
-        "summary": "Apply gift card",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -183,19 +185,20 @@
             "description": "Invalid gift card"
           }
         },
+        "summary": "Apply gift card",
         "tags": [
           "cart"
         ]
       },
       "delete": {
         "operationId": "CartController_removeGiftCard",
-        "summary": "Remove gift card from cart",
         "parameters": [],
         "responses": {
           "204": {
             "description": "Gift card removed"
           }
         },
+        "summary": "Remove gift card from cart",
         "tags": [
           "cart"
         ]
@@ -204,7 +207,6 @@
     "/v1/cart/items": {
       "post": {
         "operationId": "CartController_addItem",
-        "summary": "Add item to cart",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -227,6 +229,7 @@
             "description": "Variant not found"
           }
         },
+        "summary": "Add item to cart",
         "tags": [
           "cart"
         ]
@@ -235,7 +238,6 @@
     "/v1/cart/items/{itemId}": {
       "patch": {
         "operationId": "CartController_updateItem",
-        "summary": "Update cart item",
         "parameters": [
           {
             "name": "itemId",
@@ -267,13 +269,13 @@
             "description": "Item not found"
           }
         },
+        "summary": "Update cart item",
         "tags": [
           "cart"
         ]
       },
       "delete": {
         "operationId": "CartController_removeItem",
-        "summary": "Remove cart item",
         "parameters": [
           {
             "name": "itemId",
@@ -292,6 +294,7 @@
             "description": "Item not found"
           }
         },
+        "summary": "Remove cart item",
         "tags": [
           "cart"
         ]
@@ -300,7 +303,6 @@
     "/v1/cart/items/{itemId}/save-for-later": {
       "post": {
         "operationId": "CartController_saveForLater",
-        "summary": "Save item for later",
         "parameters": [
           {
             "name": "itemId",
@@ -322,20 +324,20 @@
             "description": "Item not found"
           }
         },
-        "tags": [
-          "cart"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Save item for later",
+        "tags": [
+          "cart"
         ]
       }
     },
     "/v1/cart/merge": {
       "post": {
         "operationId": "CartController_mergeCart",
-        "summary": "Merge the anonymous cart into the signed-in cart",
         "parameters": [],
         "responses": {
           "200": {
@@ -345,26 +347,27 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "cart"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Merge the anonymous cart into the signed-in cart",
+        "tags": [
+          "cart"
         ]
       }
     },
     "/v1/categories": {
       "get": {
         "operationId": "CategoriesController_getTree",
-        "summary": "Get category tree",
         "parameters": [],
         "responses": {
           "200": {
             "description": "Category tree retrieved"
           }
         },
+        "summary": "Get category tree",
         "tags": [
           "categories"
         ]
@@ -373,7 +376,6 @@
     "/v1/categories/{slug}": {
       "get": {
         "operationId": "CategoriesController_getBySlug",
-        "summary": "Get category by slug",
         "parameters": [
           {
             "name": "slug",
@@ -392,6 +394,7 @@
             "description": "Category not found"
           }
         },
+        "summary": "Get category by slug",
         "tags": [
           "categories"
         ]
@@ -400,7 +403,6 @@
     "/v1/categories/{slug}/products": {
       "get": {
         "operationId": "CategoriesController_getProductsInCategory",
-        "summary": "Get products in category",
         "parameters": [
           {
             "name": "slug",
@@ -412,7 +414,7 @@
           },
           {
             "name": "page",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -420,7 +422,7 @@
           },
           {
             "name": "pageSize",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -435,6 +437,7 @@
             "description": "Category not found"
           }
         },
+        "summary": "Get products in category",
         "tags": [
           "categories"
         ]
@@ -443,13 +446,13 @@
     "/v1/checkout/settings": {
       "get": {
         "operationId": "CheckoutStorefrontController_getSettings",
-        "summary": "Get the public checkout settings and the enabled payment methods",
         "parameters": [],
         "responses": {
           "200": {
             "description": "Checkout bootstrap payload retrieved"
           }
         },
+        "summary": "Get the public checkout settings and the enabled payment methods",
         "tags": [
           "checkout"
         ]
@@ -458,7 +461,6 @@
     "/v1/contact": {
       "post": {
         "operationId": "ContactController_submit",
-        "summary": "Submit a contact-form message",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -477,20 +479,23 @@
           "400": {
             "description": "Invalid input"
           }
-        }
+        },
+        "summary": "Submit a contact-form message",
+        "tags": [
+          "Contact"
+        ]
       }
     },
     "/v1/gift-cards/balance": {
       "get": {
         "operationId": "GiftCardsController_checkBalance",
-        "summary": "Check gift card balance",
         "parameters": [
           {
             "name": "code",
             "required": true,
             "in": "query",
             "schema": {
-              "pattern": "/^\\S{1,32}$/",
+              "pattern": "^\\S{1,32}$",
               "type": "string"
             }
           }
@@ -503,6 +508,7 @@
             "description": "Invalid gift card"
           }
         },
+        "summary": "Check gift card balance",
         "tags": [
           "gift-cards"
         ]
@@ -511,7 +517,6 @@
     "/v1/health/identity": {
       "get": {
         "operationId": "HealthIdentityController_identity",
-        "summary": "Runtime identity (env, and the database name in test mode)",
         "parameters": [],
         "responses": {
           "200": {
@@ -529,19 +534,23 @@
               }
             }
           }
-        }
+        },
+        "summary": "Runtime identity (env, and the database name in test mode)",
+        "tags": [
+          "HealthIdentity"
+        ]
       }
     },
     "/v1/llms-full.txt": {
       "get": {
         "operationId": "GeoStorefrontController_getLlmsFullTxt",
-        "summary": "Serve the expanded llms-full.txt catalogue file",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
+        "summary": "Serve the expanded llms-full.txt catalogue file",
         "tags": [
           "geo"
         ]
@@ -550,13 +559,13 @@
     "/v1/llms.txt": {
       "get": {
         "operationId": "GeoStorefrontController_getLlmsTxt",
-        "summary": "Serve the llms.txt file for AI language models",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
+        "summary": "Serve the llms.txt file for AI language models",
         "tags": [
           "geo"
         ]
@@ -565,7 +574,6 @@
     "/v1/newsletter/confirm": {
       "get": {
         "operationId": "NewsletterController_confirm",
-        "summary": "Confirm a newsletter subscription",
         "parameters": [
           {
             "name": "token",
@@ -585,13 +593,11 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": ""
-          },
           "302": {
             "description": "Redirect to the storefront confirmation page"
           }
         },
+        "summary": "Confirm a newsletter subscription",
         "tags": [
           "newsletter"
         ]
@@ -600,7 +606,6 @@
     "/v1/newsletter/subscribe": {
       "post": {
         "operationId": "NewsletterController_subscribe",
-        "summary": "Subscribe to the newsletter (double opt-in)",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -620,6 +625,7 @@
             "description": "Invalid email"
           }
         },
+        "summary": "Subscribe to the newsletter (double opt-in)",
         "tags": [
           "newsletter"
         ]
@@ -628,11 +634,10 @@
     "/v1/newsletter/unsubscribe": {
       "post": {
         "operationId": "NewsletterController_unsubscribePost",
-        "summary": "One-click newsletter unsubscribe (RFC 8058)",
         "parameters": [
           {
             "name": "token",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -644,13 +649,13 @@
             "description": "Opted out"
           }
         },
+        "summary": "One-click newsletter unsubscribe (RFC 8058)",
         "tags": [
           "newsletter"
         ]
       },
       "get": {
         "operationId": "NewsletterController_unsubscribeGet",
-        "summary": "Unsubscribe via the email footer link",
         "parameters": [
           {
             "name": "token",
@@ -670,13 +675,11 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": ""
-          },
           "302": {
             "description": "Redirect to the storefront confirmation page"
           }
         },
+        "summary": "Unsubscribe via the email footer link",
         "tags": [
           "newsletter"
         ]
@@ -685,7 +688,6 @@
     "/v1/orders": {
       "post": {
         "operationId": "OrdersStorefrontController_createOrder",
-        "summary": "Create order (authenticated customer or guest)",
         "parameters": [
           {
             "name": "accept-language",
@@ -717,18 +719,18 @@
             "description": "Guest checkout disabled"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create order (authenticated customer or guest)",
+        "tags": [
+          "orders"
         ]
       },
       "get": {
         "operationId": "OrdersStorefrontController_listOrders",
-        "summary": "List orders",
         "parameters": [
           {
             "name": "page",
@@ -747,6 +749,26 @@
               "minimum": 1,
               "type": "number"
             }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CANCELLED",
+                "COMPLETED",
+                "CONFIRMED",
+                "DELIVERED",
+                "ON_HOLD",
+                "PENDING",
+                "PROCESSING",
+                "RETURNED",
+                "RETURN_REQUESTED",
+                "SHIPPED"
+              ]
+            }
           }
         ],
         "responses": {
@@ -757,20 +779,20 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List orders",
+        "tags": [
+          "orders"
         ]
       }
     },
     "/v1/orders/track": {
       "post": {
         "operationId": "OrdersStorefrontController_trackOrder",
-        "summary": "Track an order by number and email",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -793,6 +815,7 @@
             "description": "Order not found"
           }
         },
+        "summary": "Track an order by number and email",
         "tags": [
           "orders"
         ]
@@ -801,7 +824,6 @@
     "/v1/orders/{id}": {
       "get": {
         "operationId": "OrdersStorefrontController_findOne",
-        "summary": "Get order by ID (owner or the guest who placed it)",
         "parameters": [
           {
             "name": "id",
@@ -823,20 +845,20 @@
             "description": "Order not found"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get order by ID (owner or the guest who placed it)",
+        "tags": [
+          "orders"
         ]
       }
     },
     "/v1/orders/{id}/cancel": {
       "post": {
         "operationId": "OrdersStorefrontController_cancelOrder",
-        "summary": "Cancel order",
         "parameters": [
           {
             "name": "id",
@@ -861,20 +883,20 @@
             "description": "Order cannot be cancelled"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Cancel order",
+        "tags": [
+          "orders"
         ]
       }
     },
     "/v1/orders/{id}/invoice": {
       "get": {
         "operationId": "OrdersStorefrontController_getInvoice",
-        "summary": "Get order invoice",
         "parameters": [
           {
             "name": "id",
@@ -896,20 +918,20 @@
             "description": "Order not found"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get order invoice",
+        "tags": [
+          "orders"
         ]
       }
     },
     "/v1/orders/{id}/invoice/pdf": {
       "get": {
         "operationId": "OrdersStorefrontController_getInvoicePdf",
-        "summary": "Download order invoice as a branded PDF",
         "parameters": [
           {
             "name": "id",
@@ -942,20 +964,20 @@
             "description": "Order not found or invoice not ready"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Download order invoice as a branded PDF",
+        "tags": [
+          "orders"
         ]
       }
     },
     "/v1/orders/{orderId}/returns": {
       "post": {
         "operationId": "ReturnsStorefrontController_createReturn",
-        "summary": "Create return request",
         "parameters": [
           {
             "name": "orderId",
@@ -990,26 +1012,27 @@
             "description": "Order not found"
           }
         },
-        "tags": [
-          "returns"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create return request",
+        "tags": [
+          "returns"
         ]
       }
     },
     "/v1/pages": {
       "get": {
         "operationId": "CmsStorefrontController_getPages",
-        "summary": "List published CMS pages",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
+        "summary": "List published CMS pages",
         "tags": [
           "cms"
         ]
@@ -1018,22 +1041,13 @@
     "/v1/pages/{slug}": {
       "get": {
         "operationId": "CmsStorefrontController_getPageBySlug",
-        "summary": "Get a published CMS page by slug",
-        "parameters": [
-          {
-            "name": "slug",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
+        "summary": "Get a published CMS page by slug",
         "tags": [
           "cms"
         ]
@@ -1042,7 +1056,6 @@
     "/v1/products": {
       "get": {
         "operationId": "ProductsStorefrontController_listProducts",
-        "summary": "List active products",
         "parameters": [
           {
             "name": "page",
@@ -1069,6 +1082,18 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
             }
           },
           {
@@ -1101,7 +1126,7 @@
             "in": "query",
             "schema": {
               "maxLength": 512,
-              "pattern": "/^[a-z0-9-]+:[a-z0-9-]+(,[a-z0-9-]+:[a-z0-9-]+)*$/",
+              "pattern": "^[a-z0-9-]+:[a-z0-9-]+(,[a-z0-9-]+:[a-z0-9-]+)*$",
               "type": "string"
             }
           },
@@ -1111,7 +1136,7 @@
             "in": "query",
             "schema": {
               "maxLength": 1024,
-              "pattern": "/^[a-z0-9-]+:[a-z0-9-]+(,[a-z0-9-]+:[a-z0-9-]+)*$/",
+              "pattern": "^[a-z0-9-]+:[a-z0-9-]+(,[a-z0-9-]+:[a-z0-9-]+)*$",
               "type": "string"
             }
           },
@@ -1150,6 +1175,7 @@
             "description": "Invalid query parameters"
           }
         },
+        "summary": "List active products",
         "tags": [
           "products"
         ]
@@ -1158,7 +1184,6 @@
     "/v1/products/brands": {
       "get": {
         "operationId": "ProductsStorefrontController_listBrandFacets",
-        "summary": "List brand facets for the catalogue",
         "parameters": [
           {
             "name": "categoryId",
@@ -1178,6 +1203,7 @@
             "description": "Invalid query parameters"
           }
         },
+        "summary": "List brand facets for the catalogue",
         "tags": [
           "products"
         ]
@@ -1186,13 +1212,13 @@
     "/v1/products/spec-facets": {
       "get": {
         "operationId": "ProductsStorefrontController_listSpecFacets",
-        "summary": "List filterable specification facets",
         "parameters": [],
         "responses": {
           "200": {
             "description": "Facets retrieved"
           }
         },
+        "summary": "List filterable specification facets",
         "tags": [
           "products"
         ]
@@ -1201,7 +1227,6 @@
     "/v1/products/{slug}": {
       "get": {
         "operationId": "ProductsStorefrontController_getProductBySlug",
-        "summary": "Get product by slug",
         "parameters": [
           {
             "name": "slug",
@@ -1220,6 +1245,7 @@
             "description": "Product not found"
           }
         },
+        "summary": "Get product by slug",
         "tags": [
           "products"
         ]
@@ -1228,7 +1254,6 @@
     "/v1/products/{slug}/questions": {
       "post": {
         "operationId": "ReviewsStorefrontController_createQuestion",
-        "summary": "Create product question",
         "parameters": [
           {
             "name": "slug",
@@ -1263,18 +1288,18 @@
             "description": "Product not found"
           }
         },
-        "tags": [
-          "reviews"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create product question",
+        "tags": [
+          "reviews"
         ]
       },
       "get": {
         "operationId": "ReviewsStorefrontController_listQuestions",
-        "summary": "List product questions",
         "parameters": [
           {
             "name": "slug",
@@ -1312,6 +1337,7 @@
             "description": "Product not found"
           }
         },
+        "summary": "List product questions",
         "tags": [
           "reviews"
         ]
@@ -1320,7 +1346,6 @@
     "/v1/products/{slug}/reviews": {
       "post": {
         "operationId": "ReviewsStorefrontController_createReview",
-        "summary": "Create product review",
         "parameters": [
           {
             "name": "slug",
@@ -1355,18 +1380,18 @@
             "description": "Product not found"
           }
         },
-        "tags": [
-          "reviews"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create product review",
+        "tags": [
+          "reviews"
         ]
       },
       "get": {
         "operationId": "ReviewsStorefrontController_listReviews",
-        "summary": "List product reviews",
         "parameters": [
           {
             "name": "slug",
@@ -1404,6 +1429,31 @@
               "maximum": 5,
               "type": "number"
             }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "helpfulCount",
+                "rating"
+              ]
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
           }
         ],
         "responses": {
@@ -1414,6 +1464,7 @@
             "description": "Product not found"
           }
         },
+        "summary": "List product reviews",
         "tags": [
           "reviews"
         ]
@@ -1422,7 +1473,6 @@
     "/v1/products/{slug}/reviews/eligibility": {
       "get": {
         "operationId": "ReviewsStorefrontController_getReviewEligibility",
-        "summary": "Whether the caller may review this product",
         "parameters": [
           {
             "name": "slug",
@@ -1444,6 +1494,7 @@
             "description": "Product not found"
           }
         },
+        "summary": "Whether the caller may review this product",
         "tags": [
           "reviews"
         ]
@@ -1452,7 +1503,6 @@
     "/v1/products/{slug}/reviews/mine": {
       "get": {
         "operationId": "ReviewsStorefrontController_getOwnReview",
-        "summary": "Get the caller's own review for a product",
         "parameters": [
           {
             "name": "slug",
@@ -1474,6 +1524,7 @@
             "description": "Product not found"
           }
         },
+        "summary": "Get the caller's own review for a product",
         "tags": [
           "reviews"
         ]
@@ -1482,7 +1533,6 @@
     "/v1/products/{slug}/reviews/summary": {
       "get": {
         "operationId": "ReviewsStorefrontController_getReviewSummary",
-        "summary": "Get review summary",
         "parameters": [
           {
             "name": "slug",
@@ -1501,6 +1551,7 @@
             "description": "Product not found"
           }
         },
+        "summary": "Get review summary",
         "tags": [
           "reviews"
         ]
@@ -1509,7 +1560,6 @@
     "/v1/promotions/automatic": {
       "post": {
         "operationId": "PromotionsController_getApplicableAutomatic",
-        "summary": "Get automatic promotions",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1526,6 +1576,7 @@
             "description": "Promotions retrieved"
           }
         },
+        "summary": "Get automatic promotions",
         "tags": [
           "promotions"
         ]
@@ -1534,7 +1585,6 @@
     "/v1/promotions/validate-coupon": {
       "post": {
         "operationId": "PromotionsController_validateCoupon",
-        "summary": "Validate coupon code",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1554,6 +1604,7 @@
             "description": "Invalid coupon"
           }
         },
+        "summary": "Validate coupon code",
         "tags": [
           "promotions"
         ]
@@ -1562,7 +1613,6 @@
     "/v1/questions/{id}/answer": {
       "post": {
         "operationId": "ReviewsStorefrontController_answerQuestion",
-        "summary": "Answer product question",
         "parameters": [
           {
             "name": "id",
@@ -1587,16 +1637,6 @@
           "200": {
             "description": "Answer added"
           },
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
           "400": {
             "description": "Invalid input"
           },
@@ -1607,20 +1647,20 @@
             "description": "Question not found"
           }
         },
-        "tags": [
-          "reviews"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Answer product question",
+        "tags": [
+          "reviews"
         ]
       }
     },
     "/v1/questions/{id}/helpful": {
       "post": {
         "operationId": "ReviewsStorefrontController_toggleHelpfulQuestion",
-        "summary": "Mark question as helpful",
         "parameters": [
           {
             "name": "id",
@@ -1635,9 +1675,6 @@
           "200": {
             "description": "Marked helpful"
           },
-          "201": {
-            "description": ""
-          },
           "401": {
             "description": "Unauthorized"
           },
@@ -1645,20 +1682,20 @@
             "description": "Question not found"
           }
         },
-        "tags": [
-          "reviews"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Mark question as helpful",
+        "tags": [
+          "reviews"
         ]
       }
     },
     "/v1/returns": {
       "get": {
         "operationId": "ReturnsStorefrontController_listReturns",
-        "summary": "List returns",
         "parameters": [
           {
             "name": "page",
@@ -1687,20 +1724,20 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "returns"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "List returns",
+        "tags": [
+          "returns"
         ]
       }
     },
     "/v1/returns/{id}": {
       "get": {
         "operationId": "ReturnsStorefrontController_findOne",
-        "summary": "Get return by ID",
         "parameters": [
           {
             "name": "id",
@@ -1722,20 +1759,20 @@
             "description": "Return not found"
           }
         },
-        "tags": [
-          "returns"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get return by ID",
+        "tags": [
+          "returns"
         ]
       }
     },
     "/v1/reviews/{id}": {
       "patch": {
         "operationId": "ReviewsStorefrontController_updateReview",
-        "summary": "Update review",
         "parameters": [
           {
             "name": "id",
@@ -1770,18 +1807,18 @@
             "description": "Review not found"
           }
         },
-        "tags": [
-          "reviews"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update review",
+        "tags": [
+          "reviews"
         ]
       },
       "delete": {
         "operationId": "ReviewsStorefrontController_deleteReview",
-        "summary": "Delete review",
         "parameters": [
           {
             "name": "id",
@@ -1803,20 +1840,20 @@
             "description": "Review not found"
           }
         },
-        "tags": [
-          "reviews"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Delete review",
+        "tags": [
+          "reviews"
         ]
       }
     },
     "/v1/reviews/{id}/helpful": {
       "post": {
         "operationId": "ReviewsStorefrontController_toggleHelpfulReview",
-        "summary": "Mark review as helpful",
         "parameters": [
           {
             "name": "id",
@@ -1831,9 +1868,6 @@
           "200": {
             "description": "Marked helpful"
           },
-          "201": {
-            "description": ""
-          },
           "401": {
             "description": "Unauthorized"
           },
@@ -1841,26 +1875,27 @@
             "description": "Review not found"
           }
         },
-        "tags": [
-          "reviews"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Mark review as helpful",
+        "tags": [
+          "reviews"
         ]
       }
     },
     "/v1/robots.txt": {
       "get": {
         "operationId": "SeoStorefrontController_getRobotsTxt",
-        "summary": "Serve the robots.txt file",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
+        "summary": "Serve the robots.txt file",
         "tags": [
           "seo"
         ]
@@ -1869,7 +1904,6 @@
     "/v1/search": {
       "get": {
         "operationId": "SearchStorefrontController_searchProducts",
-        "summary": "Search products",
         "parameters": [
           {
             "name": "q",
@@ -1925,6 +1959,33 @@
             }
           },
           {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "name",
+                "price",
+                "rating",
+                "relevance"
+              ]
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          },
+          {
             "name": "brand",
             "required": false,
             "in": "query",
@@ -1960,6 +2021,7 @@
             "description": "Search results"
           }
         },
+        "summary": "Search products",
         "tags": [
           "search"
         ]
@@ -1968,7 +2030,6 @@
     "/v1/search/events/{id}/click": {
       "post": {
         "operationId": "SearchStorefrontController_logClick",
-        "summary": "Log product click",
         "parameters": [
           {
             "name": "id",
@@ -1994,6 +2055,7 @@
             "description": "Click logged"
           }
         },
+        "summary": "Log product click",
         "tags": [
           "search"
         ]
@@ -2002,7 +2064,6 @@
     "/v1/search/events/{id}/convert": {
       "post": {
         "operationId": "SearchStorefrontController_logConversion",
-        "summary": "Log product conversion",
         "parameters": [
           {
             "name": "id",
@@ -2018,6 +2079,7 @@
             "description": "Conversion logged"
           }
         },
+        "summary": "Log product conversion",
         "tags": [
           "search"
         ]
@@ -2026,11 +2088,10 @@
     "/v1/search/filters": {
       "get": {
         "operationId": "SearchStorefrontController_getFilters",
-        "summary": "Get search filters",
         "parameters": [
           {
             "name": "q",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -2042,6 +2103,7 @@
             "description": "Filters retrieved"
           }
         },
+        "summary": "Get search filters",
         "tags": [
           "search"
         ]
@@ -2050,7 +2112,6 @@
     "/v1/search/suggest": {
       "get": {
         "operationId": "SearchStorefrontController_suggest",
-        "summary": "Get search suggestions",
         "parameters": [
           {
             "name": "q",
@@ -2068,6 +2129,7 @@
             "description": "Suggestions retrieved"
           }
         },
+        "summary": "Get search suggestions",
         "tags": [
           "search"
         ]
@@ -2076,13 +2138,13 @@
     "/v1/seo/redirects": {
       "get": {
         "operationId": "SeoStorefrontController_listActiveRedirects",
-        "summary": "List all active SEO redirects for the storefront edge",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
+        "summary": "List all active SEO redirects for the storefront edge",
         "tags": [
           "seo"
         ]
@@ -2091,7 +2153,6 @@
     "/v1/shipping/rates": {
       "post": {
         "operationId": "ShippingController_calculateRates",
-        "summary": "Calculate shipping rates",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2111,6 +2172,7 @@
             "description": "Invalid input"
           }
         },
+        "summary": "Calculate shipping rates",
         "tags": [
           "shipping"
         ]
@@ -2119,13 +2181,13 @@
     "/v1/sitemap-categories.xml": {
       "get": {
         "operationId": "SeoStorefrontController_getCategoriesSitemap",
-        "summary": "Serve the categories sitemap XML",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
+        "summary": "Serve the categories sitemap XML",
         "tags": [
           "seo"
         ]
@@ -2134,13 +2196,13 @@
     "/v1/sitemap-pages.xml": {
       "get": {
         "operationId": "SeoStorefrontController_getPagesSitemap",
-        "summary": "Serve the CMS pages sitemap XML",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
+        "summary": "Serve the CMS pages sitemap XML",
         "tags": [
           "seo"
         ]
@@ -2149,13 +2211,13 @@
     "/v1/sitemap-products.xml": {
       "get": {
         "operationId": "SeoStorefrontController_getProductsSitemap",
-        "summary": "Serve the products sitemap XML",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
+        "summary": "Serve the products sitemap XML",
         "tags": [
           "seo"
         ]
@@ -2164,13 +2226,13 @@
     "/v1/sitemap.xml": {
       "get": {
         "operationId": "SeoStorefrontController_getSitemapAlias",
-        "summary": "Redirect sitemap.xml to the sitemap index",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
+        "summary": "Redirect sitemap.xml to the sitemap index",
         "tags": [
           "seo"
         ]
@@ -2179,13 +2241,13 @@
     "/v1/sitemap_index.xml": {
       "get": {
         "operationId": "SeoStorefrontController_getSitemapIndex",
-        "summary": "Serve the sitemap index XML",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
+        "summary": "Serve the sitemap index XML",
         "tags": [
           "seo"
         ]
@@ -2194,13 +2256,13 @@
     "/v1/store/config": {
       "get": {
         "operationId": "StoreConfigController_getConfig",
-        "summary": "The runtime store config: identity, brand, localization, money, domains",
         "parameters": [],
         "responses": {
           "200": {
             "description": "Store config retrieved"
           }
         },
+        "summary": "The runtime store config: identity, brand, localization, money, domains",
         "tags": [
           "store-config"
         ]
@@ -2209,13 +2271,13 @@
     "/v1/storefront/config": {
       "get": {
         "operationId": "StorefrontConfigStorefrontController_getConfig",
-        "summary": "Get the public store identity, currency, locales, stock threshold and pixels",
         "parameters": [],
         "responses": {
           "200": {
             "description": "Storefront config retrieved"
           }
         },
+        "summary": "Get the public store identity, currency, locales, stock threshold and pixels",
         "tags": [
           "storefront-config"
         ]
@@ -2223,16 +2285,16 @@
     },
     "/v1/storefront/home-banners": {
       "get": {
-        "operationId": "StorefrontConfigStorefrontController_getHomeBanners",
-        "summary": "DEPRECATED: Get homepage hero + mid-banner config",
-        "description": "Deprecated. Use GET /v1/storefront/sections/:pageSlug instead. Every field is null and the route is removed in a later release.",
         "deprecated": true,
+        "description": "Deprecated. Use GET /v1/storefront/sections/:pageSlug instead. Every field is null and the route is removed in a later release.",
+        "operationId": "StorefrontConfigStorefrontController_getHomeBanners",
         "parameters": [],
         "responses": {
           "200": {
             "description": "Banner config retrieved (every field null on a current store)"
           }
         },
+        "summary": "DEPRECATED: Get homepage hero + mid-banner config",
         "tags": [
           "storefront-config"
         ]
@@ -2241,7 +2303,6 @@
     "/v1/storefront/sections/{pageSlug}": {
       "get": {
         "operationId": "StorefrontConfigStorefrontController_getSections",
-        "summary": "Get visible storefront sections for a page (Translatable resolved, asset URLs hydrated)",
         "parameters": [
           {
             "name": "pageSlug",
@@ -2260,6 +2321,7 @@
             "description": "Invalid pageSlug"
           }
         },
+        "summary": "Get visible storefront sections for a page (Translatable resolved, asset URLs hydrated)",
         "tags": [
           "storefront-config"
         ]
@@ -2268,11 +2330,10 @@
     "/v1/unsubscribe": {
       "post": {
         "operationId": "UnsubscribeController_unsubscribePost",
-        "summary": "One-click unsubscribe (RFC 8058)",
         "parameters": [
           {
             "name": "token",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -2287,13 +2348,13 @@
             "description": "Invalid token"
           }
         },
+        "summary": "One-click unsubscribe (RFC 8058)",
         "tags": [
           "notification-preferences"
         ]
       },
       "get": {
         "operationId": "UnsubscribeController_unsubscribeGet",
-        "summary": "Unsubscribe via the email footer link",
         "parameters": [
           {
             "name": "token",
@@ -2313,13 +2374,11 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": ""
-          },
           "302": {
             "description": "Redirect to the preference center"
           }
         },
+        "summary": "Unsubscribe via the email footer link",
         "tags": [
           "notification-preferences"
         ]
@@ -2328,7 +2387,6 @@
     "/v1/users/me": {
       "get": {
         "operationId": "UsersController_getProfile",
-        "summary": "Get current user profile",
         "parameters": [],
         "responses": {
           "200": {
@@ -2338,18 +2396,18 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "users"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get current user profile",
+        "tags": [
+          "users"
         ]
       },
       "patch": {
         "operationId": "UsersController_updateProfile",
-        "summary": "Update user profile",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2372,20 +2430,20 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "users"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update user profile",
+        "tags": [
+          "users"
         ]
       }
     },
     "/v1/users/me/addresses": {
       "post": {
         "operationId": "UsersController_createAddress",
-        "summary": "Create new address",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2408,20 +2466,20 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "users"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Create new address",
+        "tags": [
+          "users"
         ]
       }
     },
     "/v1/users/me/addresses/{addressId}": {
       "patch": {
         "operationId": "UsersController_updateAddress",
-        "summary": "Update address",
         "parameters": [
           {
             "name": "addressId",
@@ -2456,18 +2514,18 @@
             "description": "Address not found"
           }
         },
-        "tags": [
-          "users"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update address",
+        "tags": [
+          "users"
         ]
       },
       "delete": {
         "operationId": "UsersController_deleteAddress",
-        "summary": "Delete address",
         "parameters": [
           {
             "name": "addressId",
@@ -2489,20 +2547,20 @@
             "description": "Address not found"
           }
         },
-        "tags": [
-          "users"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Delete address",
+        "tags": [
+          "users"
         ]
       }
     },
     "/v1/users/me/addresses/{addressId}/default": {
       "patch": {
         "operationId": "UsersController_setDefaultAddress",
-        "summary": "Set address as default",
         "parameters": [
           {
             "name": "addressId",
@@ -2534,20 +2592,20 @@
             "description": "Address not found"
           }
         },
-        "tags": [
-          "users"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Set address as default",
+        "tags": [
+          "users"
         ]
       }
     },
     "/v1/users/me/notification-preferences": {
       "get": {
         "operationId": "NotificationPreferenceController_getPreferences",
-        "summary": "Get the current customer notification-consent map",
         "parameters": [],
         "responses": {
           "200": {
@@ -2557,18 +2615,18 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "notification-preferences"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get the current customer notification-consent map",
+        "tags": [
+          "notification-preferences"
         ]
       },
       "patch": {
         "operationId": "NotificationPreferenceController_updatePreferences",
-        "summary": "Update the current customer notification-consent map",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2591,20 +2649,20 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "notification-preferences"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Update the current customer notification-consent map",
+        "tags": [
+          "notification-preferences"
         ]
       }
     },
     "/v1/wishlist": {
       "get": {
         "operationId": "WishlistController_list",
-        "summary": "Get wishlist",
         "parameters": [
           {
             "name": "page",
@@ -2624,6 +2682,31 @@
               "maximum": 100,
               "type": "number"
             }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "price",
+                "productName"
+              ]
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
           }
         ],
         "responses": {
@@ -2634,20 +2717,20 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "wishlist"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get wishlist",
+        "tags": [
+          "wishlist"
         ]
       }
     },
     "/v1/wishlist/ids": {
       "get": {
         "operationId": "WishlistController_listIds",
-        "summary": "Get wishlisted product ids",
         "parameters": [],
         "responses": {
           "200": {
@@ -2657,20 +2740,20 @@
             "description": "Unauthorized"
           }
         },
-        "tags": [
-          "wishlist"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Get wishlisted product ids",
+        "tags": [
+          "wishlist"
         ]
       }
     },
     "/v1/wishlist/{productId}": {
       "post": {
         "operationId": "WishlistController_addItem",
-        "summary": "Add item to wishlist",
         "parameters": [
           {
             "name": "productId",
@@ -2695,18 +2778,18 @@
             "description": "Item already in wishlist"
           }
         },
-        "tags": [
-          "wishlist"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Add item to wishlist",
+        "tags": [
+          "wishlist"
         ]
       },
       "delete": {
         "operationId": "WishlistController_removeItem",
-        "summary": "Remove item from wishlist",
         "parameters": [
           {
             "name": "productId",
@@ -2728,13 +2811,14 @@
             "description": "Item not found"
           }
         },
-        "tags": [
-          "wishlist"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Remove item from wishlist",
+        "tags": [
+          "wishlist"
         ]
       }
     }
@@ -2803,7 +2887,7 @@
           },
           "country": {
             "type": "string",
-            "pattern": "/^[A-Z]{2}$/"
+            "pattern": "^[A-Z]{2}$"
           }
         },
         "required": [
@@ -2833,7 +2917,7 @@
           "code": {
             "type": "string",
             "maxLength": 50,
-            "pattern": "/^[A-Z0-9_-]+$/i"
+            "pattern": "^[A-Z0-9_-]+$"
           }
         },
         "required": [
@@ -2847,7 +2931,7 @@
             "type": "string",
             "minLength": 8,
             "maxLength": 20,
-            "pattern": "/^[A-Z0-9]+$/"
+            "pattern": "^[A-Z0-9]+$"
           }
         },
         "required": [
@@ -2931,7 +3015,8 @@
           },
           "fromEmail": {
             "type": "string",
-            "maxLength": 254
+            "maxLength": 254,
+            "format": "email"
           },
           "subjectLine": {
             "type": "string",
@@ -2963,8 +3048,7 @@
             "maxLength": 100
           },
           "phone": {
-            "type": "string",
-            "pattern": "PHONE_RE"
+            "type": "string"
           },
           "addressLine1": {
             "type": "string",
@@ -2988,7 +3072,7 @@
           },
           "country": {
             "type": "string",
-            "pattern": "/^[A-Z]{2}$/"
+            "pattern": "^[A-Z]{2}$"
           },
           "isDefaultShipping": {
             "type": "boolean"
@@ -3009,7 +3093,8 @@
         "type": "object",
         "properties": {
           "guestEmail": {
-            "type": "string"
+            "type": "string",
+            "format": "email"
           },
           "shippingAddressId": {
             "type": "string"
@@ -3034,7 +3119,7 @@
           },
           "giftCardCode": {
             "type": "string",
-            "pattern": "/^[A-Z0-9]{8,20}$/"
+            "pattern": "^[A-Z0-9]{8,20}$"
           },
           "couponCode": {
             "type": "string"
@@ -3057,13 +3142,21 @@
         "type": "object",
         "properties": {
           "items": {
+            "minItems": 1,
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ReturnItemDto"
             }
           },
           "reason": {
-            "type": "object"
+            "type": "string",
+            "enum": [
+              "CHANGED_MIND",
+              "DEFECTIVE",
+              "NOT_AS_DESCRIBED",
+              "OTHER",
+              "WRONG_SIZE"
+            ]
           },
           "reasonDetail": {
             "type": "string",
@@ -3076,7 +3169,12 @@
             }
           },
           "refundMethod": {
-            "type": "object"
+            "type": "string",
+            "enum": [
+              "EXCHANGE",
+              "ORIGINAL_PAYMENT",
+              "STORE_CREDIT"
+            ]
           }
         },
         "required": [
@@ -3103,7 +3201,8 @@
           "assetIds": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           }
         },
@@ -3138,12 +3237,22 @@
         "type": "object",
         "properties": {
           "eventType": {
-            "type": "object"
+            "type": "string",
+            "enum": [
+              "add_payment_info",
+              "add_shipping_info",
+              "add_to_cart",
+              "begin_checkout",
+              "page_view",
+              "product_view",
+              "purchase",
+              "search"
+            ]
           },
           "sessionId": {
             "type": "string",
             "maxLength": 128,
-            "pattern": "/^[A-Za-z0-9_-]+$/"
+            "pattern": "^[A-Za-z0-9_-]+$"
           },
           "userId": {
             "type": "string"
@@ -3155,7 +3264,8 @@
             "type": "string"
           },
           "data": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": true
           },
           "locale": {
             "type": "string"
@@ -3236,7 +3346,8 @@
           },
           "email": {
             "type": "string",
-            "maxLength": 254
+            "maxLength": 254,
+            "format": "email"
           }
         },
         "required": [
@@ -3249,11 +3360,12 @@
           "orderNumber": {
             "type": "string",
             "maxLength": 32,
-            "pattern": "/^[A-Z0-9-]+$/"
+            "pattern": "^[A-Z0-9-]+$"
           },
           "email": {
             "type": "string",
-            "maxLength": 254
+            "maxLength": 254,
+            "format": "email"
           }
         },
         "required": [
@@ -3273,8 +3385,7 @@
             "maxLength": 100
           },
           "phone": {
-            "type": "string",
-            "pattern": "PHONE_RE"
+            "type": "string"
           },
           "addressLine1": {
             "type": "string",
@@ -3298,7 +3409,7 @@
           },
           "country": {
             "type": "string",
-            "pattern": "/^[A-Z]{2}$/"
+            "pattern": "^[A-Z]{2}$"
           },
           "isDefaultShipping": {
             "type": "boolean"
@@ -3343,14 +3454,15 @@
             "maxLength": 100
           },
           "email": {
-            "type": "string"
+            "type": "string",
+            "format": "email"
           },
           "phone": {
-            "type": "string",
-            "pattern": "PHONE_RE"
+            "type": "string"
           },
           "avatarUrl": {
-            "type": "string"
+            "type": "string",
+            "format": "uri"
           },
           "currentPassword": {
             "type": "string"
@@ -3359,7 +3471,7 @@
             "type": "string",
             "minLength": 8,
             "maxLength": 128,
-            "pattern": "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)/"
+            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)"
           },
           "locale": {
             "type": "string"
@@ -3385,7 +3497,8 @@
           "assetIds": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           }
         }

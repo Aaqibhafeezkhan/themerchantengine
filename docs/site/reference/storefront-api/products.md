@@ -2,7 +2,7 @@
 title: "Products (storefront API)"
 description: "The 11 storefront routes of the products module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "storefront api products ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -25,8 +25,9 @@ Parameters:
 - `page` in query (number, min 1, optional).
 - `pageSize` in query (number, min 1, max 100, optional).
 - `sortBy` in query (string, optional).
-- `specs` in query (string, pattern `/^[a-z0-9-]+:[a-z0-9-]+(,[a-z0-9-]+:[a-z0-9-]+)*$/`, max length 1024, optional).
-- `tags` in query (string, pattern `/^[a-z0-9-]+:[a-z0-9-]+(,[a-z0-9-]+:[a-z0-9-]+)*$/`, max length 512, optional).
+- `sortOrder` in query (`"asc"`, `"desc"`, optional).
+- `specs` in query (string, pattern `^[a-z0-9-]+:[a-z0-9-]+(,[a-z0-9-]+:[a-z0-9-]+)*$`, max length 1024, optional).
+- `tags` in query (string, pattern `^[a-z0-9-]+:[a-z0-9-]+(,[a-z0-9-]+:[a-z0-9-]+)*$`, max length 512, optional).
 
 Responses:
 
@@ -88,6 +89,8 @@ Parameters:
 - `page` in query (number, min 1, optional).
 - `pageSize` in query (number, min 1, max 100, optional).
 - `rating` in query (number, min 1, max 5, optional).
+- `sortBy` in query (`"createdAt"`, `"helpfulCount"`, `"rating"`, optional).
+- `sortOrder` in query (`"asc"`, `"desc"`, optional).
 
 Responses:
 
@@ -184,4 +187,4 @@ Responses:
 - `rating` (number, min 1, max 5, required).
 - `title` (string, max length 200, optional).
 - `body` (string, max length 5000, required).
-- `assetIds` (array of string, optional).
+- `assetIds` (array of string, uuid, optional).

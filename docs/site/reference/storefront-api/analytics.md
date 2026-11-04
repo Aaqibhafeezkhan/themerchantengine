@@ -2,7 +2,7 @@
 title: "Analytics (storefront API)"
 description: "The 1 storefront route of the analytics module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "storefront api analytics ecommerce"
-updated: 2026-10-15
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -24,8 +24,8 @@ Responses:
 
 ### IngestEventDto
 
-- `eventType` (object, required).
-- `sessionId` (string, pattern `/^[A-Za-z0-9_-]+$/`, max length 128, optional).
+- `eventType` (`"add_payment_info"`, `"add_shipping_info"`, `"add_to_cart"`, `"begin_checkout"`, `"page_view"`, `"product_view"`, `"purchase"`, `"search"`, required).
+- `sessionId` (string, pattern `^[A-Za-z0-9_-]+$`, max length 128, optional).
 - `userId` (string, optional).
 - `productId` (string, optional).
 - `orderId` (string, optional).

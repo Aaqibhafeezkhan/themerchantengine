@@ -2,7 +2,7 @@
 title: "Customers (admin API)"
 description: "The 4 admin routes of the customers module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api customers ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -19,7 +19,7 @@ Parameters:
 - `page` in query (number, min 1, optional).
 - `pageSize` in query (number, min 1, max 100, optional).
 - `search` in query (string, max length 100, optional).
-- `segment` in query (`"NEW"`, `"ACTIVE"`, `"LOYAL"`, `"AT_RISK"`, `"CHURNED"`, `"HIGH_VALUE"`, `"VIP"`, optional).
+- `segment` in query (`"ACTIVE"`, `"AT_RISK"`, `"CHURNED"`, `"HIGH_VALUE"`, `"LOYAL"`, `"NEW"`, `"VIP"`, optional).
 
 Responses:
 
@@ -76,6 +76,6 @@ Responses:
 
 - `firstName` (string, max length 100, optional).
 - `lastName` (string, max length 100, optional).
-- `email` (string, max length 254, optional).
+- `email` (string, email, max length 254, optional).
 - `phone` (string, max length 30, optional).
 - `isActive` (boolean, optional).

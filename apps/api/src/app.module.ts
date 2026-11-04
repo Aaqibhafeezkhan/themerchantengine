@@ -96,7 +96,7 @@ import { HealthModule } from './health';
       },
     }),
 
-    // ── Rate limiting (@nestjs/throttler v4 + Redis storage) ─────────────────
+    // ── Rate limiting (@nestjs/throttler v6 + Redis storage) ─────────────────
     // Default: 100 req/60s — overridden per-route with @RateLimit decorators.
     // Uses RedisThrottlerStorage for distributed, multi-instance rate limiting.
     ThrottlerModule.forRootAsync({
@@ -104,8 +104,7 @@ import { HealthModule } from './health';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         // Default fallback limits (individual routes use @RateLimit decorators)
-        ttl: 60,
-        limit: 100,
+        throttlers: [{ ttl: 60_000, limit: 100 }],
         storage: new RedisThrottlerStorage({
           host: config.get<string>('REDIS_HOST', 'localhost'),
           port: config.get<number>('REDIS_PORT', 56379),

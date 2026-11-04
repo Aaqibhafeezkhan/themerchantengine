@@ -2,7 +2,7 @@
 title: "Questions (storefront API)"
 description: "The 2 storefront routes of the questions module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "storefront api questions ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -23,7 +23,6 @@ Request body: [AnswerQuestionDto](#answerquestiondto).
 Responses:
 
 - `200`: Answer added.
-- `201`: no description. Body: object.
 - `400`: Invalid input.
 - `401`: Unauthorized.
 - `404`: Question not found.
@@ -39,7 +38,6 @@ Parameters:
 Responses:
 
 - `200`: Marked helpful.
-- `201`: no description.
 - `401`: Unauthorized.
 - `404`: Question not found.
 

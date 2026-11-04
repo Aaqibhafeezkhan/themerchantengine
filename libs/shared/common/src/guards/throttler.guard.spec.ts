@@ -5,7 +5,7 @@ import { AppThrottlerGuard } from './throttler.guard';
 // We only test getTracker since the rest of the logic lives in ThrottlerGuard.
 // getTracker is protected, so we access it via a test subclass.
 class TestableGuard extends AppThrottlerGuard {
-  public tracker(req: Record<string, unknown>): string {
+  public tracker(req: Record<string, unknown>): Promise<string> {
     return this.getTracker(req);
   }
 }
@@ -59,34 +59,34 @@ describe('AppThrottlerGuard.getTracker', () => {
     guard = makeGuard();
   });
 
-  it('uses user ID prefix when req.user.id is present', () => {
+  it('uses user ID prefix when req.user.id is present', async () => {
     const req = { user: { id: 'user-uuid-123' }, ip: '1.2.3.4' };
-    expect(guard.tracker(req)).toBe('user:user-uuid-123');
+    expect(await guard.tracker(req)).toBe('user:user-uuid-123');
   });
 
-  it('uses ip prefix when req.user is absent', () => {
+  it('uses ip prefix when req.user is absent', async () => {
     const req = { ip: '10.0.0.1' };
-    expect(guard.tracker(req)).toBe('ip:10.0.0.1');
+    expect(await guard.tracker(req)).toBe('ip:10.0.0.1');
   });
 
-  it('uses ip prefix when req.user.id is undefined', () => {
+  it('uses ip prefix when req.user.id is undefined', async () => {
     const req = { user: {}, ip: '10.0.0.2' };
-    expect(guard.tracker(req)).toBe('ip:10.0.0.2');
+    expect(await guard.tracker(req)).toBe('ip:10.0.0.2');
   });
 
-  it('uses ip prefix when req.user is null', () => {
+  it('uses ip prefix when req.user is null', async () => {
     const req = { user: null, ip: '10.0.0.3' };
-    expect(guard.tracker(req)).toBe('ip:10.0.0.3');
+    expect(await guard.tracker(req)).toBe('ip:10.0.0.3');
   });
 
-  it('falls back to ip: (empty) when ip is also missing', () => {
+  it('falls back to ip: (empty) when ip is also missing', async () => {
     const req = {};
-    expect(guard.tracker(req)).toBe('ip:');
+    expect(await guard.tracker(req)).toBe('ip:');
   });
 
-  it('user tracker takes precedence over ip when both are present', () => {
+  it('user tracker takes precedence over ip when both are present', async () => {
     const req = { user: { id: 'u1' }, ip: '9.9.9.9' };
-    expect(guard.tracker(req)).toBe('user:u1');
+    expect(await guard.tracker(req)).toBe('user:u1');
   });
 });
 

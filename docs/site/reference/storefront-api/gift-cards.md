@@ -2,7 +2,7 @@
 title: "Gift cards (storefront API)"
 description: "The 1 storefront route of the gift cards module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "storefront api gift cards ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -16,7 +16,7 @@ Check gift card balance
 
 Parameters:
 
-- `code` in query (string, pattern `/^\S{1,32}$/`, required).
+- `code` in query (string, pattern `^\S{1,32}$`, required).
 
 Responses:
 

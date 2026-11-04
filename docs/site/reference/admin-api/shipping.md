@@ -2,7 +2,7 @@
 title: "Shipping (admin API)"
 description: "The 7 admin routes of the shipping module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api shipping ecommerce"
-updated: 2026-10-15
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -18,6 +18,7 @@ Parameters:
 
 - `page` in query (number, min 1, optional).
 - `pageSize` in query (number, min 1, max 100, optional).
+- `sortOrder` in query (`"asc"`, `"desc"`, optional).
 - `zoneId` in query (string, optional).
 
 Responses:
@@ -124,7 +125,7 @@ Responses:
 
 - `zoneId` (string, required).
 - `name` ([TranslatableDto](#translatabledto), required).
-- `type` (object, required).
+- `type` (`"CARRIER_CALCULATED"`, `"FLAT_RATE"`, `"FREE"`, `"PRICE_BASED"`, `"WEIGHT_BASED"`, required).
 - `price` (number, min 0, optional).
 - `weightRanges` (array of [WeightRangeDto](#weightrangedto), optional).
 - `priceRanges` (array of [PriceRangeDto](#pricerangedto), optional).

@@ -2,7 +2,7 @@
 title: "Webhooks (admin API)"
 description: "The 7 admin routes of the webhooks module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api webhooks ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -101,8 +101,8 @@ Responses:
 
 ### CreateWebhookDto
 
-- `url` (string, pattern `/^https:\/\//`, required).
-- `events` (array of object, required).
+- `url` (string, pattern `^https:\/\/`, required).
+- `events` (array of `"cart.abandoned"`, `"customer.created"`, `"customer.updated"`, `"inventory.low_stock"`, `"inventory.out_of_stock"`, `"inventory.restocked"`, `"order.cancelled"`, `"order.confirmed"`, `"order.created"`, `"order.delivered"`, `"order.shipped"`, `"order.status_changed"`, `"payment.received"`, `"payment.refunded"`, `"product.created"`, `"product.deleted"`, `"product.updated"`, `"return.approved"`, `"return.refunded"`, `"return.requested"`, `"review.submitted"`, required).
 - `secret` (string, optional).
 
 ### UpdateWebhookDto

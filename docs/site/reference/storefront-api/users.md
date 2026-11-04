@@ -2,7 +2,7 @@
 title: "Users (storefront API)"
 description: "The 8 storefront routes of the users module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "storefront api users ecommerce"
-updated: 2026-10-15
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -123,13 +123,13 @@ Responses:
 
 - `label` (string, max length 50, optional).
 - `fullName` (string, max length 100, required).
-- `phone` (string, pattern `PHONE_RE`, required).
+- `phone` (string, required).
 - `addressLine1` (string, max length 255, required).
 - `addressLine2` (string, max length 255, optional).
 - `city` (string, max length 100, required).
 - `state` (string, max length 100, optional).
 - `postalCode` (string, max length 20, optional).
-- `country` (string, pattern `/^[A-Z]{2}$/`, required).
+- `country` (string, pattern `^[A-Z]{2}$`, required).
 - `isDefaultShipping` (boolean, optional).
 - `isDefaultBilling` (boolean, optional).
 
@@ -142,13 +142,13 @@ Responses:
 
 - `label` (string, max length 50, optional).
 - `fullName` (string, max length 100, optional).
-- `phone` (string, pattern `PHONE_RE`, optional).
+- `phone` (string, optional).
 - `addressLine1` (string, max length 255, optional).
 - `addressLine2` (string, max length 255, optional).
 - `city` (string, max length 100, optional).
 - `state` (string, max length 100, optional).
 - `postalCode` (string, max length 20, optional).
-- `country` (string, pattern `/^[A-Z]{2}$/`, optional).
+- `country` (string, pattern `^[A-Z]{2}$`, optional).
 - `isDefaultShipping` (boolean, optional).
 - `isDefaultBilling` (boolean, optional).
 
@@ -161,9 +161,9 @@ Responses:
 
 - `firstName` (string, max length 100, optional).
 - `lastName` (string, max length 100, optional).
-- `email` (string, optional).
-- `phone` (string, pattern `PHONE_RE`, optional).
-- `avatarUrl` (string, optional).
+- `email` (string, email, optional).
+- `phone` (string, optional).
+- `avatarUrl` (string, uri, optional).
 - `currentPassword` (string, optional).
-- `newPassword` (string, pattern `/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/`, min length 8, max length 128, optional).
+- `newPassword` (string, pattern `^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)`, min length 8, max length 128, optional).
 - `locale` (string, optional).

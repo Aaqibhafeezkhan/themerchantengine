@@ -995,6 +995,25 @@ export function renderPage(front: Frontmatter, body: string, committedFile: stri
 const json = (value: unknown): string =>
   `${JSON.stringify({ 'x-generated-by': GENERATED_BY, ...(value as object) }, null, 2)}\n`;
 
+/**
+ * The swagger plugin lists a union type's members in the order the TypeScript checker
+ * holds them, which differs between machines. Sorting every string enum keeps the output stable.
+ */
+export function sortEnums<T>(node: T): T {
+  if (Array.isArray(node)) return node.map(sortEnums) as T;
+  if (node && typeof node === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(node)) {
+      out[key] =
+        key === 'enum' && Array.isArray(value) && value.every((item) => typeof item === 'string')
+          ? [...value].sort()
+          : sortEnums(value);
+    }
+    return out as T;
+  }
+  return node;
+}
+
 // ── The generator ─────────────────────────────────────────────────────────
 
 const ENV_FILES = [
@@ -1053,10 +1072,12 @@ export function generateReference(options: GenerateOptions): string[] {
 
   // OpenAPI: the export's files are copied in, the pages rendered from them.
   const documents: Record<'storefront' | 'admin', OpenApiDocument> = {
-    storefront: JSON.parse(
-      fs.readFileSync(path.join(openapiDir, 'openapi.storefront.json'), 'utf8'),
+    storefront: sortEnums(
+      JSON.parse(fs.readFileSync(path.join(openapiDir, 'openapi.storefront.json'), 'utf8')),
     ),
-    admin: JSON.parse(fs.readFileSync(path.join(openapiDir, 'openapi.admin.json'), 'utf8')),
+    admin: sortEnums(
+      JSON.parse(fs.readFileSync(path.join(openapiDir, 'openapi.admin.json'), 'utf8')),
+    ),
   };
   for (const audience of ['storefront', 'admin'] as const) {
     // The export already wrote the marker; `json()` puts it back first.

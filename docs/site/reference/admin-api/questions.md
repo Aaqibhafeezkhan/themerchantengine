@@ -2,7 +2,7 @@
 title: "Questions (admin API)"
 description: "The 4 admin routes of the questions module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api questions ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -20,6 +20,9 @@ Parameters:
 - `pageSize` in query (number, min 1, max 100, optional).
 - `productId` in query (string, optional).
 - `search` in query (string, optional).
+- `sortBy` in query (`"createdAt"`, `"helpfulCount"`, `"updatedAt"`, optional).
+- `sortOrder` in query (`"asc"`, `"desc"`, optional).
+- `status` in query (`"HIDDEN"`, `"PENDING"`, `"PUBLISHED"`, optional).
 
 Responses:
 
@@ -40,7 +43,6 @@ Request body: [AnswerQuestionAdminDto](#answerquestionadmindto).
 Responses:
 
 - `200`: Answer added.
-- `201`: no description. Body: object.
 - `400`: Invalid input.
 - `401`: Unauthorized.
 - `403`: Insufficient permissions.

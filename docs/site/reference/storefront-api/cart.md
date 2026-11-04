@@ -2,7 +2,7 @@
 title: "Cart (storefront API)"
 description: "The 12 storefront routes of the cart module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "storefront api cart ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -51,7 +51,7 @@ Estimate shipping cost
 
 Parameters:
 
-- `country` in query (string, pattern `/^[A-Z]{2}$/`, min length 2, max length 2, required).
+- `country` in query (string, pattern `^[A-Z]{2}$`, min length 2, max length 2, required).
 - `postalCode` in query (string, min length 3, max length 10, optional).
 
 Responses:
@@ -151,11 +151,11 @@ Responses:
 
 ### ApplyCouponDto
 
-- `code` (string, pattern `/^[A-Z0-9_-]+$/i`, max length 50, required).
+- `code` (string, pattern `^[A-Z0-9_-]+$`, max length 50, required).
 
 ### ApplyGiftCardDto
 
-- `code` (string, pattern `/^[A-Z0-9]+$/`, min length 8, max length 20, required).
+- `code` (string, pattern `^[A-Z0-9]+$`, min length 8, max length 20, required).
 
 ### UpdateItemDto
 

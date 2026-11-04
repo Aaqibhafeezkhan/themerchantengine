@@ -2,7 +2,7 @@
 title: "Reviews (admin API)"
 description: "The 5 admin routes of the reviews module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api reviews ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -20,6 +20,9 @@ Parameters:
 - `pageSize` in query (number, min 1, max 100, optional).
 - `productId` in query (string, optional).
 - `rating` in query (number, min 1, max 5, optional).
+- `sortBy` in query (`"createdAt"`, `"helpfulCount"`, `"rating"`, `"updatedAt"`, optional).
+- `sortOrder` in query (`"asc"`, `"desc"`, optional).
+- `status` in query (`"HIDDEN"`, `"PENDING"`, `"PUBLISHED"`, optional).
 - `userId` in query (string, optional).
 
 Responses:
@@ -101,8 +104,8 @@ Responses:
 - `rating` (number, min 1, max 5, optional).
 - `title` (string, max length 200, optional).
 - `body` (string, max length 5000, optional).
-- `assetIds` (array of string, optional).
-- `status` (object, optional).
+- `assetIds` (array of string, uuid, optional).
+- `status` (`"HIDDEN"`, `"PENDING"`, `"PUBLISHED"`, optional).
 - `reason` (string, max length 1000, optional).
 
 ### ModerateReviewDto

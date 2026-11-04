@@ -2,7 +2,7 @@
 title: "Categories (admin API)"
 description: "The 5 admin routes of the categories module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api categories ecommerce"
-updated: 2026-10-15
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -85,7 +85,7 @@ Responses:
 ### CreateCategoryAdminDto
 
 - `name` ([TranslatableDto](#translatabledto), required).
-- `slug` (string, pattern `/^[a-z0-9]+(?:-[a-z0-9]+)*$/`, required).
+- `slug` (string, pattern `^[a-z0-9]+(?:-[a-z0-9]+)*$`, required).
 - `description` ([OptionalContentTranslatableDto](#optionalcontenttranslatabledto), optional).
 - `parentId` (string, optional).
 - `imageId` (string, optional).

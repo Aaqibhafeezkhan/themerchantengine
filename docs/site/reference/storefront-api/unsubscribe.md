@@ -2,7 +2,7 @@
 title: "Unsubscribe (storefront API)"
 description: "The 2 storefront routes of the unsubscribe module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "storefront api unsubscribe ecommerce"
-updated: 2026-09-09
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -21,7 +21,6 @@ Parameters:
 
 Responses:
 
-- `200`: no description.
 - `302`: Redirect to the preference center.
 
 ## POST /v1/unsubscribe
@@ -30,7 +29,7 @@ One-click unsubscribe (RFC 8058)
 
 Parameters:
 
-- `token` in query (string, required).
+- `token` in query (string, optional).
 
 Responses:
 

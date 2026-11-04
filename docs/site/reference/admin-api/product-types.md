@@ -2,7 +2,7 @@
 title: "Product types (admin API)"
 description: "The 4 admin routes of the product types module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api product types ecommerce"
-updated: 2026-10-15
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -16,8 +16,8 @@ List all product types
 
 Parameters:
 
-- `page` in query (string, required).
-- `pageSize` in query (string, required).
+- `page` in query (string, optional).
+- `pageSize` in query (string, optional).
 
 Responses:
 
@@ -77,7 +77,7 @@ Responses:
 ### CreateProductTypeAdminDto
 
 - `name` ([TranslatableDto](#translatabledto), required).
-- `code` (string, pattern `/^[a-z0-9]+(?:[_-][a-z0-9]+)*$/`, required).
+- `code` (string, pattern `^[a-z0-9]+(?:[_-][a-z0-9]+)*$`, required).
 - `taxClassId` (string, optional).
 
 ### TranslatableDto

@@ -2,7 +2,7 @@
 title: "Orders (admin API)"
 description: "The 15 admin routes of the orders module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api orders ecommerce"
-updated: 2026-10-22
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -20,8 +20,11 @@ Parameters:
 - `dateTo` in query (string, optional).
 - `page` in query (number, min 1, optional).
 - `pageSize` in query (number, min 1, optional).
+- `paymentStatus` in query (`"AUTHORIZED"`, `"CANCELLED"`, `"CAPTURED"`, `"FAILED"`, `"PARTIALLY_REFUNDED"`, `"PENDING"`, `"REFUNDED"`, optional).
 - `search` in query (string, optional).
 - `sortBy` in query (string, optional).
+- `sortOrder` in query (`"asc"`, `"desc"`, optional).
+- `status` in query (`"CANCELLED"`, `"COMPLETED"`, `"CONFIRMED"`, `"DELIVERED"`, `"ON_HOLD"`, `"PENDING"`, `"PROCESSING"`, `"RETURNED"`, `"RETURN_REQUESTED"`, `"SHIPPED"`, optional).
 - `userId` in query (string, optional).
 
 Responses:
@@ -243,8 +246,11 @@ Parameters:
 - `dateTo` in query (string, optional).
 - `page` in query (number, min 1, optional).
 - `pageSize` in query (number, min 1, optional).
+- `paymentStatus` in query (`"AUTHORIZED"`, `"CANCELLED"`, `"CAPTURED"`, `"FAILED"`, `"PARTIALLY_REFUNDED"`, `"PENDING"`, `"REFUNDED"`, optional).
 - `search` in query (string, optional).
 - `sortBy` in query (string, optional).
+- `sortOrder` in query (`"asc"`, `"desc"`, optional).
+- `status` in query (`"CANCELLED"`, `"COMPLETED"`, `"CONFIRMED"`, `"DELIVERED"`, `"ON_HOLD"`, `"PENDING"`, `"PROCESSING"`, `"RETURNED"`, `"RETURN_REQUESTED"`, `"SHIPPED"`, optional).
 - `userId` in query (string, optional).
 
 Responses:
@@ -283,7 +289,7 @@ Responses:
 - `city` (string, required).
 - `state` (string, optional).
 - `postalCode` (string, optional).
-- `country` (string, pattern `/^[A-Z]{2}$/`, required).
+- `country` (string, pattern `^[A-Z]{2}$`, required).
 
 ### AdminOrderItemDto
 
@@ -315,7 +321,7 @@ Responses:
 - `city` (string, required).
 - `state` (string, optional).
 - `postalCode` (string, optional).
-- `country` (string, pattern `/^[A-Z]{2}$/`, required).
+- `country` (string, pattern `^[A-Z]{2}$`, required).
 
 ### EditOrderDto
 
@@ -336,10 +342,10 @@ Responses:
 
 ### UpdateOrderStatusDto
 
-- `status` (object, required).
+- `status` (`"CANCELLED"`, `"COMPLETED"`, `"CONFIRMED"`, `"DELIVERED"`, `"ON_HOLD"`, `"PENDING"`, `"PROCESSING"`, `"RETURNED"`, `"RETURN_REQUESTED"`, `"SHIPPED"`, required).
 
 ### UpdateShipmentDto
 
 - `carrier` (string, optional).
 - `trackingNumber` (string, optional).
-- `status` (object, optional).
+- `status` (`"DELIVERED"`, `"PROCESSING"`, `"SHIPPED"`, optional).

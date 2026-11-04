@@ -35,7 +35,7 @@ export function adminRoute(base: string, sub = ''): string {
  * Substitute `:param` (and `:param(matcher)`) placeholders in a route template with
  * URL-encoded values, for the Angular call sites that need a concrete path. Throws on a
  * missing param so a wrong call fails loudly at the call site rather than emitting a
- * malformed URL. The optional `(…)` matcher suffix (e.g. NestJS `:pageSlug(*)`) is part
+ * malformed URL. The optional `(…)` matcher suffix (e.g. a custom matcher) is part
  * of the placeholder token and is stripped along with the name.
  */
 export function fillRoute(template: string, params: Record<string, string | number>): string {
@@ -271,8 +271,8 @@ export const ADMIN_API_ROUTES = {
     /** Public origin + product URL shape, for admin deep links to the shop. */
     publicConfig: 'public-config',
     pages: 'pages',
-    pageSections: 'pages/:pageSlug(*)/sections',
-    sectionsReorder: 'pages/:pageSlug(*)/sections/reorder',
+    pageSections: 'pages/:pageSlug/sections',
+    sectionsReorder: 'pages/:pageSlug/sections/reorder',
     sectionById: 'sections/:id',
     sectionVisibility: 'sections/:id/visibility',
   },

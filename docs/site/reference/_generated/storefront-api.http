@@ -51,7 +51,7 @@ Accept-Language: {{locale}}
 Content-Type: application/json
 
 {
-  "eventType": {},
+  "eventType": "add_payment_info",
   "sessionId": "sessionId",
   "userId": "userId",
   "productId": "productId",
@@ -142,7 +142,7 @@ GET {{baseUrl}}/v1/categories/{{slug}}
 Accept-Language: {{locale}}
 
 ### Get products in category
-GET {{baseUrl}}/v1/categories/{{slug}}/products?page=page&pageSize=pageSize
+GET {{baseUrl}}/v1/categories/{{slug}}/products
 Accept-Language: {{locale}}
 
 # Module: checkout
@@ -202,7 +202,7 @@ GET {{baseUrl}}/v1/newsletter/unsubscribe?token=token&locale=locale
 Accept-Language: {{locale}}
 
 ### One-click newsletter unsubscribe (RFC 8058)
-POST {{baseUrl}}/v1/newsletter/unsubscribe?token=token
+POST {{baseUrl}}/v1/newsletter/unsubscribe
 Accept-Language: {{locale}}
 
 # Module: orders
@@ -277,12 +277,12 @@ Content-Type: application/json
       "exchangeVariantId": "exchangeVariantId"
     }
   ],
-  "reason": {},
+  "reason": "CHANGED_MIND",
   "reasonDetail": "reasonDetail",
   "photoAssetIds": [
     "photoAssetIds"
   ],
-  "refundMethod": {}
+  "refundMethod": "EXCHANGE"
 }
 
 ### Track an order by number and email
@@ -475,7 +475,7 @@ POST {{baseUrl}}/v1/search/events/{{id}}/convert
 Accept-Language: {{locale}}
 
 ### Get search filters
-GET {{baseUrl}}/v1/search/filters?q=q
+GET {{baseUrl}}/v1/search/filters
 Accept-Language: {{locale}}
 
 ### Get search suggestions
@@ -566,7 +566,7 @@ GET {{baseUrl}}/v1/unsubscribe?token=token&locale=locale
 Accept-Language: {{locale}}
 
 ### One-click unsubscribe (RFC 8058)
-POST {{baseUrl}}/v1/unsubscribe?token=token
+POST {{baseUrl}}/v1/unsubscribe
 Accept-Language: {{locale}}
 
 # Module: users

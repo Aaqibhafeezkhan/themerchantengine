@@ -2,7 +2,7 @@
 title: "Carriers (admin API)"
 description: "The 5 admin routes of the carriers module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "admin api carriers ecommerce"
-updated: 2026-10-15
+updated: 2026-11-04
 schema: TechArticle
 ---
 
@@ -19,7 +19,7 @@ Parameters:
 - `isActive` in query (boolean, optional).
 - `page` in query (number, min 1, optional).
 - `pageSize` in query (number, min 1, max 100, optional).
-- `provider` in query (`"dhl"`, `"fedex"`, `"ups"`, `"aramex"`, `"manual"`, optional).
+- `provider` in query (`"aramex"`, `"dhl"`, `"fedex"`, `"manual"`, `"ups"`, optional).
 
 Responses:
 
@@ -88,11 +88,11 @@ Responses:
 
 ### CreateCarrierDto
 
-- `code` (string, pattern `/^[a-z0-9_]+$/`, min length 2, max length 50, required).
+- `code` (string, pattern `^[a-z0-9_]+$`, min length 2, max length 50, required).
 - `name` ([CarrierTranslatableDto](#carriertranslatabledto), required).
-- `provider` (`"dhl"`, `"fedex"`, `"ups"`, `"aramex"`, `"manual"`, required).
+- `provider` (`"aramex"`, `"dhl"`, `"fedex"`, `"manual"`, `"ups"`, required).
 - `services` (array of string, optional).
-- `zones` (array of string, pattern `/^[A-Z]{2}$/`, optional).
+- `zones` (array of string, pattern `^[A-Z]{2}$`, optional).
 - `isActive` (boolean, optional).
 - `sortOrder` (number, min 0, optional).
 - `config` (object, optional).
@@ -108,7 +108,7 @@ Responses:
 
 - `name` ([OptionalTranslatableDto](#optionaltranslatabledto), optional).
 - `services` (array of string, optional).
-- `zones` (array of string, pattern `/^[A-Z]{2}$/`, optional).
+- `zones` (array of string, pattern `^[A-Z]{2}$`, optional).
 - `isActive` (boolean, optional).
 - `sortOrder` (number, min 0, optional).
 - `config` (object, optional).

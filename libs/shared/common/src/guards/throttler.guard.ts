@@ -50,7 +50,7 @@ export class AppThrottlerGuard extends ThrottlerGuard {
    * Returns the tracker string used as part of the Redis key.
    * Authenticated users are throttled per user ID; everyone else per IP.
    */
-  protected getTracker(req: Record<string, unknown>): string {
+  protected async getTracker(req: Record<string, unknown>): Promise<string> {
     const user = req['user'] as { id?: string } | undefined;
     if (user?.id) {
       return `user:${user.id}`;
