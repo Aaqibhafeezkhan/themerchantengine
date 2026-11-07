@@ -66,7 +66,7 @@
 - **Catalogue:** products, variants, categories, inventory, reviews and full-text search. See [What you get](docs/site/getting-started/what-you-get.md).
 - **Orders:** cart, checkout, orders, returns, invoices, gift cards and promotions. See [Checkout and orders](docs/site/build-a-storefront/05-checkout-and-orders.md).
 - **Content:** CMS pages, home sections, SEO and translatable fields in every locale you enable. See [Content and sections](docs/site/build-a-storefront/07-content-and-sections.md).
-- **Payments:** cash on delivery, manual bank transfer, gift cards and card payment through Stripe. The operator enters the Stripe keys in the admin, and the shopper pays in an embedded form or on a hosted page. More card providers plug in behind one interface. See [What you get](docs/site/getting-started/what-you-get.md).
+- **Payments:** cash on delivery, manual bank transfer, gift cards and card payment through Stripe. The operator enters the Stripe keys in the admin (`STRIPE_API_KEY` still works as a fallback), and the shopper pays in an embedded form or on a hosted page. More card providers plug in behind one interface. See [What you get](docs/site/getting-started/what-you-get.md).
 - **Mail:** Resend (`RESEND_API_KEY`), plus a console transport that logs mail in development. See [Environment variables](docs/site/reference/environment-variables.md).
 - **Storage:** local disk or any S3-compatible bucket (`S3_BUCKET`). See [Install on a server](docs/site/getting-started/install-on-a-server.md).
 - **Shipping:** zones and methods with the rates you enter in the admin, and a carrier list for tracking links. See [Store settings](docs/site/operate/store-settings.md).
