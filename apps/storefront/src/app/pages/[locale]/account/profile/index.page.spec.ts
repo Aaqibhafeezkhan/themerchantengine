@@ -196,6 +196,25 @@ describe('AccountProfilePage', () => {
     expect(root.querySelector('[data-testid="account-profile-status"]')).not.toBeNull();
   });
 
+  it('hides the saved message once the customer edits a field again (finding S2-5)', async () => {
+    const { fixture } = await renderProfile({ locale: 'en', authed: true });
+    const root = fixture.nativeElement as HTMLElement;
+    const phoneInput = root.querySelector(`input[formcontrolname="phone"]`) as HTMLInputElement;
+    phoneInput.value = '+97455551234';
+    phoneInput.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+    const form = root.querySelector('[data-testid="account-profile-form"]') as HTMLFormElement;
+    form.dispatchEvent(new Event('submit'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(root.querySelector('[data-testid="account-profile-status"]')).not.toBeNull();
+
+    phoneInput.value = '+97455550000';
+    phoneInput.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+    expect(root.querySelector('[data-testid="account-profile-status"]')).toBeNull();
+  });
+
   it('renders the error branch when getMe throws', async () => {
     const { StorefrontServerError } = await import('@storefront-types');
     const { fixture } = await renderProfile({

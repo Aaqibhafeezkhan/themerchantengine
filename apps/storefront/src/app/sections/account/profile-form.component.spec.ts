@@ -3,6 +3,9 @@ import { TestBed } from '@angular/core/testing';
 
 import type { CustomerUser, UpdateProfileRequest } from '@storefront-types';
 
+import ar from '../../../i18n/ar';
+import en from '../../../i18n/en';
+import fr from '../../../i18n/fr';
 import { LocaleService } from '../../locale.service';
 import { assertAxeClean, renderComponent } from '../../ui/testing';
 import { ProfileFormComponent } from './profile-form.component';
@@ -26,6 +29,13 @@ describe('ProfileFormComponent', () => {
     const out = fixture.nativeElement.querySelector('[data-testid="account-profile-email"]');
     expect(out?.textContent?.trim()).toBe('jane@example.com');
     expect(fixture.nativeElement.querySelectorAll('input[type="email"]').length).toBe(0);
+  });
+
+  it('does not claim email changes are unavailable, the Security block offers them (S2-3)', async () => {
+    const unavailable = /not yet available|pas encore disponible|غير متاح/;
+    for (const dict of [en, fr, ar]) {
+      expect(dict.account.profile.emailReadOnlyHint).not.toMatch(unavailable);
+    }
   });
 
   it('pre-populates firstName / lastName / phone from the user', async () => {
@@ -108,6 +118,23 @@ describe('ProfileFormComponent', () => {
       `[data-testid="account-profile-form-error"]`,
     );
     expect(region?.textContent?.trim()).toBe('API rejected the profile.');
+  });
+
+  it('clears the form error and emits edited when the customer types (finding S2-5)', async () => {
+    const fixture = await renderComponent(
+      ProfileFormComponent,
+      { user: baseUser, externalError: 'API rejected the profile.' },
+      [LocaleService],
+    );
+    let edits = 0;
+    fixture.componentInstance.edited.subscribe(() => edits++);
+    const root = fixture.nativeElement as HTMLElement;
+    const phone = root.querySelector('input[formcontrolname="phone"]') as HTMLInputElement;
+    phone.value = '+97455550000';
+    phone.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+    expect(root.querySelector('[data-testid="account-profile-form-error"]')).toBeNull();
+    expect(edits).toBe(1);
   });
 
   it('axe — zero serious / critical violations', async () => {

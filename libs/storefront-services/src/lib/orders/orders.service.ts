@@ -6,12 +6,16 @@ import {
   listOrdersQuerySchema,
   orderSchema,
   paginationMetaSchema,
+  paymentActionSchema,
+  placedOrderSchema,
   trackOrderRequestSchema,
   trackingResponseSchema,
   type CreateOrderRequest,
   type ListOrdersQuery,
   type Order,
   type PaginationMeta,
+  type PaymentAction,
+  type PlacedOrder,
   type TrackOrderRequest,
 } from '@storefront-types';
 import * as z from 'zod';
@@ -25,16 +29,42 @@ const paginatedOrdersEnvelopeSchema = apiResponseSchema(z.array(orderSchema)).ex
 export class OrdersService {
   constructor(@Inject(STOREFRONT_API_CLIENT) private readonly api: ApiClient) {}
 
-  /** Place a COD order. The caller MUST supply `idempotencyKey` per
+  /** Place an order. The caller MUST supply `idempotencyKey` per
    * constitution §3.6 and `docs/storefront-api-reference.md` §"Orders". */
-  async create(input: CreateOrderRequest, idempotencyKey: string): Promise<Order> {
+  async create(input: CreateOrderRequest, idempotencyKey: string): Promise<PlacedOrder> {
     const body = createOrderRequestSchema.parse(input);
     // Constitution §3.6 requires a format allowlist on the idempotency key.
     // Storefront generates the value via crypto.randomUUID(); reject anything
     // that is not a UUID v4 to keep the contract narrow.
     z.string().uuid().parse(idempotencyKey);
     const envelope = await this.api.post<unknown>('/v1/orders', body, { idempotencyKey });
-    return apiResponseSchema(orderSchema).parse(envelope).data;
+    return apiResponseSchema(placedOrderSchema).parse(envelope).data;
+  }
+
+  /** Start a fresh payment attempt for an unpaid order. */
+  async retryPayment(id: string, idempotencyKey: string): Promise<PaymentAction> {
+    z.string().min(1).parse(id);
+    z.string().uuid().parse(idempotencyKey);
+    const envelope = await this.api.post<unknown>(
+      `/v1/orders/${encodeURIComponent(id)}/payment`,
+      undefined,
+      { idempotencyKey },
+    );
+    return apiResponseSchema(z.object({ paymentAction: paymentActionSchema })).parse(envelope).data
+      .paymentAction;
+  }
+
+  /** Ask the API to re-read the payment status from the provider. */
+  async confirmPayment(id: string, idempotencyKey: string): Promise<string> {
+    z.string().min(1).parse(id);
+    z.string().uuid().parse(idempotencyKey);
+    const envelope = await this.api.post<unknown>(
+      `/v1/orders/${encodeURIComponent(id)}/payment/confirm`,
+      undefined,
+      { idempotencyKey },
+    );
+    return apiResponseSchema(z.object({ paymentStatus: z.string() })).parse(envelope).data
+      .paymentStatus;
   }
 
   async list(query: ListOrdersQuery = {}): Promise<{ data: Order[]; meta: PaginationMeta }> {
@@ -59,6 +89,20 @@ export class OrdersService {
     const parsed = trackOrderRequestSchema.parse(body);
     const envelope = await this.api.post<unknown>('/v1/orders/track', parsed);
     return apiResponseSchema(trackingResponseSchema).parse(envelope).data;
+  }
+
+  /** Guest pay again: the order number plus the email on file prove ownership. */
+  async retryTrackedPayment(
+    body: TrackOrderRequest,
+    idempotencyKey: string,
+  ): Promise<PaymentAction> {
+    const parsed = trackOrderRequestSchema.parse(body);
+    z.string().uuid().parse(idempotencyKey);
+    const envelope = await this.api.post<unknown>('/v1/orders/track/payment', parsed, {
+      idempotencyKey,
+    });
+    return apiResponseSchema(z.object({ paymentAction: paymentActionSchema })).parse(envelope).data
+      .paymentAction;
   }
 
   async getById(id: string): Promise<Order> {

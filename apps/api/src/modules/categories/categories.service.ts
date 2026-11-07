@@ -1,6 +1,8 @@
 import { ConflictException, Inject, Injectable, Logger } from '@nestjs/common';
 import { CategoryNotFoundException } from './category-not-found.exception';
+import { CategoryHasProductsException } from './category-has-products.exception';
 import { CategoryParentNotFoundException } from './category-parent-not-found.exception';
+import { CategorySlugTakenException } from './category-slug-taken.exception';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import type Redis from 'ioredis';
@@ -377,6 +379,8 @@ export class CategoriesService {
    * Uses a two-step transaction: create → update path with generated ID.
    */
   async create(dto: CreateCategoryAdminDto): Promise<RawCategory> {
+    await this.assertSlugFree(dto.slug);
+
     let parent: RawCategory | null = null;
     if (dto.parentId) {
       parent = (await this.prisma.category.findUnique({
@@ -431,6 +435,10 @@ export class CategoriesService {
 
     if (!category) throw new CategoryNotFoundException();
 
+    if (dto.slug !== undefined && dto.slug !== category.slug) {
+      await this.assertSlugFree(dto.slug, id);
+    }
+
     const isMoving = 'parentId' in dto && dto.parentId !== category.parentId;
 
     if (isMoving) {
@@ -476,6 +484,14 @@ export class CategoriesService {
     return updated as RawCategory;
   }
 
+  private async assertSlugFree(slug: string, exceptId?: string): Promise<void> {
+    const clash = await this.prisma.category.findFirst({
+      where: { slug, ...(exceptId && { id: { not: exceptId } }) },
+      select: { id: true },
+    });
+    if (clash) throw new CategorySlugTakenException(slug);
+  }
+
   /**
    * Soft-deletes a category.
    * Blocked if any products are associated with this category (§9.3).
@@ -489,9 +505,7 @@ export class CategoriesService {
     });
 
     if (productCount > 0) {
-      throw new ConflictException(
-        `Cannot delete category: ${productCount} product(s) are assigned to it. Reassign them first.`,
-      );
+      throw new CategoryHasProductsException(productCount);
     }
 
     await this.prisma.category.update({

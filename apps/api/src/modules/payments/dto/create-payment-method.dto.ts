@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
+  IsDefined,
   IsIn,
   IsInt,
   IsObject,
@@ -8,9 +9,9 @@ import {
   IsString,
   Matches,
   MaxLength,
+  Min,
   MinLength,
   ValidateNested,
-  Min,
 } from 'class-validator';
 import { REGISTERED_PAYMENT_PROVIDER_IDS } from '../payment-providers';
 import { OptionalTranslatableDto, PaymentTranslatableDto } from './translatable.dto';
@@ -41,6 +42,7 @@ export class CreatePaymentMethodDto {
   })
   code!: string;
 
+  @IsDefined()
   @ValidateNested()
   @Type(() => PaymentTranslatableDto)
   name!: PaymentTranslatableDto;

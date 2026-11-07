@@ -34,6 +34,8 @@ export const storefrontPaymentMethodSchema = z
     description: z.string().nullable().optional(),
     provider: z.string().min(1),
     sortOrder: z.number().int().optional(),
+    /** The provider needs a payment step after the order (redirect, form or embedded). */
+    requiresPayment: z.boolean().default(false),
   })
   .passthrough()
   .superRefine((value, ctx) => {

@@ -146,6 +146,32 @@ export class OrdersStorefrontController {
     return this.orders.trackOrder({ orderNumber: dto.orderNumber, email: dto.email });
   }
 
+  // ── POST /v1/orders/track/payment ────────────────────────────────────────
+
+  /**
+   * Pay again for a guest order from the track page. The order number plus the
+   * email on file prove ownership when the cart session is gone. Declared
+   * before `:id` for the same reason as `track`.
+   */
+  @Post('track/payment')
+  @Public()
+  @RateLimit.StorefrontWrite()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Retry the payment of a tracked order' })
+  @ApiResponse({ status: 200, description: 'New payment action' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
+  @ApiResponse({ status: 409, description: 'Order payment is not retryable' })
+  retryTrackedPayment(
+    @Body() dto: TrackOrderDto,
+    @IdempotencyKey(IdempotencyKeyPipe) _idempotencyKey: string,
+    @Headers('accept-language') acceptLanguage?: string,
+  ) {
+    return this.orders.retryTrackedPayment(
+      { orderNumber: dto.orderNumber, email: dto.email },
+      acceptLanguage,
+    );
+  }
+
   // ── GET /v1/orders/:id ───────────────────────────────────────────────────
 
   /**
@@ -228,6 +254,59 @@ export class OrdersStorefrontController {
   @ApiResponse({ status: 409, description: 'Order cannot be cancelled' })
   cancelOrder(@Param('id') id: string, @Req() req: AuthedRequest) {
     return this.orders.cancelOrder(id, req.user.id);
+  }
+
+  // ── POST /v1/orders/:id/payment ──────────────────────────────────────────
+
+  /**
+   * Take a new payment attempt on an order whose payment is still pending or
+   * failed. Guest-capable like `findOne`: the service matches the account or
+   * the anonymous cart cookie, so `@OwnerGuard()` stays off for the same reason
+   * as on `createOrder`. Returns the fresh `paymentAction` for the storefront
+   * to run.
+   */
+  @Post(':id/payment')
+  @OptionalAuth()
+  @RateLimit.StorefrontWrite()
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Retry the payment of an order' })
+  @ApiResponse({ status: 200, description: 'New payment action' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
+  @ApiResponse({ status: 409, description: 'Order payment is not retryable' })
+  retryPayment(
+    @Param('id') id: string,
+    @Req() req: OptionalAuthRequest,
+    @IdempotencyKey(IdempotencyKeyPipe) _idempotencyKey: string,
+    @Headers('accept-language') acceptLanguage?: string,
+  ) {
+    return this.orders.retryPayment(id, {
+      userId: req.user?.id,
+      sessionId: guestSessionOf(req),
+      acceptLanguage,
+    });
+  }
+
+  /**
+   * Asks the provider for the live payment status after the customer returns
+   * from it, so the page does not depend on the webhook arriving first.
+   */
+  @Post(':id/payment/confirm')
+  @OptionalAuth()
+  @RateLimit.StorefrontWrite()
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Confirm the payment status of an order with the provider' })
+  @ApiResponse({ status: 200, description: 'Current payment status' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
+  confirmPayment(
+    @Param('id') id: string,
+    @Req() req: OptionalAuthRequest,
+    // The pipe enforces the header; the value itself is not needed.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    @IdempotencyKey(IdempotencyKeyPipe) _idempotencyKey: string,
+  ) {
+    return this.orders.confirmPayment(id, { userId: req.user?.id, sessionId: guestSessionOf(req) });
   }
 }
 
@@ -381,7 +460,7 @@ export class OrdersAdminController {
   // ── POST /v1/admin/orders/:id/payment/capture ────────────────────────────
 
   @Post(ADMIN_API_ROUTES.orders.paymentCapture)
-  @Permissions('orders:update')
+  @Permissions('payments:manage')
   @RateLimit.Admin()
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
@@ -402,7 +481,7 @@ export class OrdersAdminController {
   // ── POST /v1/admin/orders/:id/payment/refund ─────────────────────────────
 
   @Post(ADMIN_API_ROUTES.orders.paymentRefund)
-  @Permissions('orders:update')
+  @Permissions('payments:manage')
   @RateLimit.Admin()
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
@@ -423,7 +502,7 @@ export class OrdersAdminController {
   // ── POST /v1/admin/orders/:id/payment/cancel ─────────────────────────────
 
   @Post(ADMIN_API_ROUTES.orders.paymentCancel)
-  @Permissions('orders:update')
+  @Permissions('payments:manage')
   @RateLimit.Admin()
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)

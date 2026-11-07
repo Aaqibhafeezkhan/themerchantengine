@@ -217,6 +217,7 @@ export const orderSchema = z.object({
   number: z.string().optional(),
   status: orderStatusSchema,
   paymentStatus: paymentStatusSchema.optional(),
+  paymentMethodName: z.string().nullable().optional(),
   userId: z.string().nullable().optional(),
   subtotal: coercedMoney.optional(),
   discountAmount: coercedMoney.optional(),

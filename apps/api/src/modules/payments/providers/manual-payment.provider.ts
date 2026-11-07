@@ -6,4 +6,5 @@ import { OfflinePaymentProvider } from './offline-payment.provider';
 export class ManualPaymentProvider extends OfflinePaymentProvider {
   static readonly providerId = 'manual' as const;
   readonly id = ManualPaymentProvider.providerId;
+  readonly label = 'Manual payment';
 }

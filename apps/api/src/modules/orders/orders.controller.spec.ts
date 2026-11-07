@@ -35,6 +35,8 @@ describe('OrdersStorefrontController — decorator audit', () => {
     'getInvoice',
     'getInvoicePdf',
     'cancelOrder',
+    'retryPayment',
+    'confirmPayment',
     'trackOrder',
   ];
 
@@ -67,6 +69,16 @@ describe('OrdersStorefrontController — decorator audit', () => {
   it('declares trackOrder before the :id route that would otherwise shadow it', () => {
     const handlers = Object.getOwnPropertyNames(proto);
     expect(handlers.indexOf('trackOrder')).toBeLessThan(handlers.indexOf('findOne'));
+  });
+
+  it('retryTrackedPayment is a public POST on `track/payment`, declared before :id', () => {
+    expect(isPublic('retryTrackedPayment')).toBe(true);
+    expect(getPermissions('retryTrackedPayment')).toBeUndefined();
+    expect(Reflect.getMetadata('method', proto['retryTrackedPayment'])).toBe(RequestMethod.POST);
+    expect(Reflect.getMetadata('__httpCode__', proto['retryTrackedPayment'])).toBe(200);
+    expect(Reflect.getMetadata('path', proto['retryTrackedPayment'])).toBe('track/payment');
+    const handlers = Object.getOwnPropertyNames(proto);
+    expect(handlers.indexOf('retryTrackedPayment')).toBeLessThan(handlers.indexOf('findOne'));
   });
 
   it('listOrders has @OwnerGuard()', () => {
@@ -108,6 +120,26 @@ describe('OrdersStorefrontController — decorator audit', () => {
 
   it('cancelOrder has @OwnerGuard()', () => {
     expect(hasOwnerGuard('cancelOrder')).toBe(true);
+  });
+
+  it('retryPayment is a POST on `:id/payment`, @OptionalAuth() and NOT @OwnerGuard()', () => {
+    expect(Reflect.getMetadata('method', proto['retryPayment'])).toBe(RequestMethod.POST);
+    expect(Reflect.getMetadata('path', proto['retryPayment'])).toBe(':id/payment');
+    expect(Reflect.getMetadata('__httpCode__', proto['retryPayment'])).toBe(200);
+    expect(isOptionalAuth('retryPayment')).toBe(true);
+    expect(hasOwnerGuard('retryPayment')).toBe(false);
+    expect(isPublic('retryPayment')).toBe(false);
+    expect(getPermissions('retryPayment')).toBeUndefined();
+  });
+
+  it('confirmPayment is a POST on `:id/payment/confirm`, @OptionalAuth() and NOT @OwnerGuard()', () => {
+    expect(Reflect.getMetadata('method', proto['confirmPayment'])).toBe(RequestMethod.POST);
+    expect(Reflect.getMetadata('path', proto['confirmPayment'])).toBe(':id/payment/confirm');
+    expect(Reflect.getMetadata('__httpCode__', proto['confirmPayment'])).toBe(200);
+    expect(isOptionalAuth('confirmPayment')).toBe(true);
+    expect(hasOwnerGuard('confirmPayment')).toBe(false);
+    expect(isPublic('confirmPayment')).toBe(false);
+    expect(getPermissions('confirmPayment')).toBeUndefined();
   });
 
   it('createOrder is not @Public() (requires authentication)', () => {

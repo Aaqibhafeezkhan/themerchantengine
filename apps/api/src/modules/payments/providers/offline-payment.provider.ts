@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { PaymentTransitionNotAllowedException } from '../payment-transition-not-allowed.exception';
 import { PaymentWebhookUnsupportedException } from '../payment-webhook-unsupported.exception';
 import type {
+  PaymentActionType,
   PaymentCaptureInput,
   PaymentMutationInput,
   PaymentOperationInput,
@@ -10,6 +11,7 @@ import type {
   PaymentProviderResult,
   PaymentRefundInput,
   PaymentSessionInput,
+  PaymentSessionResult,
   PaymentWebhookEvent,
 } from './payment-provider.interface';
 
@@ -26,10 +28,17 @@ export abstract class OfflinePaymentProvider implements PaymentProvider<OfflineC
   /** The order needs no payment step at checkout, so the storefront may offer it. */
   static readonly offeredAtCheckout = true;
   abstract readonly id: string;
+  abstract readonly label: string;
+  readonly actionTypes: readonly PaymentActionType[] = ['none'];
+  readonly secretFields = [] as const;
   readonly configSchema = offlineConfigSchema;
 
-  async createSession(input: PaymentSessionInput<OfflineConfig>): Promise<PaymentProviderResult> {
-    return { reference: `${this.id}_${input.orderId}`, status: PaymentStatus.PENDING };
+  async createSession(input: PaymentSessionInput<OfflineConfig>): Promise<PaymentSessionResult> {
+    return {
+      reference: `${this.id}_${input.orderId}`,
+      status: PaymentStatus.PENDING,
+      action: { type: 'none' },
+    };
   }
 
   async authorize(input: PaymentOperationInput<OfflineConfig>): Promise<PaymentProviderResult> {

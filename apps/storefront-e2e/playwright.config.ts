@@ -114,6 +114,9 @@ export default defineConfig({
         REDIS_PORT: process.env['REDIS_TEST_PORT'] ?? '56380',
         // Throttler: env-gated bypass per clarifications §1.17.
         DISABLE_THROTTLE: '1',
+        // Registers the fake_embedded and fake_redirect test providers (issue #45).
+        // The API refuses to boot with this flag when NODE_ENV=production.
+        PAYMENT_FAKE_PROVIDERS: 'true',
         // BA4: drop Better Auth's requireEmailVerification on the e2e API
         // so a freshly-registered customer can be authenticated without an
         // inbox round-trip. Scoped to this spawn only — the backend e2e
@@ -227,6 +230,21 @@ export default defineConfig({
       // project-coverage.spec.ts.
       name: 'desktop-chromium-1440-store-config',
       testMatch: /store-config\.journey\.spec\.ts$/,
+      dependencies: [
+        'desktop-chromium-1440',
+        'mobile-chrome',
+        'mobile-safari',
+        'desktop-chromium-1440-card-payment',
+      ],
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
+    },
+    {
+      // embedded-card-payment.journey activates a second payment method in the
+      // shared DB while it runs. An order placed without a method code then
+      // fails with ORDER_PAYMENT_METHOD_INVALID, so no other spec may run
+      // beside it. Guarded by project-coverage.spec.ts.
+      name: 'desktop-chromium-1440-card-payment',
+      testMatch: /embedded-card-payment\.journey\.spec\.ts$/,
       dependencies: ['desktop-chromium-1440', 'mobile-chrome', 'mobile-safari'],
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
     },

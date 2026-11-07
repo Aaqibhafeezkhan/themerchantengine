@@ -148,6 +148,9 @@ export interface ChromeStrings {
     trackingNumberLabel: string;
     carrierLink: string;
     noShipments: string;
+    payAgain: string;
+    paymentPendingNote: string;
+    cancelledNote: string;
   };
   /**
    * Footer newsletter signup. It used to be an inline `COPY` constant in the
@@ -725,12 +728,16 @@ export interface ChromeStrings {
         idempotencyTooltip: string;
       };
     };
+    paymentPayCta: string;
+    paymentPayBusy: string;
+    paymentCardNumber: string;
     errors: {
       addressRequired: string;
       invalidPhone: string;
       invalidCountry: string;
       invalidPostalCode: string;
       requiredField: string;
+      termsRequired: string;
       outOfStock: string;
       outOfStockCta: string;
       paymentRefused: string;
@@ -742,6 +749,11 @@ export interface ChromeStrings {
       shippingUnavailable: string;
       paymentMethodInvalid: string;
       paymentMethodUnavailable: string;
+      paymentNotRetryable: string;
+      paymentProviderUnavailable: string;
+      paymentEmbeddedUnsupported: string;
+      paymentCardDeclined: string;
+      paymentFailed: string;
       invalidEmail: string;
       guestCheckoutDisabled: string;
       generic: string;
@@ -761,7 +773,22 @@ export interface ChromeStrings {
     deliveryEstimateUnknown: string;
     trackingCta: string;
     publicTrackCta: string;
+    cancelledHeading: string;
+    paymentOnDelivery: string;
     continueShoppingCta: string;
+    payAgainCta: string;
+    payAgainBusy: string;
+    paymentStatusLabel: string;
+    paymentStatus: {
+      PENDING: string;
+      AUTHORIZED: string;
+      CAPTURED: string;
+      FAILED: string;
+      REFUNDED: string;
+      PARTIALLY_REFUNDED: string;
+      CANCELLED: string;
+    };
+    paymentEmbeddedTitle: string;
     summarySection: {
       title: string;
       subtotal: string;
@@ -927,6 +954,7 @@ export interface ChromeStrings {
         cta: string;
         confirmTitle: string;
         confirmBody: string;
+        confirmCardHold: string;
         confirmYes: string;
         confirmNo: string;
         success: string;
@@ -942,6 +970,7 @@ export interface ChromeStrings {
         /** Why the download is unavailable, rendered under a disabled button. */
         reasonNotConfirmed: string;
         reasonPreparing: string;
+        reasonCancelled: string;
       };
       notFound: {
         title: string;

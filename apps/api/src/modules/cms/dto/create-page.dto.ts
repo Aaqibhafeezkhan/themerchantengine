@@ -1,5 +1,6 @@
 import {
   IsBoolean,
+  IsDefined,
   IsEnum,
   IsInt,
   IsOptional,
@@ -26,11 +27,13 @@ export class CreatePageAdminDto {
   type: CmsPageType;
 
   /** Translatable title: { default: string; [locale: string]: string } */
+  @IsDefined()
   @ValidateNested()
   @Type(() => TranslatableDto)
   title: TranslatableDto;
 
   /** Translatable rich text content (should be sanitized on storage). */
+  @IsDefined()
   @ValidateNested()
   @Type(() => TranslatableDto)
   content: TranslatableDto;

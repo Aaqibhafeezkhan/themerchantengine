@@ -15,13 +15,34 @@ describe('PaymentMethodNewPage', () => {
   let page: PaymentMethodNewPage;
   let createSpy: jest.Mock;
   let navigateSpy: jest.SpyInstance;
+  let providersSpy: jest.Mock;
+
+  const catalogue = [
+    {
+      id: 'stripe',
+      label: 'Stripe',
+      actionTypes: ['embedded', 'redirect'],
+      secretFields: ['secretKey'],
+      configJsonSchema: {},
+    },
+    {
+      id: 'canary_pay',
+      label: 'Canary Pay',
+      actionTypes: ['redirect'],
+      secretFields: ['merchantPassword'],
+      configJsonSchema: {},
+    },
+  ];
 
   function configure() {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([{ path: '**', children: [] }]),
         { provide: BOOTSTRAP_LOCALE, useValue: 'fr' },
-        { provide: PaymentMethodsService, useValue: { create: createSpy } },
+        {
+          provide: PaymentMethodsService,
+          useValue: { create: createSpy, providers: providersSpy },
+        },
       ],
     });
     TestBed.inject(AuthStore).setSession({
@@ -51,6 +72,7 @@ describe('PaymentMethodNewPage', () => {
   }
 
   beforeEach(() => {
+    providersSpy = jest.fn(() => of(catalogue));
     createSpy = jest.fn(() =>
       of({
         id: 'pm-new',
@@ -70,6 +92,59 @@ describe('PaymentMethodNewPage', () => {
     expect(page.form.controls.code.value).toBe('');
     expect(page.form.controls.provider.value).toBe('');
     expect(page.form.invalid).toBe(true);
+  });
+
+  describe('provider catalogue', () => {
+    function optionTexts(): string[] {
+      const select: HTMLSelectElement = fixture.nativeElement.querySelector(
+        '[data-testid="pm-new-provider"]',
+      );
+      return Array.from(select.options).map((o) => o.textContent?.trim() ?? '');
+    }
+
+    it('offers every provider the API catalogue lists, including one admin never heard of', () => {
+      configure();
+      fixture.detectChanges();
+      const texts = optionTexts();
+      expect(texts).toContain('Canary Pay');
+      expect(texts).toContain('Stripe');
+      expect(texts).not.toContain('PayPal');
+    });
+
+    it('submits a catalogue-only provider id', () => {
+      configure();
+      page.form.patchValue({
+        code: 'canary_main',
+        name: { default: 'Canary' },
+        provider: 'canary_pay',
+      });
+      page.submit();
+      expect(createSpy.mock.calls[0][0].provider).toBe('canary_pay');
+    });
+
+    it('shows a retryable error when the catalogue fails to load', () => {
+      providersSpy = jest.fn(() =>
+        throwError(() => new ApiError({ code: 'GENERIC', message: 'down' })),
+      );
+      configure();
+      fixture.detectChanges();
+      const err = fixture.nativeElement.querySelector('[data-testid="pm-new-providers-error"]');
+      expect(err).not.toBeNull();
+      expect(page.form.controls.provider.disabled).toBe(false);
+      providersSpy.mockReturnValue(of(catalogue));
+      page.reloadProviders();
+      fixture.detectChanges();
+      expect(optionTexts()).toContain('Canary Pay');
+    });
+
+    it('shows an empty state when no provider is registered', () => {
+      providersSpy = jest.fn(() => of([]));
+      configure();
+      fixture.detectChanges();
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="pm-new-providers-empty"]'),
+      ).not.toBeNull();
+    });
   });
 
   describe('validators', () => {

@@ -362,10 +362,25 @@
       "sites": [
         {
           "file": "apps/api/src/modules/categories/categories.service.ts",
-          "line": 538,
+          "line": 552,
           "exception": "ConflictException",
           "status": 409,
           "message": "Cannot set a descendant as parent"
+        }
+      ]
+    },
+    {
+      "code": "CATEGORY_HAS_PRODUCTS",
+      "statuses": [
+        409
+      ],
+      "sites": [
+        {
+          "file": "apps/api/src/modules/categories/category-has-products.exception.ts",
+          "line": 10,
+          "exception": "CategoryHasProductsException",
+          "status": 409,
+          "message": "Cannot delete category: ${productCount} product(s) are assigned to it. Reassign them first."
         }
       ]
     },
@@ -396,6 +411,21 @@
           "exception": "CategoryParentNotFoundException",
           "status": 404,
           "message": null
+        }
+      ]
+    },
+    {
+      "code": "CATEGORY_SLUG_TAKEN",
+      "statuses": [
+        409
+      ],
+      "sites": [
+        {
+          "file": "apps/api/src/modules/categories/category-slug-taken.exception.ts",
+          "line": 10,
+          "exception": "CategorySlugTakenException",
+          "status": 409,
+          "message": "Slug \"${slug}\" is already taken"
         }
       ]
     },
@@ -467,7 +497,7 @@
       "sites": [
         {
           "file": "apps/api/src/modules/gift-cards/gift-cards.service.ts",
-          "line": 284,
+          "line": 322,
           "exception": "BadRequestException",
           "status": 400,
           "message": "Gift card code \"${code}\" is already in use"
@@ -542,7 +572,7 @@
       "sites": [
         {
           "file": "apps/api/src/modules/gift-cards/gift-cards.service.ts",
-          "line": 478,
+          "line": 516,
           "exception": "BadRequestException",
           "status": 400,
           "message": "Gift card has no recipient email on file"
@@ -707,7 +737,7 @@
       "sites": [
         {
           "file": "apps/api/src/modules/orders/orders.service.ts",
-          "line": 2425,
+          "line": 2663,
           "exception": "NotFoundException",
           "status": 404,
           "message": "Address \"${addressId}\" not found"
@@ -767,7 +797,7 @@
       "sites": [
         {
           "file": "apps/api/src/modules/orders/orders.service.ts",
-          "line": 807,
+          "line": 830,
           "exception": "BadRequestException",
           "status": 400,
           "message": "Customer not found"
@@ -797,7 +827,7 @@
       "sites": [
         {
           "file": "apps/api/src/modules/orders/orders.service.ts",
-          "line": 1817,
+          "line": 1862,
           "exception": "NotFoundException",
           "status": 404,
           "message": "Order item \"${removal.orderItemId}\" not found"
@@ -812,7 +842,7 @@
       "sites": [
         {
           "file": "apps/api/src/modules/orders/orders.service.ts",
-          "line": 1766,
+          "line": 1811,
           "exception": "NotFoundException",
           "status": 404,
           "message": "Variant \"${addItem.variantId}\" not found"
@@ -1015,6 +1045,21 @@
       ]
     },
     {
+      "code": "ORDER_PAYMENT_NOT_RETRYABLE",
+      "statuses": [
+        409
+      ],
+      "sites": [
+        {
+          "file": "apps/api/src/modules/orders/order-payment-not-retryable.exception.ts",
+          "line": 11,
+          "exception": "OrderPaymentNotRetryableException",
+          "status": 409,
+          "message": "Order ${orderId} cannot take a new payment attempt"
+        }
+      ]
+    },
+    {
       "code": "ORDER_SHIPMENT_ITEM_NOT_IN_ORDER",
       "statuses": [
         400
@@ -1022,7 +1067,7 @@
       "sites": [
         {
           "file": "apps/api/src/modules/orders/orders.service.ts",
-          "line": 1526,
+          "line": 1571,
           "exception": "BadRequestException",
           "status": 400,
           "message": "Item \"${si.orderItemId}\" does not belong to this order"
@@ -1037,7 +1082,7 @@
       "sites": [
         {
           "file": "apps/api/src/modules/orders/orders.service.ts",
-          "line": 1597,
+          "line": 1642,
           "exception": "NotFoundException",
           "status": 404,
           "message": "Shipment \"${shipmentId}\" not found for order \"${orderId}\""
@@ -1067,7 +1112,7 @@
       "sites": [
         {
           "file": "apps/api/src/modules/orders/orders.service.ts",
-          "line": 2444,
+          "line": 2682,
           "exception": "BadRequestException",
           "status": 400,
           "message": "Shipping address is required"
@@ -1082,14 +1127,14 @@
       "sites": [
         {
           "file": "apps/api/src/modules/orders/orders.service.ts",
-          "line": 1070,
+          "line": 1103,
           "exception": "BadRequestException",
           "status": 400,
           "message": "Cannot transition from ${order.status} to ${newStatus}"
         },
         {
           "file": "apps/api/src/modules/orders/orders.service.ts",
-          "line": 1116,
+          "line": 1149,
           "exception": "BadRequestException",
           "status": 400,
           "message": "Cannot transition from ${order.status} to ${newStatus}"
@@ -1104,7 +1149,7 @@
       "sites": [
         {
           "file": "apps/api/src/modules/orders/orders.service.ts",
-          "line": 1717,
+          "line": 1762,
           "exception": "BadRequestException",
           "status": 400,
           "message": "Order in ${order.status} status cannot be edited"
@@ -1119,7 +1164,7 @@
       "sites": [
         {
           "file": "apps/api/src/modules/orders/orders.service.ts",
-          "line": 849,
+          "line": 872,
           "exception": "BadRequestException",
           "status": 400,
           "message": "Variant \"${item.variantId}\" not found or unavailable"
@@ -1153,6 +1198,21 @@
           "exception": "OwnerGuardUserMissingException",
           "status": 401,
           "message": "Authenticated user required"
+        }
+      ]
+    },
+    {
+      "code": "PAYMENT_CONFIG_ENCRYPTION_UNAVAILABLE",
+      "statuses": [
+        503
+      ],
+      "sites": [
+        {
+          "file": "apps/api/src/modules/payments/payment-config-encryption-unavailable.exception.ts",
+          "line": 8,
+          "exception": "PaymentConfigEncryptionUnavailableException",
+          "status": 503,
+          "message": "Payment secrets cannot be stored until an encryption key is configured"
         }
       ]
     },
@@ -1562,6 +1622,21 @@
       ]
     },
     {
+      "code": "QUESTION_ALREADY_PUBLISHED",
+      "statuses": [
+        409
+      ],
+      "sites": [
+        {
+          "file": "apps/api/src/modules/reviews/question-already-published.exception.ts",
+          "line": 13,
+          "exception": "QuestionAlreadyPublishedException",
+          "status": 409,
+          "message": "This question is already published"
+        }
+      ]
+    },
+    {
       "code": "QUESTION_NOT_AVAILABLE_FOR_ANSWER",
       "statuses": [
         400
@@ -1573,6 +1648,21 @@
           "exception": "QuestionNotAvailableForAnswerException",
           "status": 400,
           "message": "This question is not available for answers"
+        }
+      ]
+    },
+    {
+      "code": "REVIEW_ALREADY_PUBLISHED",
+      "statuses": [
+        409
+      ],
+      "sites": [
+        {
+          "file": "apps/api/src/modules/reviews/review-already-published.exception.ts",
+          "line": 13,
+          "exception": "ReviewAlreadyPublishedException",
+          "status": 409,
+          "message": "This review is already published"
         }
       ]
     },
@@ -2048,7 +2138,7 @@
       "sites": [
         {
           "file": "apps/api/src/main.ts",
-          "line": 253,
+          "line": 246,
           "exception": "BadRequestException",
           "status": 400,
           "message": "Validation failed"

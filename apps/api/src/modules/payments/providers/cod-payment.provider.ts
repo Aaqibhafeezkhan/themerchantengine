@@ -6,4 +6,5 @@ import { OfflinePaymentProvider } from './offline-payment.provider';
 export class CodPaymentProvider extends OfflinePaymentProvider {
   static readonly providerId = 'cod' as const;
   readonly id = CodPaymentProvider.providerId;
+  readonly label = 'Cash on delivery';
 }

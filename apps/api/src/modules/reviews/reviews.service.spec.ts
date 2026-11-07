@@ -6,6 +6,8 @@ import { NEUTRAL_LOCALE_SET, storeLocales } from '@common/locale';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ReviewsService } from './reviews.service';
 import { REVIEW_EVENTS, QUESTION_EVENTS } from './reviews.constants';
+import { ReviewAlreadyPublishedException } from './review-already-published.exception';
+import { QuestionAlreadyPublishedException } from './question-already-published.exception';
 
 // ── Factories ─────────────────────────────────────────────────────────────────
 
@@ -512,6 +514,17 @@ describe('ReviewsService', () => {
       prisma.review.findUnique.mockResolvedValue(null);
       await expect(service.approveReview('bad-id', 'admin-1')).rejects.toThrow(NotFoundException);
     });
+
+    it('refuses an already published review without writing, auditing or emitting', async () => {
+      prisma.review.findUnique.mockResolvedValue(makeReview({ status: ReviewStatus.PUBLISHED }));
+
+      await expect(service.approveReview('review-1', 'admin-1')).rejects.toBeInstanceOf(
+        ReviewAlreadyPublishedException,
+      );
+      expect(prisma.review.update).not.toHaveBeenCalled();
+      expect(prisma.auditLogEntry.create).not.toHaveBeenCalled();
+      expect(events.emit).not.toHaveBeenCalled();
+    });
   });
 
   describe('rejectReview', () => {
@@ -964,6 +977,19 @@ describe('ReviewsService', () => {
         expect.objectContaining({ data: { status: QuestionStatus.PUBLISHED } }),
       );
       expect(events.emit).toHaveBeenCalledWith(QUESTION_EVENTS.APPROVED, expect.any(Object));
+    });
+
+    it('refuses an already published question without writing, auditing or emitting', async () => {
+      prisma.productQuestion.findUnique.mockResolvedValue(
+        makeQuestion({ status: QuestionStatus.PUBLISHED }),
+      );
+
+      await expect(service.approveQuestion('question-1', 'admin-1')).rejects.toBeInstanceOf(
+        QuestionAlreadyPublishedException,
+      );
+      expect(prisma.productQuestion.update).not.toHaveBeenCalled();
+      expect(prisma.auditLogEntry.create).not.toHaveBeenCalled();
+      expect(events.emit).not.toHaveBeenCalled();
     });
   });
 

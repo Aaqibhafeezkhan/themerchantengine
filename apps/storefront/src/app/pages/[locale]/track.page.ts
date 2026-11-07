@@ -31,6 +31,7 @@ import {
   type OrderTimelineEvent,
 } from '../../sections/account/order-status-timeline.component';
 import { pageTitle } from '../../../lib/seo';
+import { browserPaymentActionEnv, runPaymentAction } from '../../sections/checkout/payment-action';
 
 type PageState = 'idle' | 'submitting' | 'ready' | 'not-found';
 
@@ -164,6 +165,24 @@ const ORDER_STATUSES: ReadonlyArray<OrderStatus> = [
             <span>{{ strings().account.orderDetail.status }}:</span>
             <app-order-status-badge [status]="resolvedStatus(t.status)" />
           </p>
+
+          @if (t.status.toUpperCase() === 'CANCELLED') {
+            <p class="payment-note" data-testid="track-cancelled-note">
+              {{ strings().track.cancelledNote }}
+            </p>
+          } @else if (t.paymentRetryable) {
+            <p class="payment-note">{{ strings().track.paymentPendingNote }}</p>
+            <p class="pay-again" data-testid="track-pay-again">
+              <app-button variant="primary" [loading]="payAgainBusy()" (clicked)="payAgain()">
+                {{ strings().track.payAgain }}
+              </app-button>
+            </p>
+          }
+          @if (paymentError(); as message) {
+            <p class="payment-error" role="alert" data-testid="track-payment-error">
+              {{ message }}
+            </p>
+          }
 
           @if (shipments().length > 0) {
             <h3 class="shipments-heading">{{ strings().track.shipmentsHeading }}</h3>
@@ -345,6 +364,14 @@ const ORDER_STATUSES: ReadonlyArray<OrderStatus> = [
         font-size: var(--brand-text-section);
         font-weight: 600;
       }
+      .payment-note {
+        margin: 0;
+        color: var(--brand-text-muted);
+      }
+      .payment-error {
+        margin: 0;
+        color: var(--brand-error);
+      }
       .back-row {
         margin: 0;
       }
@@ -371,6 +398,10 @@ export class TrackPageComponent implements OnInit {
   protected readonly strings = this.locale.strings;
   protected readonly state = signal<PageState>('idle');
   protected readonly tracking = signal<TrackingResponse | null>(null);
+  protected readonly payAgainBusy = signal(false);
+  protected readonly paymentError = signal<string | null>(null);
+  /** The lookup that produced the result; the form may be edited after submit. */
+  private lastLookup: { orderNumber: string; email: string } | null = null;
 
   protected readonly form: FormGroup = this.fb.nonNullable.group({
     orderNumber: ['', [Validators.required, Validators.maxLength(32)]],
@@ -512,12 +543,58 @@ export class TrackPageComponent implements OnInit {
     }
     this.state.set('submitting');
     this.tracking.set(null);
+    this.paymentError.set(null);
+    this.lastLookup = parsed.data;
+    await this.lookup(parsed.data);
+  }
+
+  private async lookup(body: { orderNumber: string; email: string }): Promise<void> {
     try {
-      const result = await this.ordersSvc.track(parsed.data);
+      const result = await this.ordersSvc.track(body);
       this.tracking.set(result);
       this.state.set('ready');
     } catch {
       this.state.set('not-found');
+    }
+  }
+
+  protected async payAgain(): Promise<void> {
+    const body = this.lastLookup;
+    if (!body || this.payAgainBusy()) return;
+    this.payAgainBusy.set(true);
+    this.paymentError.set(null);
+    try {
+      const action = await this.ordersSvc.retryTrackedPayment(body, crypto.randomUUID());
+      const outcome = await runPaymentAction(action, browserPaymentActionEnv);
+      if (outcome.kind === 'done') {
+        await this.lookup(body);
+      } else if (outcome.kind === 'embedded') {
+        // The track page has no embedded form; the confirmation page does.
+        this.paymentError.set(this.strings().checkout.errors.generic);
+      }
+    } catch (error) {
+      this.paymentError.set(this.paymentErrorMessageFor(error));
+    } finally {
+      this.payAgainBusy.set(false);
+    }
+  }
+
+  private paymentErrorMessageFor(error: unknown): string {
+    const errors = this.strings().checkout.errors;
+    const code = (error as { code?: string } | null)?.code;
+    switch (code) {
+      case 'ORDER_PAYMENT_NOT_RETRYABLE':
+        return errors.paymentNotRetryable;
+      case 'PAYMENT_PROVIDER_UNAVAILABLE':
+      case 'PAYMENT_PROVIDER_REJECTED':
+      case 'PAYMENT_CONFIG_ENCRYPTION_UNAVAILABLE':
+      case 'PAYMENT_PROVIDER_UNKNOWN':
+      case 'ORDER_PAYMENT_NOT_OPENED':
+        return errors.paymentProviderUnavailable;
+      case 'ORDER_PAYMENT_METHOD_UNAVAILABLE':
+        return errors.paymentMethodUnavailable;
+      default:
+        return errors.generic;
     }
   }
 }

@@ -161,6 +161,7 @@ const MUTATION_ERROR_TIMEOUT_MS = 4000;
                   [error]="couponError()"
                   (apply)="onApplyCoupon($event)"
                   (remove)="onRemoveCoupon()"
+                  (edited)="couponError.set(null)"
                 />
                 <cart-gift-card-form
                   [applied]="appliedGiftCard()"
@@ -168,6 +169,7 @@ const MUTATION_ERROR_TIMEOUT_MS = 4000;
                   [error]="giftCardError()"
                   (apply)="onApplyGiftCard($event)"
                   (remove)="onRemoveGiftCard()"
+                  (edited)="giftCardError.set(null)"
                 />
                 <cart-totals [cart]="cart()!" [pending]="pendingMutation()" />
               </aside>

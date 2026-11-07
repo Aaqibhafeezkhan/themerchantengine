@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsNotEmpty,
   IsOptional,
   IsString,
   IsUrl,
@@ -14,11 +15,13 @@ import { IsEnabledLocaleValue } from '../../../../common/dto/translatable-locale
 export class UpdateProfileDto {
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
   @MaxLength(100)
   firstName?: string;
 
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
   @MaxLength(100)
   lastName?: string;
 

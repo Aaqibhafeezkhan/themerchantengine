@@ -1,6 +1,6 @@
 ---
 title: What you get
-description: What an install of themerchantengine puts on a box, what a store owner has on day one, and what is not in the first release.
+description: What an install of themerchantengine puts on a box, what a store owner has on day one, and what is not shipped yet.
 primaryQuery: self-hosted ecommerce platform what is included
 updated: 2026-09-08
 schema: TechArticle
@@ -20,7 +20,7 @@ An Angular dashboard for the people who run the store: catalogue and orders, cus
 
 ## The storefront
 
-A server-rendered storefront (Analog.js on Nitro) that reads the store's configuration at request time: brand tokens, logo and fonts, the locales the store serves with a locale prefix in every URL, right-to-left layout for Arabic, and money formatting with the currency's own symbol, separators and precision. It ships catalogue browsing and full-text search, the cart, checkout with cash on delivery, manual bank transfer and gift cards, customer accounts with order history and invoice PDFs, wishlists, reviews, content pages, and the structured data, canonical tags and `hreflang` links a search engine expects.
+A server-rendered storefront (Analog.js on Nitro) that reads the store's configuration at request time: brand tokens, logo and fonts, the locales the store serves with a locale prefix in every URL, right-to-left layout for Arabic, and money formatting with the currency's own symbol, separators and precision. It ships catalogue browsing and full-text search, the cart, checkout with card payment through Stripe, cash on delivery, manual bank transfer and gift cards, customer accounts with order history and invoice PDFs, wishlists, reviews, content pages, and the structured data, canonical tags and `hreflang` links a search engine expects.
 
 You can brand this storefront through the admin, change it in the source, or build your own on the REST API and keep the API and the admin as they are.
 
@@ -39,9 +39,9 @@ The same installer runs on a laptop with Docker Desktop under a local profile: n
 - Nightly database dumps and automatic certificate renewal on the server.
 - A sitemap, `robots.txt` and `llms.txt` that update themselves as the catalogue changes.
 
-## What is not in the first release
+## What is not shipped yet
 
-- **Card payment gateways.** Cash on delivery, manual bank transfer and gift cards are the live tenders. The payments module has the seams for a card provider; none ships yet.
+- **More card payment gateways.** Stripe is the one card provider that ships. Cash on delivery, manual bank transfer and gift cards are the other tenders. Another card provider is one class behind the `PaymentProvider` interface; see [Add a payment provider](../customize/recipes/api/add-a-payment-provider.md).
 - **An upgrade command.** An update is a re-run of the installer on a newer checkout, which is idempotent and keeps every secret and certificate. See [Update the store](../operate/update.md).
 - **Prebuilt images.** The installer builds the three images from source on the box. There is no public image registry.
 - **A second storefront layout or theme presets.** One storefront ships. Its colours, fonts and logo come from the store's configuration; its layout is one.

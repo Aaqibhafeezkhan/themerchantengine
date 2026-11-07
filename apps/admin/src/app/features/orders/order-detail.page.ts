@@ -22,6 +22,7 @@ import { AuthStore } from '../../core/stores/auth.store';
 import { TranslatablePipe } from '../../shared/pipes/translatable.pipe';
 import { statusLabel as returnStatusLabel } from '../returns/returns.utils';
 import { OrderActionsComponent } from './order-actions.component';
+import { OrderPaymentActionsComponent } from './order-payment-actions.component';
 import { OrderShipmentPanelComponent } from './order-shipment-panel.component';
 import {
   canEditOrder,
@@ -53,6 +54,7 @@ import { AdminDatePipe } from '../../shared/pipes/admin-date.pipe';
     SkeletonComponent,
     TranslatablePipe,
     OrderActionsComponent,
+    OrderPaymentActionsComponent,
     OrderShipmentPanelComponent,
     AdminDatePipe,
   ],
@@ -330,6 +332,10 @@ import { AdminDatePipe } from '../../shared/pipes/admin-date.pipe';
                 </dd>
               </div>
               <div class="px-5 py-3 flex justify-between gap-3 text-sm tabular">
+                <dt class="text-ink-muted">Method</dt>
+                <dd data-testid="order-payment-method">{{ o.paymentMethodName ?? '—' }}</dd>
+              </div>
+              <div class="px-5 py-3 flex justify-between gap-3 text-sm tabular">
                 <dt class="text-ink-muted">Charged in</dt>
                 <dd>{{ o.currency ?? '—' }}</dd>
               </div>
@@ -344,6 +350,12 @@ import { AdminDatePipe } from '../../shared/pipes/admin-date.pipe';
                 </dd>
               </div>
             </dl>
+            <app-order-payment-actions
+              class="block px-5 pb-4"
+              [order]="o"
+              [canManage]="canManagePayments()"
+              (orderChanged)="onOrderChanged($event)"
+            />
           </section>
         </div>
 
@@ -468,6 +480,7 @@ export class OrderDetailPage implements OnInit, OnDestroy {
   readonly invoiceBusy = signal(false);
   readonly invoiceStatus = signal<string>('');
   readonly canManage = computed(() => this.authStore.hasPermission('orders:manage'));
+  readonly canManagePayments = computed(() => this.authStore.hasPermission('payments:manage'));
 
   /** Plain method, not a computed: it reads the order the template already holds. */
   canEdit(status: string | null | undefined): boolean {

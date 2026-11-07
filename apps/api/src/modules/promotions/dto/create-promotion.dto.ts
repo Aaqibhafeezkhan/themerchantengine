@@ -2,6 +2,7 @@ import {
   IsArray,
   IsBoolean,
   IsDateString,
+  IsDefined,
   IsEnum,
   IsInt,
   IsNumber,
@@ -15,6 +16,7 @@ import { PromotionApplicationMethod, PromotionType } from '@prisma/client';
 import { TranslatableDto } from './translatable.dto';
 
 export class CreatePromotionAdminDto {
+  @IsDefined()
   @ValidateNested()
   @Type(() => TranslatableDto)
   name: TranslatableDto;

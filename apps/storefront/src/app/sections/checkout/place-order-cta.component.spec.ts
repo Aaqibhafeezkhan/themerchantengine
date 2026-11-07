@@ -55,6 +55,24 @@ describe('PlaceOrderCtaComponent', () => {
   });
 
   /**
+   * S2-20. The Arabic submit label said "cash on delivery" for every tender, so a
+   * customer who picked a card was told they would pay the courier.
+   */
+  it('words the submit button the same in every locale, never naming a tender', async () => {
+    for (const locale of ['fr', 'en', 'ar'] as const) {
+      TestBed.resetTestingModule();
+      const fixture = await renderComponent(PlaceOrderCtaComponent, { paymentProvider: 'card' }, [
+        provideRouter([]),
+        { provide: LocaleService, useValue: new FakeLocaleService(locale) },
+      ]);
+      const label = (
+        fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement
+      ).textContent;
+      expect(label).not.toContain('الدفع عند الاستلام');
+    }
+  });
+
+  /**
    * Pass-2 finding D7. An unset `termsOfServiceUrl` must never resolve to the
    * locale home, which is a perfectly truthy href for a link that goes nowhere
    * near the terms the customer is being asked to accept.
@@ -108,6 +126,7 @@ describe('PlaceOrderCtaComponent', () => {
       '[data-testid="place-order-terms-required"]',
     ) as HTMLElement;
     expect(err).not.toBeNull();
+    expect(err.textContent?.trim()).toBe(getChromeStrings('fr').checkout.errors.termsRequired);
   });
 
   it('emits placeOrder when accepted form submits', async () => {

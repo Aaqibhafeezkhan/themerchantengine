@@ -5,6 +5,7 @@ import {
   ArrayUnique,
   IsArray,
   IsBoolean,
+  IsDefined,
   IsIn,
   IsObject,
   IsOptional,
@@ -35,6 +36,7 @@ export class CreateNotificationTemplateDto {
   @IsOptional()
   subject?: OptionalTranslatableBodyDto;
 
+  @IsDefined()
   @ValidateNested()
   @Type(() => TranslatableBodyDto)
   body!: TranslatableBodyDto;

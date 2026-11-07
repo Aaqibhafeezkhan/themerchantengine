@@ -1,7 +1,18 @@
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ConfigService } from '@nestjs/config';
+import { PaymentConfigCrypto } from './payment-config-crypto';
 import { PaymentMethodsService } from './payment-methods.service';
+import { PaymentProviderRegistry } from './payment-provider.registry';
+
+// ConfigService reads process.env before its own values, so a key in .env (loaded by nx) would win.
+function isolatedConfig(env: Record<string, string>): ConfigService {
+  return { get: (name: string) => env[name] } as unknown as ConfigService;
+}
+
+const KEY = Buffer.alloc(32, 7).toString('base64');
+const crypto = new PaymentConfigCrypto(isolatedConfig({ PAYMENT_CONFIG_ENCRYPTION_KEY: KEY }));
 
 function makeRow(overrides: Partial<Record<string, unknown>> = {}) {
   return {
@@ -42,7 +53,24 @@ describe('PaymentMethodsService', () => {
   beforeEach(async () => {
     prisma = makePrismaMock();
     const module: TestingModule = await Test.createTestingModule({
-      providers: [PaymentMethodsService, { provide: PrismaService, useValue: prisma }],
+      providers: [
+        PaymentMethodsService,
+        { provide: PrismaService, useValue: prisma },
+        {
+          provide: PaymentConfigCrypto,
+          useValue: crypto,
+        },
+        {
+          provide: PaymentProviderRegistry,
+          useValue: {
+            has: (id: string) => id === 'canary_pay' || id === 'cod' || id === 'card_pay',
+            get: (id: string) => ({
+              secretFields: ['merchantPassword'],
+              actionTypes: id === 'card_pay' ? ['redirect', 'embedded'] : ['none'],
+            }),
+          },
+        },
+      ],
     }).compile();
     service = module.get(PaymentMethodsService);
   });
@@ -116,7 +144,8 @@ describe('PaymentMethodsService', () => {
       expect((out.config as Record<string, unknown>)['flag']).toBe(true);
       // update call saw the REAL apiKey preserved in the merge.
       const writeArgs = prisma.paymentMethod.update.mock.calls[0][0];
-      expect(writeArgs.data.config['apiKey']).toBe('sk_live_real');
+      expect(writeArgs.data.config['apiKey']).toMatch(/^enc:v1:/);
+      expect(crypto.decrypt(writeArgs.data.config, ['apiKey'])['apiKey']).toBe('sk_live_real');
     });
 
     it('null in config deletes the key', async () => {
@@ -186,7 +215,7 @@ describe('PaymentMethodsService', () => {
       expect(args.where).toMatchObject({
         isActive: true,
         deletedAt: null,
-        provider: { in: ['cod', 'manual'] },
+        provider: { in: ['cod', 'manual', 'stripe'] },
       });
       expect(args.orderBy).toEqual([{ sortOrder: 'asc' }, { createdAt: 'asc' }]);
       // An explicit select is the guarantee. A `select` that omits `config`
@@ -197,7 +226,19 @@ describe('PaymentMethodsService', () => {
       expect(args.select).not.toHaveProperty('isTestMode');
     });
 
-    it('projects code, name, description, provider and sortOrder, and nothing else', async () => {
+    it('flags a method as requiring a payment step from the provider action types', async () => {
+      prisma.paymentMethod.findMany.mockResolvedValue([
+        { code: 'cod', name: {}, description: null, provider: 'cod', sortOrder: 0 },
+        { code: 'card', name: {}, description: null, provider: 'card_pay', sortOrder: 1 },
+      ]);
+      const rows = await service.listStorefront();
+      expect(rows.map((r) => [r.code, r.requiresPayment])).toEqual([
+        ['cod', false],
+        ['card', true],
+      ]);
+    });
+
+    it('projects code, name, description, provider, sortOrder and requiresPayment, and nothing else', async () => {
       prisma.paymentMethod.findMany.mockResolvedValue([
         {
           code: 'cod',
@@ -214,6 +255,7 @@ describe('PaymentMethodsService', () => {
         'description',
         'name',
         'provider',
+        'requiresPayment',
         'sortOrder',
       ]);
       expect(rows[0].code).toBe('cod');
@@ -235,6 +277,121 @@ describe('PaymentMethodsService', () => {
       expect(rows[0]).not.toHaveProperty('config');
       expect(rows[0]).not.toHaveProperty('isTestMode');
       expect(JSON.stringify(rows)).not.toContain('sk_live_leaked');
+    });
+  });
+
+  describe('secret fields declared by the provider', () => {
+    it('encrypts them on create and never stores plaintext', async () => {
+      prisma.paymentMethod.findUnique.mockResolvedValue(null);
+      prisma.paymentMethod.create.mockImplementation(({ data }: { data: object }) =>
+        Promise.resolve(makeRow(data)),
+      );
+
+      const out = await service.create({
+        code: 'canary',
+        name: { default: 'Canary' },
+        provider: 'canary_pay',
+        config: { merchantId: 'm-1', merchantPassword: 'hunter2' },
+      } as never);
+
+      const stored = prisma.paymentMethod.create.mock.calls[0][0].data.config;
+      expect(stored.merchantPassword).toMatch(/^enc:v1:/);
+      expect(JSON.stringify(stored)).not.toContain('hunter2');
+      expect(out.config['merchantPassword']).toBe('***');
+      expect(out.config['merchantId']).toBe('m-1');
+    });
+
+    it('keeps the stored ciphertext when the form resubmits the mask', async () => {
+      const stored = makeRow({
+        provider: 'canary_pay',
+        config: { merchantPassword: 'enc:v1:abcd1234:iv:tag:body' },
+      });
+      prisma.paymentMethod.findFirst.mockResolvedValue(stored);
+      prisma.paymentMethod.update.mockImplementation(({ data }: { data: object }) =>
+        Promise.resolve(makeRow({ provider: 'canary_pay', ...data })),
+      );
+
+      await service.update('pm-1', { config: { merchantPassword: '***' } });
+
+      const written = prisma.paymentMethod.update.mock.calls[0][0].data.config;
+      expect(written.merchantPassword).toBe('enc:v1:abcd1234:iv:tag:body');
+    });
+
+    it('masks them on read', async () => {
+      prisma.paymentMethod.findFirst.mockResolvedValue(
+        makeRow({ provider: 'canary_pay', config: { merchantPassword: 'enc:v1:k:i:t:b' } }),
+      );
+
+      const out = await service.findOne('pm-1');
+
+      expect(out.config['merchantPassword']).toBe('***');
+    });
+  });
+
+  describe('reencryptAll', () => {
+    const oldKey = Buffer.alloc(32, 3).toString('base64');
+    const oldCrypto = new PaymentConfigCrypto(
+      isolatedConfig({ PAYMENT_CONFIG_ENCRYPTION_KEY: oldKey }),
+    );
+
+    it('rewrites plaintext and old-key secrets with the current key, soft-deleted rows included', async () => {
+      prisma.paymentMethod.findMany.mockResolvedValue([
+        makeRow({
+          id: 'pm-plain',
+          provider: 'canary_pay',
+          config: { merchantId: 'm-1', merchantPassword: 'hunter2' },
+        }),
+        makeRow({
+          id: 'pm-old',
+          provider: 'canary_pay',
+          deletedAt: new Date(),
+          config: oldCrypto.encrypt({ merchantPassword: 'hunter3' }, ['merchantPassword']),
+        }),
+        makeRow({ id: 'pm-none', provider: 'canary_pay', config: { merchantId: 'm-2' } }),
+      ]);
+      prisma.paymentMethod.update.mockResolvedValue({});
+      const rotating = new PaymentConfigCrypto(
+        isolatedConfig({
+          PAYMENT_CONFIG_ENCRYPTION_KEY: KEY,
+          PAYMENT_CONFIG_ENCRYPTION_KEYS_PREVIOUS: oldKey,
+        }),
+      );
+      (service as unknown as { crypto: PaymentConfigCrypto }).crypto = rotating;
+
+      const result = await service.reencryptAll();
+
+      expect(prisma.paymentMethod.findMany).toHaveBeenCalledWith({
+        where: { deletedAt: undefined },
+        select: { id: true, provider: true, config: true },
+      });
+      expect(
+        Object.prototype.hasOwnProperty.call(
+          prisma.paymentMethod.findMany.mock.calls[0][0].where,
+          'deletedAt',
+        ),
+      ).toBe(true);
+      expect(result).toEqual({ rewritten: 2, unchanged: 1 });
+      const writes = prisma.paymentMethod.update.mock.calls.map(
+        ([arg]: [{ where: { id: string }; data: { config: Record<string, string> } }]) => arg,
+      );
+      expect(writes.map((w) => w.where.id)).toEqual(['pm-plain', 'pm-old']);
+      for (const write of writes) {
+        expect(write.data.config['merchantPassword']).toMatch(/^enc:v1:/);
+        expect(rotating.decrypt(write.data.config, ['merchantPassword'])).toBeDefined();
+      }
+      expect(JSON.stringify(writes)).not.toContain('hunter');
+    });
+
+    it('rewrites nothing when every secret is already under the current key', async () => {
+      prisma.paymentMethod.findMany.mockResolvedValue([
+        makeRow({
+          provider: 'canary_pay',
+          config: crypto.encrypt({ merchantPassword: 'hunter2' }, ['merchantPassword']),
+        }),
+      ]);
+
+      await expect(service.reencryptAll()).resolves.toEqual({ rewritten: 0, unchanged: 1 });
+      expect(prisma.paymentMethod.update).not.toHaveBeenCalled();
     });
   });
 });

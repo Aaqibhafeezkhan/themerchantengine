@@ -1,4 +1,4 @@
-import { isPlatformBrowser } from '@angular/common';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -13,8 +13,14 @@ import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { CheckoutService, OrdersService } from '@storefront-services';
-import type { Order, StorefrontCheckoutSettings } from '@storefront-types';
+import type { Order, PaymentAction, StorefrontCheckoutSettings } from '@storefront-types';
 import { StorefrontUnauthorizedError } from '@storefront-types';
+
+import { EmbeddedPaymentHostComponent } from '../../../sections/checkout/embedded-payment-host.component';
+import {
+  browserPaymentActionEnv,
+  runPaymentAction,
+} from '../../../sections/checkout/payment-action';
 
 import { LocaleService } from '../../../locale.service';
 import { AuthStateService } from '../../../services/auth-state.service';
@@ -30,6 +36,14 @@ import { StoreConfigService } from '../../../services/store-config.service';
  * the cart session expired. This page used to answer all of those with a login
  * form, which is useless to someone who has no account (finding K3).
  */
+const PROVIDER_RETURN_PARAMS = [
+  'payment_intent',
+  'payment_intent_client_secret',
+  'redirect_status',
+  'setup_intent',
+  'setup_intent_client_secret',
+] as const;
+
 type PageState = 'loading' | 'ready' | 'not-found' | 'error' | 'guest-track';
 
 /**
@@ -45,7 +59,7 @@ type PageState = 'loading' | 'ready' | 'not-found' | 'error' | 'guest-track';
 @Component({
   selector: 'app-order-confirmation-page',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, EmbeddedPaymentHostComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="page" data-testid="order-confirmation-page">
@@ -82,7 +96,13 @@ type PageState = 'loading' | 'ready' | 'not-found' | 'error' | 'guest-track';
         <p class="state" role="alert">{{ strings().orderConfirmation.loadError }}</p>
       } @else if (state() === 'ready' && order(); as o) {
         <header class="head">
-          <h1 class="heading">{{ strings().orderConfirmation.heading }}</h1>
+          <h1 class="heading">
+            {{
+              o.status === 'CANCELLED'
+                ? strings().orderConfirmation.cancelledHeading
+                : strings().orderConfirmation.heading
+            }}
+          </h1>
           <p class="order-number" data-testid="order-confirmation-number">
             {{ subheading() }}
           </p>
@@ -176,6 +196,14 @@ type PageState = 'loading' | 'ready' | 'not-found' | 'error' | 'guest-track';
                 <span>{{ paymentMethodLabel() }}</span>
               </dd>
             </div>
+            @if (paymentStatusText(); as statusText) {
+              <div class="row">
+                <dt>{{ strings().orderConfirmation.paymentStatusLabel }}</dt>
+                <dd>
+                  <span data-testid="order-confirmation-payment-status">{{ statusText }}</span>
+                </dd>
+              </div>
+            }
             <div class="row total">
               <dt>{{ strings().orderConfirmation.summarySection.total }}</dt>
               <dd>
@@ -193,7 +221,34 @@ type PageState = 'loading' | 'ready' | 'not-found' | 'error' | 'guest-track';
           </dl>
         </section>
 
+        @if (paymentError(); as message) {
+          <p class="state" role="alert" data-testid="order-confirmation-payment-error">
+            {{ message }}
+          </p>
+        }
+        @if (embeddedAction(); as embedded) {
+          <section data-testid="order-confirmation-embedded">
+            <h2>{{ strings().orderConfirmation.paymentEmbeddedTitle }}</h2>
+            <app-embedded-payment-host [action]="embedded" [returnUrl]="returnUrl()" />
+          </section>
+        }
+
         <div class="actions">
+          @if (canPayAgain()) {
+            <button
+              type="button"
+              class="cta primary"
+              [disabled]="payAgainBusy()"
+              (click)="payAgain()"
+              data-testid="order-confirmation-pay-again"
+            >
+              {{
+                payAgainBusy()
+                  ? strings().orderConfirmation.payAgainBusy
+                  : strings().orderConfirmation.payAgainCta
+              }}
+            </button>
+          }
           <a
             class="cta primary"
             [routerLink]="trackingHref()"
@@ -416,7 +471,14 @@ export default class OrderConfirmationPage implements OnInit, OnDestroy {
   private readonly meta = inject(Meta);
   private readonly title = inject(Title);
   private readonly locale = inject(LocaleService);
+  private readonly document = inject(DOCUMENT);
   protected readonly strings = this.locale.strings;
+
+  protected returnUrl(): string {
+    const number = this.order()?.orderNumber ?? this.orderNumberParam() ?? '';
+    const path = APP_ROUTES.orderConfirmation(this.locale.locale(), number);
+    return `${this.document.location.origin}${path}`;
+  }
 
   protected readonly homeHref = computed(() => APP_ROUTES.home(this.locale.locale()));
 
@@ -502,6 +564,101 @@ export default class OrderConfirmationPage implements OnInit, OnDestroy {
     return this.strings().orderConfirmation.deliveryEstimate.replace('{date}', formatted);
   });
 
+  /** Latest known payment status: the order's, then what the confirm call said. */
+  private readonly confirmedStatus = signal<string | null>(null);
+  protected readonly paymentError = signal<string | null>(null);
+  protected readonly payAgainBusy = signal(false);
+  protected readonly embeddedAction = signal<Extract<PaymentAction, { type: 'embedded' }> | null>(
+    null,
+  );
+
+  private readonly paymentStatus = computed(
+    () => this.confirmedStatus() ?? this.order()?.paymentStatus ?? null,
+  );
+
+  protected readonly paymentStatusText = computed<string | null>(() => {
+    const o = this.order();
+    const status = this.paymentStatus();
+    if (!o?.paymentMethodCode || !status) return null;
+    const copy = this.strings().orderConfirmation;
+    // A pending order the API will not retry is offline (cash on delivery), not an unfinished online payment.
+    if (status === 'PENDING' && o.paymentRetryable !== true && o.status !== 'CANCELLED')
+      return copy.paymentOnDelivery;
+    const labels = copy.paymentStatus as Record<string, string>;
+    return labels[status] ?? status;
+  });
+
+  /**
+   * `paymentRetryable` is read once with the order, so it goes stale when the
+   * return confirmation moves the status. Same statuses the API retries on.
+   */
+  protected readonly canPayAgain = computed(() => {
+    const status = this.paymentStatus();
+    const order = this.order();
+    return (
+      order?.paymentRetryable === true &&
+      order.status !== 'CANCELLED' &&
+      (status === 'PENDING' || status === 'FAILED')
+    );
+  });
+
+  /**
+   * A provider may finish off-site and send the customer back here. The API
+   * has no return-URL concept, so a still-pending order asks the provider for
+   * the truth once per load. A failure leaves the stored status in place.
+   */
+  private async confirmOnReturn(order: Order): Promise<void> {
+    if (!order.paymentMethodCode || order.paymentStatus !== 'PENDING') return;
+    if (order.paymentRetryable !== true) return;
+    try {
+      this.confirmedStatus.set(await this.orders.confirmPayment(order.id, crypto.randomUUID()));
+    } catch {
+      // The stored status stays on screen; the pay-again button still works.
+    }
+  }
+
+  protected async payAgain(): Promise<void> {
+    const o = this.order();
+    if (!o || this.payAgainBusy()) return;
+    this.payAgainBusy.set(true);
+    this.paymentError.set(null);
+    try {
+      const action = await this.orders.retryPayment(o.id, crypto.randomUUID());
+      const outcome = runPaymentAction(action, browserPaymentActionEnv);
+      if (outcome.kind === 'embedded') {
+        this.embeddedAction.set(outcome.action);
+      } else if (outcome.kind === 'done') {
+        await this.confirmOnReturn({ ...o, paymentStatus: 'PENDING' });
+      }
+    } catch (cause) {
+      this.paymentError.set(this.paymentErrorMessageFor(cause));
+    } finally {
+      this.payAgainBusy.set(false);
+    }
+  }
+
+  private paymentErrorMessageFor(err: unknown): string {
+    const errors = this.strings().checkout.errors;
+    const code =
+      err !== null && typeof err === 'object' && 'code' in err
+        ? String((err as { code: string }).code)
+        : null;
+    switch (code) {
+      case 'ORDER_PAYMENT_NOT_RETRYABLE':
+        return errors.paymentNotRetryable;
+      case 'PAYMENT_PROVIDER_UNAVAILABLE':
+      case 'PAYMENT_PROVIDER_REJECTED':
+      case 'PAYMENT_CONFIG_ENCRYPTION_UNAVAILABLE':
+      case 'PAYMENT_PROVIDER_UNKNOWN':
+      case 'ORDER_PAYMENT_NOT_OPENED':
+        return errors.paymentProviderUnavailable;
+      case 'ORDER_PAYMENT_METHOD_UNAVAILABLE':
+        return errors.paymentMethodUnavailable;
+      default:
+        return errors.generic;
+    }
+  }
+
   ngOnDestroy(): void {
     this.meta.removeTag("name='robots'");
   }
@@ -518,7 +675,22 @@ export default class OrderConfirmationPage implements OnInit, OnDestroy {
 
     if (!isPlatformBrowser(this.platformId)) return;
 
+    this.stripProviderReturnParams();
     void this.bootstrap();
+  }
+
+  /**
+   * A provider redirect appends its params to the return URL, and Stripe's
+   * includes the PaymentIntent client secret. The server confirms the payment
+   * by order id, so nothing here reads them; keeping them in the address bar
+   * would leak the secret into history, shared links and referrers.
+   */
+  private stripProviderReturnParams(): void {
+    const url = new URL(window.location.href);
+    const found = PROVIDER_RETURN_PARAMS.filter((name) => url.searchParams.has(name));
+    if (found.length === 0) return;
+    found.forEach((name) => url.searchParams.delete(name));
+    window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
   }
 
   private async bootstrap(): Promise<void> {
@@ -558,6 +730,7 @@ export default class OrderConfirmationPage implements OnInit, OnDestroy {
         if (direct.orderNumber === orderNumber) {
           this.order.set(direct);
           this.state.set('ready');
+          void this.confirmOnReturn(direct);
           return;
         }
       }
@@ -577,6 +750,7 @@ export default class OrderConfirmationPage implements OnInit, OnDestroy {
       const detail = await this.orders.getById(found.id);
       this.order.set(detail);
       this.state.set('ready');
+      void this.confirmOnReturn(detail);
     } catch (cause) {
       if (cause instanceof StorefrontUnauthorizedError) {
         // The row belongs to an account, so signing in is genuinely the remedy

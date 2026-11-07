@@ -11,7 +11,11 @@ import {
   UsersService,
   type ApiClient,
 } from '@storefront-services';
-import { StorefrontConflictError, StorefrontValidationError } from '@storefront-types';
+import {
+  StorefrontConflictError,
+  StorefrontError,
+  StorefrontValidationError,
+} from '@storefront-types';
 
 import { LocaleService } from '../../../locale.service';
 import { AuthStateService } from '../../../services/auth-state.service';
@@ -127,8 +131,10 @@ class StubOrdersService extends OrdersService {
       total: '1500',
       currency: 'AED',
       createdAt: '2026-04-27T00:00:00Z',
+      paymentAction: this.paymentAction,
     } as never;
   }
+  paymentAction: { type: string; [k: string]: unknown } = { type: 'none' };
   calls: { input: unknown; key: string }[] = [];
   failure: 'none' | 'out-of-stock' = 'none';
 }
@@ -454,6 +460,17 @@ describe('CheckoutPage', () => {
     );
   });
 
+  it('adds a freshly saved address to the picker list so it shows as a card', async () => {
+    const { cmp } = await bootWithAddress(commonProviders());
+    const added = { ...seedAddress, id: 'addr-new', isDefaultShipping: false };
+    cmp['onAddressSaved'](added as never);
+    const ids = (cmp['addresses']() as { id: string }[]).map((a) => a.id);
+    expect(ids).toContain('addr-new');
+    expect(ids.filter((id) => id === 'addr-new').length).toBe(1);
+    cmp['onAddressSaved'](added as never);
+    expect((cmp['addresses']() as { id: string }[]).length).toBe(ids.length);
+  });
+
   it('re-quotes and drops a stale selection when the address changes', async () => {
     const providers = commonProviders();
     const { cmp } = await bootWithAddress(providers);
@@ -699,6 +716,61 @@ describe('CheckoutPage', () => {
     expect(msg).toBe(
       'La commande sans compte n’est pas disponible. Connectez-vous pour continuer.',
     );
+  });
+
+  it('maps ORDER_PAYMENT_NOT_RETRYABLE to its own localized error (fr default)', async () => {
+    const msg = await placeOrderWithError(
+      new StorefrontConflictError({
+        code: 'ORDER_PAYMENT_NOT_RETRYABLE',
+        message: 'This order payment cannot be retried',
+      }),
+    );
+    expect(msg).toBe(
+      'Le paiement de cette commande ne peut plus être relancé. Contactez-nous si besoin.',
+    );
+  });
+
+  it.each([
+    'PAYMENT_PROVIDER_UNAVAILABLE',
+    'PAYMENT_PROVIDER_REJECTED',
+    'PAYMENT_CONFIG_ENCRYPTION_UNAVAILABLE',
+    'PAYMENT_PROVIDER_UNKNOWN',
+    'ORDER_PAYMENT_NOT_OPENED',
+  ])('maps %s to the payment provider unavailable error (fr default)', async (code) => {
+    const msg = await placeOrderWithError(
+      new StorefrontError({ code, message: 'provider down', status: 503 }),
+    );
+    expect(msg).toBe(
+      'Le paiement par carte est momentanément indisponible. Réessayez plus tard ou choisissez un autre moyen de paiement.',
+    );
+  });
+
+  it('keeps the customer on the page with the embedded payment set for an embedded action', async () => {
+    class EmbeddedOrders extends StubOrdersService {
+      override paymentAction = { type: 'embedded', clientToken: 'tok_1' };
+    }
+    const providers = commonProviders().map((p) =>
+      typeof p === 'object' && p !== null && 'provide' in p && p.provide === OrdersService
+        ? { provide: OrdersService, useClass: EmbeddedOrders }
+        : p,
+    );
+    const { cmp } = await renderAndBoot(providers);
+    cmp['advanceFromStep'](1);
+    cmp['advanceFromStep'](2);
+    await cmp['placeOrder']();
+    expect(cmp['embeddedPayment']()).toEqual({
+      orderId: 'ord-1',
+      orderNumber: 'AKL-0001',
+      action: { type: 'embedded', clientToken: 'tok_1' },
+    });
+  });
+
+  it('leaves embeddedPayment unset when no payment step is needed', async () => {
+    const { cmp } = await renderAndBoot(commonProviders());
+    cmp['advanceFromStep'](1);
+    cmp['advanceFromStep'](2);
+    await cmp['placeOrder']();
+    expect(cmp['embeddedPayment']()).toBeNull();
   });
 
   it('reuses the same idempotency-key across a second bootstrap cycle', async () => {

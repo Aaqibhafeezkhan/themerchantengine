@@ -390,6 +390,14 @@ describe('FooterComponent', () => {
       expect(link.textContent?.trim()).toBe('contact@demo.test');
     });
 
+    it('isolates the visible number as left-to-right so a leading plus stays first in RTL (S2-19)', () => {
+      const { fixture } = setup('ar', '/ar/', [], { phone: '+218 21 000 000' });
+      const number = fixture.nativeElement.querySelector(
+        '[data-testid="footer-contact-phone"] bdi[dir="ltr"]',
+      ) as HTMLElement | null;
+      expect(number?.textContent?.trim()).toBe('+218 21 000 000');
+    });
+
     it('renders a tel link with the spaces stripped from the href only', () => {
       // A `tel:` href with spaces is not dialable on every handset; the visible
       // number keeps the operator's grouping.

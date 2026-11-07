@@ -114,6 +114,20 @@ describe('OrderDetailPage', () => {
     expect(fixture.nativeElement.querySelector('[data-testid=order-edit-link]')).toBeNull();
   });
 
+  it('shows the payment actions with payments:manage', () => {
+    getSpy = jest.fn(() => of(orderFixture));
+    configure('order-1', { permissions: ['orders:view', 'payments:manage'] });
+    expect(
+      fixture.nativeElement.querySelector('[data-testid=order-payment-refund]'),
+    ).not.toBeNull();
+  });
+
+  it('hides the payment actions without payments:manage even with orders:manage', () => {
+    getSpy = jest.fn(() => of(orderFixture));
+    configure('order-1');
+    expect(fixture.nativeElement.querySelector('[data-testid=order-payment-actions]')).toBeNull();
+  });
+
   it('records an error when the route has no :id', () => {
     getSpy = jest.fn();
     configure(null);
@@ -238,6 +252,7 @@ describe('OrderDetailPage', () => {
     ...orderFixture,
     currency: 'EUR',
     couponCode: 'WELCOME10',
+    paymentMethodName: 'Credit card',
     items: [
       {
         id: 'item-1',
@@ -340,6 +355,12 @@ describe('OrderDetailPage', () => {
     expect(text).toContain('EUR');
     expect(text).toContain('WELCOME10');
     expect(text).toContain('INV-2026-0007');
+  });
+
+  it('names the payment method the customer chose in the payment card', () => {
+    getSpy = jest.fn(() => of(contentOrderFixture));
+    configure('order-1');
+    expect(textOf('order-payment-method')).toContain('Credit card');
   });
 
   it('keeps the payment card honest when no invoice has been generated', () => {

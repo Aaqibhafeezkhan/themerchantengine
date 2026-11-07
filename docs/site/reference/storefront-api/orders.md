@@ -1,8 +1,8 @@
 ---
 title: "Orders (storefront API)"
-description: "The 8 storefront routes of the orders module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
+description: "The 11 storefront routes of the orders module: parameters, request bodies, responses and schemas, generated from the OpenAPI document."
 primaryQuery: "storefront api orders ecommerce"
-updated: 2026-11-04
+updated: 2026-11-06
 schema: TechArticle
 ---
 
@@ -18,7 +18,6 @@ Parameters:
 
 - `page` in query (number, min 1, optional).
 - `pageSize` in query (number, min 1, optional).
-- `status` in query (`"CANCELLED"`, `"COMPLETED"`, `"CONFIRMED"`, `"DELIVERED"`, `"ON_HOLD"`, `"PENDING"`, `"PROCESSING"`, `"RETURNED"`, `"RETURN_REQUESTED"`, `"SHIPPED"`, optional).
 
 Responses:
 
@@ -100,6 +99,34 @@ Responses:
 - `403`: Order does not belong to the caller.
 - `404`: Order not found or invoice not ready.
 
+## POST /v1/orders/{id}/payment
+
+Retry the payment of an order
+
+Parameters:
+
+- `accept-language` in header (string, required).
+- `id` in path (string, required).
+
+Responses:
+
+- `200`: New payment action.
+- `404`: Order not found.
+- `409`: Order payment is not retryable.
+
+## POST /v1/orders/{id}/payment/confirm
+
+Confirm the payment status of an order with the provider
+
+Parameters:
+
+- `id` in path (string, required).
+
+Responses:
+
+- `200`: Current payment status.
+- `404`: Order not found.
+
 ## POST /v1/orders/{orderId}/returns
 
 Create return request
@@ -129,6 +156,22 @@ Responses:
 - `400`: Invalid input.
 - `404`: Order not found.
 
+## POST /v1/orders/track/payment
+
+Retry the payment of a tracked order
+
+Parameters:
+
+- `accept-language` in header (string, required).
+
+Request body: [TrackOrderDto](#trackorderdto).
+
+Responses:
+
+- `200`: New payment action.
+- `404`: Order not found.
+- `409`: Order payment is not retryable.
+
 ## Schemas
 
 ### AddressDto
@@ -140,11 +183,11 @@ Responses:
 - `city` (string, required).
 - `state` (string, optional).
 - `postalCode` (string, optional).
-- `country` (string, pattern `^[A-Z]{2}$`, required).
+- `country` (string, pattern `/^[A-Z]{2}$/`, required).
 
 ### CreateOrderDto
 
-- `guestEmail` (string, email, optional).
+- `guestEmail` (string, optional).
 - `shippingAddressId` (string, optional).
 - `shippingAddress` ([AddressDto](#addressdto), optional).
 - `billingAddressId` (string, optional).
@@ -152,16 +195,16 @@ Responses:
 - `shippingMethodId` (string, optional).
 - `paymentMethodCode` (string, optional).
 - `notes` (string, optional).
-- `giftCardCode` (string, pattern `^[A-Z0-9]{8,20}$`, optional).
+- `giftCardCode` (string, pattern `/^[A-Z0-9]{8,20}$/`, optional).
 - `couponCode` (string, optional).
 
 ### CreateReturnDto
 
 - `items` (array of [ReturnItemDto](#returnitemdto), required).
-- `reason` (`"CHANGED_MIND"`, `"DEFECTIVE"`, `"NOT_AS_DESCRIBED"`, `"OTHER"`, `"WRONG_SIZE"`, required).
+- `reason` (object, required).
 - `reasonDetail` (string, max length 1000, optional).
 - `photoAssetIds` (array of string, optional).
-- `refundMethod` (`"EXCHANGE"`, `"ORIGINAL_PAYMENT"`, `"STORE_CREDIT"`, optional).
+- `refundMethod` (object, optional).
 
 ### ReturnItemDto
 
@@ -171,5 +214,5 @@ Responses:
 
 ### TrackOrderDto
 
-- `orderNumber` (string, pattern `^[A-Z0-9-]+$`, max length 32, required).
-- `email` (string, email, max length 254, required).
+- `orderNumber` (string, pattern `/^[A-Z0-9-]+$/`, max length 32, required).
+- `email` (string, max length 254, required).

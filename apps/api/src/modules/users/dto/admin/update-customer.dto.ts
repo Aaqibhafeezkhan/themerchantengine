@@ -1,13 +1,15 @@
-import { IsBoolean, IsEmail, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class UpdateCustomerAdminDto {
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
   @MaxLength(100)
   firstName?: string;
 
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
   @MaxLength(100)
   lastName?: string;
 

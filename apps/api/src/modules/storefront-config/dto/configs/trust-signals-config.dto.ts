@@ -1,4 +1,11 @@
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsIn, ValidateNested } from 'class-validator';
+import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
+  IsDefined,
+  IsIn,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { TranslatableDto } from '../translatable.dto';
 
@@ -14,10 +21,12 @@ export class TrustSignalItemDto {
   @IsIn(TRUST_PILLAR_KINDS)
   kind: TrustPillarKind;
 
+  @IsDefined()
   @ValidateNested()
   @Type(() => TranslatableDto)
   title: TranslatableDto;
 
+  @IsDefined()
   @ValidateNested()
   @Type(() => TranslatableDto)
   subtitle: TranslatableDto;

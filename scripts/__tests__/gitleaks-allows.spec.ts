@@ -40,8 +40,8 @@ function markedLines(): { file: string; line: string }[] {
 describe('inline gitleaks allows', () => {
   const marks = markedLines();
 
-  it('are sixteen, all in specs; change this number with the review that added the line', () => {
-    expect(marks).toHaveLength(16);
+  it('are seventeen, all in specs; change this number with the review that added the line', () => {
+    expect(marks).toHaveLength(17);
     for (const { file } of marks) {
       expect(file, file).toMatch(/\.spec\.ts$|\.e2e-spec\.ts$/);
     }

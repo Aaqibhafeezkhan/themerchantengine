@@ -180,6 +180,38 @@ describe('AccountPreferencesPage', () => {
     expect(err?.textContent ?? '').toContain('Could not save your preferences');
   });
 
+  it('hides the saved message and the save error once the customer toggles again (sibling of S2-5)', async () => {
+    const { StorefrontServerError } = await import('@storefront-types');
+    for (const updateThrows of [
+      undefined,
+      new StorefrontServerError({ code: 'SERVER', message: 'boom' }),
+    ]) {
+      TestBed.resetTestingModule();
+      const { fixture } = await renderPage({ locale: 'en', authed: true, updateThrows });
+      const root = fixture.nativeElement as HTMLElement;
+      const toggle = root.querySelector(
+        '[data-testid="pref-toggle-LIFECYCLE"]',
+      ) as HTMLInputElement;
+      toggle.checked = true;
+      toggle.dispatchEvent(new Event('change', { bubbles: true }));
+      fixture.detectChanges();
+      const form = root.querySelector(
+        '[data-testid="account-preferences-form"]',
+      ) as HTMLFormElement;
+      form.dispatchEvent(new Event('submit'));
+      await fixture.whenStable();
+      fixture.detectChanges();
+      const stale =
+        '[data-testid="account-preferences-status"], [data-testid="account-preferences-form-error"]';
+      expect(root.querySelector(stale)).not.toBeNull();
+
+      toggle.checked = false;
+      toggle.dispatchEvent(new Event('change', { bubbles: true }));
+      fixture.detectChanges();
+      expect(root.querySelector(stale)).toBeNull();
+    }
+  });
+
   it('renders the error branch when getPreferences throws', async () => {
     const { StorefrontServerError } = await import('@storefront-types');
     const { fixture } = await renderPage({

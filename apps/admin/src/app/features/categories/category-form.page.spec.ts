@@ -189,22 +189,44 @@ describe('CategoryFormPage', () => {
 
   it('delete ApiConflictError maps to the assigned-products error', async () => {
     deleteSpy = jest.fn(() =>
-      throwError(() => new ApiConflictError({ code: 'CONFLICT', message: 'assigned' })),
+      throwError(
+        () => new ApiConflictError({ code: 'CATEGORY_HAS_PRODUCTS', message: 'assigned' }),
+      ),
     );
     configure('a');
     await page.confirmDelete();
     expect(page.error()).toContain('products still reference');
   });
 
+  it('delete with an unknown conflict code does not claim products are assigned', async () => {
+    deleteSpy = jest.fn(() =>
+      throwError(() => new ApiConflictError({ code: 'CONFLICT', message: 'other' })),
+    );
+    configure('a');
+    await page.confirmDelete();
+    expect(page.error()).not.toContain('products still reference');
+  });
+
   it('save ApiConflictError maps to slug conflict', () => {
     updateSpy = jest.fn(() =>
-      throwError(() => new ApiConflictError({ code: 'CONFLICT', message: 'taken' })),
+      throwError(() => new ApiConflictError({ code: 'CATEGORY_SLUG_TAKEN', message: 'taken' })),
     );
     configure('a');
     page.form.controls.slug.setValue('taken');
     page.form.controls.slug.markAsDirty();
     page.save();
     expect(page.error()).toContain('Slug conflict');
+  });
+
+  it('save with an unknown conflict code does not blame the slug', () => {
+    updateSpy = jest.fn(() =>
+      throwError(() => new ApiConflictError({ code: 'CONFLICT', message: 'cycle' })),
+    );
+    configure('a');
+    page.form.controls.slug.setValue('taken');
+    page.form.controls.slug.markAsDirty();
+    page.save();
+    expect(page.error()).not.toContain('Slug conflict');
   });
 
   it('save ApiForbiddenError maps to the permission-specific error', () => {

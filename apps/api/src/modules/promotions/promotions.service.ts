@@ -11,6 +11,7 @@ import type { UpdatePromotionAdminDto } from './dto/update-promotion.dto';
 import type { ListPromotionsAdminDto } from './dto/query-promotion.dto';
 import type { CartItemDto } from './dto/validate-coupon.dto';
 import { CouponInvalidException } from './coupon-invalid.exception';
+import { PromotionInvalidException } from './promotion-invalid.exception';
 import { MoneyFormatterService } from '../currencies/money-formatter.service';
 
 // ── Public interface types ─────────────────────────────────────────────────────
@@ -76,6 +77,31 @@ const ELIGIBILITY_INCLUDE = {
 
 // ── Service ────────────────────────────────────────────────────────────────────
 
+const COUPON_CODE_PATTERN = /^[A-Z0-9_-]{3,32}$/;
+
+/** Codes are stored and looked up as trimmed upper case, so the shopper's casing never matters. */
+function normalizeCouponCode(code: string): string {
+  return code.trim().toUpperCase();
+}
+
+function assertPromotionShape(p: {
+  type: PromotionType;
+  value: number;
+  startsAt: Date | null;
+  endsAt: Date | null;
+  couponCode: string | null;
+}): void {
+  if (p.type === PromotionType.PERCENTAGE && p.value > 100) {
+    throw new PromotionInvalidException('PROMOTION_PERCENT_OUT_OF_RANGE');
+  }
+  if (p.startsAt && p.endsAt && p.endsAt <= p.startsAt) {
+    throw new PromotionInvalidException('PROMOTION_DATES_INVALID');
+  }
+  if (p.couponCode && !COUPON_CODE_PATTERN.test(p.couponCode)) {
+    throw new PromotionInvalidException('PROMOTION_COUPON_CODE_INVALID');
+  }
+}
+
 @Injectable()
 export class PromotionsService {
   private readonly logger = new Logger(PromotionsService.name);
@@ -107,7 +133,7 @@ export class PromotionsService {
     userId?: string,
   ): Promise<ValidatedCoupon> {
     const promo = await this.prisma.promotion.findFirst({
-      where: { couponCode: code, isActive: true, deletedAt: null },
+      where: { couponCode: normalizeCouponCode(code), isActive: true, deletedAt: null },
       include: ELIGIBILITY_INCLUDE,
     });
 
@@ -367,6 +393,11 @@ export class PromotionsService {
     });
   }
 
+  /** Frees the usage an order consumed, for example when the order is cancelled. */
+  async releaseUsageForOrder(orderId: string): Promise<void> {
+    await this.prisma.promotionUsage.deleteMany({ where: { orderId } });
+  }
+
   // ── Admin: Promotions CRUD ─────────────────────────────────────────────────
 
   async list(query: ListPromotionsAdminDto): Promise<PaginatedResult<unknown>> {
@@ -405,6 +436,14 @@ export class PromotionsService {
 
   async create(dto: CreatePromotionAdminDto): Promise<unknown> {
     const { eligibleProductIds, eligibleCategoryIds, ...rest } = dto;
+    const couponCode = rest.couponCode ? normalizeCouponCode(rest.couponCode) : null;
+    assertPromotionShape({
+      type: rest.type,
+      value: rest.value,
+      startsAt: rest.startsAt ? new Date(rest.startsAt) : null,
+      endsAt: rest.endsAt ? new Date(rest.endsAt) : null,
+      couponCode,
+    });
 
     return this.prisma.promotion.create({
       data: {
@@ -412,7 +451,7 @@ export class PromotionsService {
         description: rest.description ?? undefined,
         type: rest.type,
         applicationMethod: rest.applicationMethod,
-        couponCode: rest.couponCode ?? null,
+        couponCode,
         value: rest.value,
         minimumOrderAmount: rest.minimumOrderAmount ?? null,
         maximumDiscount: rest.maximumDiscount ?? null,
@@ -438,9 +477,24 @@ export class PromotionsService {
   }
 
   async update(id: string, dto: UpdatePromotionAdminDto): Promise<unknown> {
-    await this.ensureExists(id);
+    const current = await this.prisma.promotion.findUnique({
+      where: { id },
+      select: { id: true, type: true, value: true, startsAt: true, endsAt: true },
+    });
+    if (!current) throw new NotFoundException(`Promotion "${id}" not found`);
 
     const { eligibleProductIds, eligibleCategoryIds, ...rest } = dto;
+    const couponCode =
+      rest.couponCode === undefined || rest.couponCode === null
+        ? rest.couponCode
+        : normalizeCouponCode(rest.couponCode);
+    assertPromotionShape({
+      type: rest.type ?? current.type,
+      value: rest.value ?? Number(current.value),
+      startsAt: rest.startsAt ? new Date(rest.startsAt) : (current.startsAt ?? null),
+      endsAt: rest.endsAt ? new Date(rest.endsAt) : (current.endsAt ?? null),
+      couponCode: couponCode ?? null,
+    });
 
     return this.prisma.promotion.update({
       where: { id },
@@ -449,7 +503,7 @@ export class PromotionsService {
         ...(rest.description !== undefined && { description: rest.description }),
         ...(rest.type !== undefined && { type: rest.type }),
         ...(rest.applicationMethod !== undefined && { applicationMethod: rest.applicationMethod }),
-        ...(rest.couponCode !== undefined && { couponCode: rest.couponCode }),
+        ...(couponCode !== undefined && { couponCode }),
         ...(rest.value !== undefined && { value: rest.value }),
         ...(rest.minimumOrderAmount !== undefined && {
           minimumOrderAmount: rest.minimumOrderAmount,

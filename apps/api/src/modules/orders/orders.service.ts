@@ -16,6 +16,7 @@ import { tryPickVariantUrl } from '@common/asset-variants';
 import { lineTotal, roundMoney, sumMoney } from '@common/money';
 import { PrismaService } from '../../prisma/prisma.service';
 import { InventoryService } from '../inventory/inventory.service';
+import { CouponInvalidException } from '../promotions/coupon-invalid.exception';
 import { PromotionsService } from '../promotions/promotions.service';
 import { CartItemDto } from '../promotions/dto/validate-coupon.dto';
 import { GiftCardsService } from '../gift-cards/gift-cards.service';
@@ -50,6 +51,8 @@ import { OrderGuestSessionRequiredException } from './order-guest-session-requir
 import { CheckoutService } from '../checkout/checkout.service';
 import { PaymentMethodsService } from '../payments/payment-methods.service';
 import { PaymentGatewayService } from '../payments/payment-gateway.service';
+import type { PaymentAction as ProviderPaymentAction } from '../payments/providers/payment-provider.interface';
+import { OrderPaymentNotRetryableException } from './order-payment-not-retryable.exception';
 import type { PaymentWebhookEvent } from '../payments/providers/payment-provider.interface';
 import { PaymentTransitionNotAllowedException } from '../payments/payment-transition-not-allowed.exception';
 import { OrderPaymentNotOpenedException } from './order-payment-not-opened.exception';
@@ -72,6 +75,7 @@ import type { UpdateShipmentDto } from './dto/update-shipment.dto';
 import type { ListOrdersStorefrontDto, ListOrdersAdminDto } from './dto/query-orders.dto';
 import { buildVariantLabel } from '@common/utils';
 import { parseLocale, resolveTranslatable } from '@common/interceptors';
+import { storefrontBaseUrl } from '../mail/config/public-hosts';
 import { resolveLocale } from '../mail/listeners/locale.util';
 import {
   ORDER_NUMBER_PREFIX,
@@ -437,8 +441,11 @@ export class OrdersService {
             promotionId: validated.promotionId,
             discountAmount: validated.discountAmount,
           };
-        } catch {
-          // Coupon invalid at checkout — proceed without it
+        } catch (err) {
+          // A code the caller typed must not vanish: charging full price with
+          // no hint is worse than an error they can act on. A code that only
+          // sits on the cart, and died since, is dropped like a dead gift card.
+          if (dto.couponCode && err instanceof CouponInvalidException) throw err;
           couponCode = null;
         }
       }
@@ -627,6 +634,8 @@ export class OrdersService {
         orderId: order.id,
         amount: new Prisma.Decimal(orderTotal),
         currencyCode: order.currency,
+        returnUrl: this.paymentReturnUrl(order.orderNumber, acceptLanguage),
+        customerEmail: guestEmail ?? (await this.accountEmail(userId)),
       });
       openedSession = {
         methodCode: paymentMethod.code,
@@ -676,7 +685,9 @@ export class OrdersService {
       // Serialized BEFORE it is cached: a replay within the 24h TTL returns
       // this payload verbatim, so caching the raw row would keep leaking
       // admin fields for a day after the fix.
-      const customerOrder = toCustomerOrder(placedOrder);
+      // The action is not stored on the order: it carries a short-lived client
+      // token. A shopper who needs a new one retries the payment.
+      const customerOrder = { ...toCustomerOrder(placedOrder), paymentAction: session.action };
       await this.idempotency.completeRequest({
         ...idempotencyArgs,
         entityId: order.id,
@@ -722,7 +733,7 @@ export class OrdersService {
       // Delete orphaned order if it was persisted before the failure
       if (createdOrderId) {
         try {
-          await this.prisma.order.delete({ where: { id: createdOrderId } });
+          await this.deleteUnplacedOrder(createdOrderId);
         } catch (deleteErr) {
           this.logger.error(
             `Failed to delete orphaned order ${createdOrderId}: ${(deleteErr as Error).message}`,
@@ -750,6 +761,18 @@ export class OrdersService {
       }
       throw error;
     }
+  }
+
+  /**
+   * Rollback delete for an order that never finished placement. `OrderItem.order`
+   * is `onDelete: Restrict`, so the lines go first, in one transaction with the
+   * order. Status history cascades on its own.
+   */
+  private async deleteUnplacedOrder(orderId: string): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      await tx.orderItem.deleteMany({ where: { orderId } });
+      await tx.order.delete({ where: { id: orderId } });
+    });
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -927,8 +950,10 @@ export class OrdersService {
             promotionId: validated.promotionId,
             discountAmount: validated.discountAmount,
           };
-        } catch {
-          couponCode = null; // invalid coupon — proceed without it
+        } catch (err) {
+          // The admin named this code on purpose, so a dead one is an error.
+          if (err instanceof CouponInvalidException) throw err;
+          couponCode = null;
         }
       }
       const totalDiscount = couponPromotion?.discountAmount ?? 0;
@@ -1025,7 +1050,7 @@ export class OrdersService {
       });
       if (createdOrderId) {
         try {
-          await this.prisma.order.delete({ where: { id: createdOrderId } });
+          await this.deleteUnplacedOrder(createdOrderId);
         } catch (deleteErr) {
           this.logger.error(
             `Failed to delete orphaned manual order ${createdOrderId}: ${(deleteErr as Error).message}`,
@@ -1061,7 +1086,15 @@ export class OrdersService {
   ): Promise<unknown> {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
-      select: { id: true, status: true, orderNumber: true, userId: true },
+      select: {
+        id: true,
+        status: true,
+        orderNumber: true,
+        userId: true,
+        paymentMethodCode: true,
+        paymentReference: true,
+        paymentStatus: true,
+      },
     });
     if (!order) throw new OrderNotFoundException(orderId);
 
@@ -1138,6 +1171,7 @@ export class OrdersService {
     // actually happened.
     if (newStatus === OrderStatus.CANCELLED) {
       await this.restoreOrderStock(orderId, performedBy);
+      await this.unwindCancelledOrder(order);
     }
 
     // Audit log
@@ -1282,6 +1316,7 @@ export class OrdersService {
       where: { id: orderId },
       select: {
         id: true,
+        status: true,
         paymentStatus: true,
         paymentMethodCode: true,
         paymentReference: true,
@@ -1359,6 +1394,16 @@ export class OrdersService {
       from,
       to: result.status,
     });
+
+    // A full refund of an order nobody confirmed ends it: cancelling through the
+    // shared path releases stock, the gift card and the promotion usage.
+    if (
+      action === 'refund' &&
+      result.status === PaymentStatus.REFUNDED &&
+      order.status === OrderStatus.PENDING
+    ) {
+      await this.updateStatus(orderId, OrderStatus.CANCELLED, performedBy);
+    }
 
     return this.prisma.order.findUniqueOrThrow({ where: { id: orderId }, include: ORDER_INCLUDE });
   }
@@ -1922,6 +1967,187 @@ export class OrdersService {
    * place. A guest order with no recorded session is unreachable by this route
    * at all, rather than matching a caller who also has no cookie.
    */
+  /** Ownership rule shared by every storefront read or write on one order. */
+  private assertStorefrontOwner(
+    order: { userId: string | null; guestSessionId: string | null },
+    orderId: string,
+    userId?: string,
+    sessionId?: string,
+  ): void {
+    if (order.userId !== null) {
+      if (order.userId !== userId) {
+        throw userId ? new OrderNotYoursException() : new OrderNotFoundException(orderId);
+      }
+    } else if (!order.guestSessionId || !sessionId || order.guestSessionId !== sessionId) {
+      // A guest order has no authenticated caller to owe an explanation to.
+      throw new OrderNotFoundException(orderId);
+    }
+  }
+
+  /**
+   * Opens a new provider session for an order whose payment has not been
+   * taken, so a shopper can retry after a failure. The order stays as it is;
+   * only the payment reference and status change. The action is returned and
+   * never stored (it carries a short-lived client token).
+   */
+  async retryPayment(
+    orderId: string,
+    caller: { userId?: string; sessionId?: string; acceptLanguage?: string },
+  ): Promise<{ paymentAction: ProviderPaymentAction }> {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      select: {
+        id: true,
+        orderNumber: true,
+        status: true,
+        userId: true,
+        guestSessionId: true,
+        total: true,
+        currency: true,
+        paymentStatus: true,
+        paymentMethodCode: true,
+        paymentReference: true,
+        guestEmail: true,
+        user: { select: { email: true } },
+      },
+    });
+    if (!order) throw new OrderNotFoundException(orderId);
+    this.assertStorefrontOwner(order, orderId, caller.userId, caller.sessionId);
+
+    return this.reopenPaymentSession(order, orderId, caller.acceptLanguage);
+  }
+
+  /**
+   * Guest pay again from the track page. The order number plus the email on
+   * file stand in for the cart session a guest may no longer have.
+   */
+  async retryTrackedPayment(
+    dto: { orderNumber: string; email: string },
+    acceptLanguage?: string,
+  ): Promise<{ paymentAction: ProviderPaymentAction }> {
+    const order = await this.prisma.order.findUnique({
+      where: { orderNumber: dto.orderNumber },
+      select: {
+        id: true,
+        orderNumber: true,
+        status: true,
+        total: true,
+        currency: true,
+        guestEmail: true,
+        paymentStatus: true,
+        paymentMethodCode: true,
+        paymentReference: true,
+        user: { select: { email: true } },
+      },
+    });
+    const onFile = order?.user?.email ?? order?.guestEmail ?? null;
+    const supplied = dto.email?.trim().toLowerCase() ?? null;
+    if (!order || !onFile || !supplied || onFile.trim().toLowerCase() !== supplied) {
+      throw new OrderNotFoundException();
+    }
+    return this.reopenPaymentSession(order, order.id, acceptLanguage);
+  }
+
+  private async reopenPaymentSession(
+    order: {
+      id: string;
+      orderNumber: string;
+      status: OrderStatus;
+      total: Prisma.Decimal;
+      currency: string;
+      paymentStatus: PaymentStatus;
+      paymentMethodCode: string | null;
+      paymentReference: string | null;
+      guestEmail?: string | null;
+      user?: { email: string } | null;
+    },
+    orderId: string,
+    acceptLanguage?: string,
+  ): Promise<{ paymentAction: ProviderPaymentAction }> {
+    if (!(await this.isPaymentRetryable(order))) {
+      throw new OrderPaymentNotRetryableException(orderId);
+    }
+    const methodCode = order.paymentMethodCode as string;
+
+    // The previous attempt is closed first so it cannot be paid later. A
+    // provider that already lost the session has nothing to close.
+    if (order.paymentReference) {
+      await this.paymentGateway
+        .cancel(methodCode, {
+          reference: order.paymentReference,
+          status: order.paymentStatus,
+          idempotencyKey: `retry-cancel:${order.paymentReference}`,
+        })
+        .catch(() => undefined);
+    }
+
+    const session = await this.paymentGateway.openSession(methodCode, {
+      orderId: order.id,
+      amount: order.total,
+      currencyCode: order.currency,
+      returnUrl: this.paymentReturnUrl(order.orderNumber, acceptLanguage),
+      customerEmail: order.user?.email ?? order.guestEmail ?? undefined,
+    });
+    await this.prisma.order.update({
+      where: { id: order.id },
+      data: { paymentReference: session.reference, paymentStatus: session.status },
+    });
+    return { paymentAction: session.action };
+  }
+
+  private async accountEmail(userId?: string): Promise<string | undefined> {
+    if (!userId) return undefined;
+    const user = await this.prisma.user.findFirst({
+      where: { id: userId, deletedAt: null },
+      select: { email: true },
+    });
+    return user?.email ?? undefined;
+  }
+
+  /** Where a hosted payment page sends the shopper back: the order confirmation page. */
+  private paymentReturnUrl(orderNumber: string, acceptLanguage?: string): string {
+    return `${storefrontBaseUrl()}/${resolveLocale(acceptLanguage)}/order-confirmation/${encodeURIComponent(orderNumber)}`;
+  }
+
+  // The storefront calls this when the customer comes back from the provider.
+  // The webhook may be late, so the provider is asked directly. The status then
+  // moves through the same forward-only rules as a webhook event.
+  async confirmPayment(
+    orderId: string,
+    caller: { userId?: string; sessionId?: string },
+  ): Promise<{ paymentStatus: PaymentStatus }> {
+    const select = {
+      id: true,
+      userId: true,
+      guestSessionId: true,
+      paymentStatus: true,
+      paymentMethodCode: true,
+      paymentReference: true,
+    } as const;
+    const order = await this.prisma.order.findUnique({ where: { id: orderId }, select });
+    if (!order) throw new OrderNotFoundException(orderId);
+    this.assertStorefrontOwner(order, orderId, caller.userId, caller.sessionId);
+
+    if (!order.paymentMethodCode || !order.paymentReference) {
+      return { paymentStatus: order.paymentStatus };
+    }
+
+    const live = await this.paymentGateway.getStatus(order.paymentMethodCode, {
+      reference: order.paymentReference,
+      status: order.paymentStatus,
+    });
+    if (live.status !== order.paymentStatus) {
+      await this.applyPaymentWebhookEvent(
+        await this.paymentGateway.providerIdFor(order.paymentMethodCode),
+        { reference: live.reference, status: live.status, eventId: `confirm:${live.reference}` },
+        [order.paymentMethodCode],
+      );
+    }
+
+    const current = await this.prisma.order.findUnique({ where: { id: orderId }, select });
+    return { paymentStatus: (current ?? order).paymentStatus };
+  }
+
   async findOneStorefront(orderId: string, userId?: string, sessionId?: string): Promise<unknown> {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
@@ -1939,21 +2165,31 @@ export class OrdersService {
     // distinct `ORDER_NOT_YOURS`, because the account order page renders a
     // dedicated state for it and they have already proved who they are. It is
     // only the anonymous caller who gets the opaque answer.
-    if (order.userId !== null) {
-      if (order.userId !== userId) {
-        throw userId ? new OrderNotYoursException() : new OrderNotFoundException(orderId);
-      }
-    } else if (!order.guestSessionId || !sessionId || order.guestSessionId !== sessionId) {
-      // A guest order has no authenticated caller to owe an explanation to.
-      throw new OrderNotFoundException(orderId);
-    }
+    this.assertStorefrontOwner(order, orderId, userId, sessionId);
     return {
       ...toCustomerOrder(await this.withProductSlugs(order)),
       // One server-computed flag instead of a client-side status allowlist that
       // drifted wider than the server rule and offered a button the API refused
       // (finding AD4).
       cancellable: this.isCustomerCancellable(order),
+      // Same rule `retryPayment` enforces, so the "pay again" button never
+      // offers an action the endpoint refuses.
+      paymentRetryable: await this.isPaymentRetryable(order),
     };
+  }
+
+  private async isPaymentRetryable(order: {
+    status: OrderStatus;
+    paymentStatus: PaymentStatus;
+    paymentMethodCode: string | null;
+  }): Promise<boolean> {
+    const retryableStatus =
+      order.paymentStatus === PaymentStatus.PENDING || order.paymentStatus === PaymentStatus.FAILED;
+    if (!order.paymentMethodCode || !retryableStatus || order.status === OrderStatus.CANCELLED) {
+      return false;
+    }
+    // Cash on delivery and bank transfer have no payment step to retry.
+    return this.paymentGateway.collectsPaymentOnline(order.paymentMethodCode);
   }
 
   /**
@@ -2202,6 +2438,8 @@ export class OrdersService {
       status: order.status,
       shipments: order.shipments,
       createdAt: order.createdAt,
+      paymentStatus: order.paymentStatus,
+      paymentRetryable: await this.isPaymentRetryable(order),
       // The customer projection, not the raw rows: the history table carries an
       // id, an orderId and a fromStatus this surface has no use for, and this
       // response is public behind nothing but the email challenge. Named
@@ -2483,6 +2721,57 @@ export class OrdersService {
     const year = new Date().getFullYear();
     const seq = await this.nextSequenceValue('invoice');
     return `${INVOICE_NUMBER_PREFIX}-${year}-${String(seq).padStart(6, '0')}`;
+  }
+
+  /**
+   * Gives back everything a cancelled order held: the open payment, the gift
+   * card balance and the promotion usage. Each step logs and never blocks the
+   * cancel, which has already committed.
+   */
+  private async unwindCancelledOrder(order: {
+    id: string;
+    paymentMethodCode: string | null;
+    paymentReference: string | null;
+    paymentStatus: PaymentStatus;
+  }): Promise<void> {
+    const openPayment =
+      order.paymentStatus === PaymentStatus.PENDING ||
+      order.paymentStatus === PaymentStatus.AUTHORIZED;
+    if (openPayment) {
+      try {
+        if (order.paymentMethodCode && order.paymentReference) {
+          await this.paymentGateway.cancel(order.paymentMethodCode, {
+            reference: order.paymentReference,
+            status: order.paymentStatus,
+            idempotencyKey: `order-cancel:${order.id}`,
+          });
+        }
+        await this.prisma.order.updateMany({
+          where: { id: order.id, paymentStatus: order.paymentStatus },
+          data: { paymentStatus: PaymentStatus.CANCELLED },
+        });
+      } catch (err) {
+        this.logger.error(
+          `Failed to void payment on cancel orderId=${order.id}: ${(err as Error).message}`,
+        );
+      }
+    }
+
+    try {
+      await this.giftCards.restoreForOrder(order.id);
+    } catch (err) {
+      this.logger.error(
+        `Failed to restore gift card on cancel orderId=${order.id}: ${(err as Error).message}`,
+      );
+    }
+
+    try {
+      await this.promotions.releaseUsageForOrder(order.id);
+    } catch (err) {
+      this.logger.error(
+        `Failed to release promotion usage on cancel orderId=${order.id}: ${(err as Error).message}`,
+      );
+    }
   }
 
   /** Restores all item stock for an order (used on cancellation). */

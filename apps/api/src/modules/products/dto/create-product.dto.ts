@@ -3,6 +3,7 @@ import {
   ArrayUnique,
   IsArray,
   IsBoolean,
+  IsDefined,
   IsEnum,
   IsInt,
   IsOptional,
@@ -17,6 +18,7 @@ import { OptionalContentTranslatableDto, TranslatableDto } from './translatable.
 import { CreateProductVariantAdminDto } from './create-variant.dto';
 
 export class CreateProductAdminDto {
+  @IsDefined()
   @ValidateNested()
   @Type(() => TranslatableDto)
   name: TranslatableDto;

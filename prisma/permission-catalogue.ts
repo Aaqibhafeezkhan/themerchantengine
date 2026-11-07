@@ -26,6 +26,7 @@ export const PERMISSION_MODULES = [
   'notifications',
   'orders',
   'payment_methods',
+  'payments',
   'products',
   'promotions',
   'returns',

@@ -71,6 +71,11 @@ export async function runStepper(args: SetupArgs, deps: RunDeps): Promise<SetupS
         'stdin is not a terminal and no --answers document was given; nothing can answer the stepper',
       );
     }
+    // The document is the whole answer set: an earlier run's answers would
+    // fill whatever it leaves out.
+    state = document.profile
+      ? mergeAnswers(emptyState(), { profile: document.profile })
+      : emptyState();
     prompter = new DocumentPrompter(document);
   }
 

@@ -4,6 +4,7 @@ import {
   ArrayUnique,
   IsArray,
   IsBoolean,
+  IsDefined,
   IsIn,
   IsInt,
   IsObject,
@@ -27,6 +28,7 @@ export class CreateCarrierDto {
   @Matches(/^[a-z0-9_]+$/)
   code!: string;
 
+  @IsDefined()
   @ValidateNested()
   @Type(() => CarrierTranslatableDto)
   name!: CarrierTranslatableDto;

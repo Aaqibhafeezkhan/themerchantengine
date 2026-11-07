@@ -105,6 +105,12 @@ export default defineEventHandler((event) => {
   // Angular package, so an upgrade that changes the script fails a test rather
   // than quietly disarming event replay.
   const TURNSTILE_ORIGIN = 'https://challenges.cloudflare.com';
+  // Stripe Payment Element (the `embedded` card step). stripe.js, its card iframe,
+  // the 3-D Secure frame on hooks.stripe.com and the API calls it makes. Static
+  // like the vendor tags: nothing on these origins loads unless a method needs it.
+  const STRIPE_SCRIPT_ORIGIN = 'https://js.stripe.com';
+  const STRIPE_FRAME_ORIGINS = 'https://js.stripe.com https://hooks.stripe.com';
+  const STRIPE_CONNECT_ORIGIN = 'https://api.stripe.com';
   // Vendor analytics tags (plan I phase I8, finding D2). Each vendor serves its
   // loader from one origin and beacons to another, and both have to be allowed
   // or the tag is dead with no visible error anywhere.
@@ -148,7 +154,7 @@ export default defineEventHandler((event) => {
   setCspNonce(event.node.req, nonce);
   const csp = [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' '${EVENT_DISPATCH_CONTRACT_SHA256}' ${TURNSTILE_ORIGIN} ${VENDOR_SCRIPT_ORIGINS}`,
+    `script-src 'self' 'nonce-${nonce}' '${EVENT_DISPATCH_CONTRACT_SHA256}' ${TURNSTILE_ORIGIN} ${STRIPE_SCRIPT_ORIGIN} ${VENDOR_SCRIPT_ORIGINS}`,
     "style-src 'self' 'unsafe-inline'",
     // Assets come from the store's storage over https. The local profile
     // serves them from the API over plain http on another port of this
@@ -156,8 +162,8 @@ export default defineEventHandler((event) => {
     // install is always production and never widens.
     `img-src 'self' data: https:${isProduction() ? '' : ' http:'}`,
     "font-src 'self' data:",
-    `connect-src 'self' ${TURNSTILE_ORIGIN} ${VENDOR_CONNECT_ORIGINS}`,
-    `frame-src ${TURNSTILE_ORIGIN}`,
+    `connect-src 'self' ${TURNSTILE_ORIGIN} ${STRIPE_CONNECT_ORIGIN} ${VENDOR_CONNECT_ORIGINS}`,
+    `frame-src ${TURNSTILE_ORIGIN} ${STRIPE_FRAME_ORIGINS}`,
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",

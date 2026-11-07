@@ -1,5 +1,34 @@
 # themerchantengine
 
+## 1.0.1
+
+Card payment at checkout, with Stripe as the first card provider.
+
+### Minor Changes
+
+- Card checkout. A shopper can pay by card at checkout. Stripe is now
+  offered at checkout, in an embedded Payment Element form or on a hosted
+  Checkout Session page. Each payment method row picks its `checkoutMode`.
+- Provider agnostic payment action. Placing an order answers with a
+  `paymentAction`: `none`, `redirect`, `form_post` or `embedded`. The
+  storefront has one handler for all four, so a new provider needs no
+  storefront change unless it is `embedded`.
+- Payment retry and confirm. `POST /v1/orders/:id/payment` starts a fresh
+  payment for an unpaid order. `POST /v1/orders/:id/payment/confirm` asks
+  the provider for the live status when the shopper comes back. Both need
+  `X-Idempotency-Key`. Webhooks stay the source of truth.
+- Credentials in the admin. The operator enters the provider keys on the
+  payment method form. Secret fields are encrypted at rest (AES-256-GCM)
+  with `PAYMENT_CONFIG_ENCRYPTION_KEY`, and old keys can stay readable in
+  `PAYMENT_CONFIG_ENCRYPTION_KEYS_PREVIOUS`. Without a key, saving a secret
+  answers `PAYMENT_CONFIG_ENCRYPTION_UNAVAILABLE` and the app still boots.
+  `STRIPE_API_KEY`, `STRIPE_WEBHOOK_SECRET` and `STRIPE_PUBLISHABLE_KEY`
+  still work as a fallback.
+- Several payment methods can be active at once, each with its own keys.
+- New stable error codes for conflicts: `CATEGORY_SLUG_TAKEN`,
+  `CATEGORY_HAS_PRODUCTS`, `REVIEW_ALREADY_PUBLISHED` and
+  `QUESTION_ALREADY_PUBLISHED`.
+
 ## 1.0.0
 
 The first public release of the engine, under the MIT License.

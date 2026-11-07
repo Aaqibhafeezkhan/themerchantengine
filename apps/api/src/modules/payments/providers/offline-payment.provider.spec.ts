@@ -39,7 +39,11 @@ describe.each([
       config,
     });
 
-    expect(session).toEqual({ reference: `${id}_order-1`, status: PaymentStatus.PENDING });
+    expect(session).toEqual({
+      reference: `${id}_order-1`,
+      status: PaymentStatus.PENDING,
+      action: { type: 'none' },
+    });
   });
 
   it('captures a pending payment once the money is received', async () => {

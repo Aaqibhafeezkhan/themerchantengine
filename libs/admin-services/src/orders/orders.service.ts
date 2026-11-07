@@ -52,6 +52,34 @@ export class OrdersService {
       .pipe(map((raw) => orderSchema.parse(envelope(raw))));
   }
 
+  /** POST /v1/admin/orders/:id/payment/capture (needs `payments:manage`). */
+  capturePayment(id: string, idempotencyKey: string = crypto.randomUUID()): Observable<Order> {
+    return this.paymentAction(fillRoute(ORDERS.paymentCapture, { id }), idempotencyKey);
+  }
+
+  /** POST /v1/admin/orders/:id/payment/refund (full refund only). */
+  refundPayment(id: string, idempotencyKey: string = crypto.randomUUID()): Observable<Order> {
+    return this.paymentAction(fillRoute(ORDERS.paymentRefund, { id }), idempotencyKey);
+  }
+
+  /** POST /v1/admin/orders/:id/payment/cancel (void an unpaid or authorized payment). */
+  cancelPayment(id: string, idempotencyKey: string = crypto.randomUUID()): Observable<Order> {
+    return this.paymentAction(fillRoute(ORDERS.paymentCancel, { id }), idempotencyKey);
+  }
+
+  private paymentAction(path: string, idempotencyKey: string): Observable<Order> {
+    return this.http
+      .post<unknown>(
+        `${this.apiBase}/${adminRoute(ORDERS.base, path)}`,
+        {},
+        {
+          withCredentials: true,
+          headers: { 'X-Idempotency-Key': idempotencyKey },
+        },
+      )
+      .pipe(map((raw) => orderSchema.parse(envelope(raw))));
+  }
+
   /** GET /v1/admin/orders/stats */
   stats(): Observable<unknown> {
     return this.http

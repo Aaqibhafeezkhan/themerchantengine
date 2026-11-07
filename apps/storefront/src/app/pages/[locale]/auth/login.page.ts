@@ -50,6 +50,7 @@ import { pageTitle } from '../../../../lib/seo';
           class="form"
           [formGroup]="form"
           (ngSubmit)="onSubmit()"
+          (input)="errorMessage.set(null)"
           novalidate
           data-testid="auth-login-form"
           [attr.aria-describedby]="errorMessage() ? errorId : null"

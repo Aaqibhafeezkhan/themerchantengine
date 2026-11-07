@@ -9,6 +9,7 @@ import {
   signal,
   SimpleChanges,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { LocaleService } from '../../locale.service';
@@ -131,14 +132,14 @@ let nextInstanceId = 0;
             {{ passwordFormError() }}
           </p>
         }
-        @if (passwordSuccess()) {
+        @if (passwordSuccessShown()) {
           <p
             class="form-success"
             role="status"
             aria-live="polite"
             data-testid="account-security-password-success"
           >
-            {{ passwordSuccess() }}
+            {{ passwordSuccessShown() }}
           </p>
         }
 
@@ -213,14 +214,14 @@ let nextInstanceId = 0;
             {{ emailFormError() }}
           </p>
         }
-        @if (emailSuccess()) {
+        @if (emailSuccessShown()) {
           <p
             class="form-success"
             role="status"
             aria-live="polite"
             data-testid="account-security-email-success"
           >
-            {{ emailSuccess() }}
+            {{ emailSuccessShown() }}
           </p>
         }
 
@@ -346,6 +347,8 @@ export class SecuritySectionComponent implements OnChanges {
 
   protected readonly passwordFormError = signal<string | null>(null);
   protected readonly emailFormError = signal<string | null>(null);
+  protected readonly passwordSuccessShown = signal<string | null>(null);
+  protected readonly emailSuccessShown = signal<string | null>(null);
 
   protected readonly passwordForm: FormGroup = this.fb.nonNullable.group({
     currentPassword: ['', [Validators.required]],
@@ -366,7 +369,25 @@ export class SecuritySectionComponent implements OnChanges {
     currentPassword: ['', [Validators.required]],
   });
 
+  constructor() {
+    // A message about the last submit is stale once the customer edits again.
+    this.passwordForm.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+      this.passwordFormError.set(null);
+      this.passwordSuccessShown.set(null);
+    });
+    this.emailForm.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+      this.emailFormError.set(null);
+      this.emailSuccessShown.set(null);
+    });
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['passwordSuccess']) {
+      this.passwordSuccessShown.set(this.passwordSuccess());
+    }
+    if (changes['emailSuccess']) {
+      this.emailSuccessShown.set(this.emailSuccess());
+    }
     if (changes['passwordExternalError']) {
       this.passwordFormError.set(this.passwordExternalError());
     }

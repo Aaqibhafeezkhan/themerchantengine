@@ -45,6 +45,8 @@ export interface AddressFormSubmit {
       class="form"
       [formGroup]="form"
       (ngSubmit)="onSubmit()"
+      (input)="formError.set(null)"
+      (change)="formError.set(null)"
       novalidate
       [attr.data-testid]="'account-address-form-' + (initialAddress()?.id ?? 'new')"
       data-testid-shared="account-address-form"
@@ -179,7 +181,7 @@ export interface AddressFormSubmit {
           <!-- Only with a market to name: the copy reads "We deliver within
                {country}." and a store that has configured none would ship a
                sentence ending in a bare full stop. -->
-          @if (countryOptions().length) {
+          @if (countryOptions().length && strings().account.addresses.form.countryHint) {
             <span [id]="countryHintId" class="helper">
               {{ strings().account.addresses.form.countryHint }}
             </span>

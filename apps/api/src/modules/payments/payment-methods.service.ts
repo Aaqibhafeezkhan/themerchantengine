@@ -10,9 +10,16 @@ import type { PaginatedResult } from '@common/interceptors/api-response.intercep
 import type { CreatePaymentMethodDto } from './dto/create-payment-method.dto';
 import type { ListPaymentMethodsDto } from './dto/query-payment-methods.dto';
 import type { UpdatePaymentMethodDto } from './dto/update-payment-method.dto';
+import { MASKED_SECRET, PaymentConfigCrypto } from './payment-config-crypto';
+import {
+  type PaymentProviderCatalogueEntry,
+  PaymentProviderRegistry,
+} from './payment-provider.registry';
 import { CHECKOUT_PAYMENT_PROVIDER_IDS } from './payment-providers';
 
 /**
+ * Legacy names masked for rows whose provider has no implementation (for
+ * example `paypal`). Registered providers declare `secretFields` instead.
  * Config keys that must never leak their raw value on read. The stored
  * value is preserved; we just overwrite the returned copy with the
  * placeholder `***` so admin UIs can show "a secret is set" without
@@ -26,14 +33,13 @@ const MASKED_CONFIG_KEYS = new Set([
   'signingSecret',
 ]);
 
-const MASKED_PLACEHOLDER = '***';
+const MASKED_PLACEHOLDER = MASKED_SECRET;
 
 /**
- * Provider families the storefront checkout is allowed to offer: only the
- * registered ones that need no payment step at checkout. A `paypal` row with
- * no provider behind it, or a `stripe` row with no card step, must never
- * reach a customer, because it would produce orders nobody can charge (plan F
- * decision K-F4).
+ * Provider families the storefront checkout is allowed to offer: the
+ * registered ones that declare `offeredAtCheckout`. A `paypal` row with no
+ * provider behind it must never reach a customer, because it would produce
+ * orders nobody can charge (plan F decision K-F4).
  */
 export const STOREFRONT_PAYMENT_PROVIDERS = CHECKOUT_PAYMENT_PROVIDER_IDS;
 
@@ -49,6 +55,8 @@ export interface StorefrontPaymentMethod {
   description: unknown;
   provider: string;
   sortOrder: number;
+  /** True when the provider needs a payment step (redirect, form or embedded) after the order. */
+  requiresPayment: boolean;
 }
 
 export interface PaymentMethodResult {
@@ -69,7 +77,50 @@ export interface PaymentMethodResult {
 export class PaymentMethodsService {
   private readonly logger = new Logger(PaymentMethodsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly crypto: PaymentConfigCrypto,
+    private readonly registry: PaymentProviderRegistry,
+  ) {}
+
+  providerCatalogue(): PaymentProviderCatalogueEntry[] {
+    return this.registry.catalogue();
+  }
+
+  private secretFieldsOf(providerId: string): string[] {
+    const declared = this.registry.has(providerId)
+      ? this.registry.get(providerId).secretFields
+      : [];
+    return [...new Set([...declared, ...MASKED_CONFIG_KEYS])];
+  }
+
+  /**
+   * Rewrites every stored secret under the current key: plaintext gets encrypted,
+   * retired keys get replaced. Soft-deleted rows are included because their open
+   * orders still reach the provider.
+   */
+  async reencryptAll(): Promise<{ rewritten: number; unchanged: number }> {
+    const rows = await this.prisma.paymentMethod.findMany({
+      where: { deletedAt: undefined },
+      select: { id: true, provider: true, config: true },
+    });
+    let rewritten = 0;
+    let unchanged = 0;
+    for (const row of rows) {
+      const config = (row.config ?? {}) as Record<string, unknown>;
+      const next = this.crypto.reencrypt(config, this.secretFieldsOf(row.provider));
+      if (JSON.stringify(next) === JSON.stringify(config)) {
+        unchanged += 1;
+        continue;
+      }
+      await this.prisma.paymentMethod.update({
+        where: { id: row.id },
+        data: { config: next as never },
+      });
+      rewritten += 1;
+    }
+    return { rewritten, unchanged };
+  }
 
   async list(query: ListPaymentMethodsDto): Promise<PaginatedResult<PaymentMethodResult>> {
     const page = query.page ?? 1;
@@ -129,6 +180,7 @@ export class PaymentMethodsService {
       description: r.description,
       provider: r.provider,
       sortOrder: r.sortOrder,
+      requiresPayment: this.registry.get(r.provider).actionTypes.some((type) => type !== 'none'),
     }));
   }
 
@@ -158,7 +210,7 @@ export class PaymentMethodsService {
         isActive: dto.isActive ?? false,
         isTestMode: dto.isTestMode ?? false,
         sortOrder: dto.sortOrder ?? 0,
-        config: (dto.config ?? {}) as never,
+        config: this.crypto.encrypt(dto.config ?? {}, this.secretFieldsOf(dto.provider)) as never,
       },
     });
 
@@ -174,7 +226,10 @@ export class PaymentMethodsService {
 
     const mergedConfig =
       dto.config !== undefined
-        ? this.mergeConfig(existing.config as Record<string, unknown>, dto.config)
+        ? this.crypto.encrypt(
+            this.mergeConfig(existing.config as Record<string, unknown>, dto.config),
+            this.secretFieldsOf(existing.provider),
+          )
         : undefined;
 
     const row = await this.prisma.paymentMethod.update({
@@ -260,18 +315,6 @@ export class PaymentMethodsService {
     return next;
   }
 
-  private maskConfig(config: Record<string, unknown>): Record<string, unknown> {
-    const out: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(config ?? {})) {
-      if (MASKED_CONFIG_KEYS.has(k) && typeof v === 'string' && v.length > 0) {
-        out[k] = MASKED_PLACEHOLDER;
-      } else {
-        out[k] = v;
-      }
-    }
-    return out;
-  }
-
   private toResult(row: {
     id: string;
     code: string;
@@ -294,7 +337,10 @@ export class PaymentMethodsService {
       isActive: row.isActive,
       isTestMode: row.isTestMode,
       sortOrder: row.sortOrder,
-      config: this.maskConfig((row.config ?? {}) as Record<string, unknown>),
+      config: this.crypto.mask(
+        (row.config ?? {}) as Record<string, unknown>,
+        this.secretFieldsOf(row.provider),
+      ),
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };

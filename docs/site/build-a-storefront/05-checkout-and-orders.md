@@ -2,7 +2,7 @@
 title: Checkout and orders
 description: "Read the checkout settings, quote shipping for an address, place a cash-on-delivery order with an idempotency key and retry it safely, read the order back as a guest or a customer, track it, cancel it, fetch its invoice, and map every error code to text in each locale."
 primaryQuery: place an order rest api idempotency key guest checkout shipping rates error codes
-updated: 2026-09-09
+updated: 2026-11-07
 schema: TechArticle
 ---
 
@@ -107,6 +107,23 @@ async function placeOrder(body, locale, cookieHeader) {
 - `GET /v1/orders/{id}` serves the confirmation page. A guest reaches it with the same `sessionId` cookie that placed the order; a customer with the session cookie. Anyone else, and any id that does not exist, gets the same `404 ORDER_NOT_FOUND`, so the route is not an existence oracle. A signed-in customer asking for another customer's order is the one caller told `403 ORDER_NOT_YOURS`.
 - `POST /v1/orders/track` with `{ orderNumber, email }` is public and needs no cookie: the email on file is the shared secret. It serves the "where is my order" page for guests who closed the browser. A POST, not a GET with a query string, so the email never lands in an access log.
 - `GET /v1/orders` (the customer's list), `POST /v1/orders/{id}/cancel`, `GET /v1/orders/{id}/invoice` and `GET /v1/orders/{id}/invoice/pdf` need the session cookie and belong to the signed-in customer; a guest gets `401 AUTH_UNAUTHENTICATED` on all four. Ownership is checked in the service, as [Permissions and ownership](../customize/conventions.md#permissions-and-ownership) explains.
+
+### 5. Paying by card
+
+Cash on delivery needs nothing after the order is placed. A card method does. The `201` answer of `POST /v1/orders` carries a `paymentAction` next to the order, and it tells the storefront what to do next. The `type` is one of four values:
+
+- `none`: nothing to do. This is the case for cash on delivery and manual transfer.
+- `redirect`: send the shopper to `url`, a hosted payment page.
+- `form_post`: post `fields` to `url`.
+- `embedded`: render the provider form in the page, using `clientToken` and `publicConfig`.
+
+The order exists before the shopper pays. If the payment fails or the shopper walks away, the order stays pending and the storefront can start again:
+
+- `POST /v1/orders/{id}/payment` answers a fresh `paymentAction`. It answers `409` when the order is not payable any more.
+- `POST /v1/orders/{id}/payment/confirm` asks the provider for the live status when the shopper comes back, and answers `{ "data": { "paymentStatus": "..." } }`.
+- `POST /v1/orders/track/payment` does the retry for a tracked order, with the same body as `/v1/orders/track`.
+
+Both `{id}` routes need `X-Idempotency-Key`, and the same owner or guest session that placed the order. The provider webhook stays the source of truth for the paid status; the confirm call only speeds up the page the shopper sees. The action is not stored on the order, so a replay of the order within 24 hours returns the one cached at placement, and a shopper who needs a new one calls the retry route.
 
 The parameter tables are on [the orders reference](../reference/storefront-api/orders.md) and [the checkout reference](../reference/storefront-api/checkout.md).
 

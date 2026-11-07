@@ -186,6 +186,7 @@ export const ADMIN_API_ROUTES = {
     base: 'v1/admin',
     list: 'payment-methods',
     reorder: 'payment-methods/reorder',
+    providers: 'payment-providers',
     byId: 'payment-methods/:id',
   },
   products: {

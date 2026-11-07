@@ -1,5 +1,6 @@
 import {
   IsBoolean,
+  IsDefined,
   IsInt,
   IsOptional,
   IsString,
@@ -11,6 +12,7 @@ import { Type } from 'class-transformer';
 import { OptionalContentTranslatableDto, TranslatableDto } from './translatable.dto';
 
 export class CreateCategoryAdminDto {
+  @IsDefined()
   @ValidateNested()
   @Type(() => TranslatableDto)
   name: TranslatableDto;

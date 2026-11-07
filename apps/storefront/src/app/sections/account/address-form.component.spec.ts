@@ -286,4 +286,20 @@ describe('AddressFormComponent country and error handling (findings A3, A4)', ()
 
     expect(banner(fixture)).toBeNull();
   });
+
+  it('clears a stale banner as soon as the customer edits a field (sibling of S2-5)', async () => {
+    const fixture = await renderComponent(
+      AddressFormComponent,
+      { externalError: 'Server said no' },
+      [LocaleService],
+    );
+    expect(banner(fixture)?.textContent).toContain('Server said no');
+
+    const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+    input.value = 'Sam Customer';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(banner(fixture)).toBeNull();
+  });
 });

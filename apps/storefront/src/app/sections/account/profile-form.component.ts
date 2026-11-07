@@ -33,6 +33,7 @@ let nextHintId = 0;
       class="form"
       [formGroup]="form"
       (ngSubmit)="onSubmit()"
+      (input)="onEdit()"
       novalidate
       data-testid="account-profile-form"
     >
@@ -192,6 +193,7 @@ export class ProfileFormComponent implements OnChanges {
   readonly externalError = input<string | null>(null);
 
   @Output() readonly submit = new EventEmitter<UpdateProfileRequest>();
+  @Output() readonly edited = new EventEmitter<void>();
 
   private readonly fb = inject(FormBuilder);
   private readonly locale = inject(LocaleService);
@@ -227,6 +229,12 @@ export class ProfileFormComponent implements OnChanges {
     if (changes['externalError']) {
       this.formError.set(this.externalError());
     }
+  }
+
+  // A DOM event, not valueChanges: form.reset after a save would also emit and wipe the fresh banner.
+  protected onEdit(): void {
+    this.formError.set(null);
+    this.edited.emit();
   }
 
   protected showError(key: string): boolean {

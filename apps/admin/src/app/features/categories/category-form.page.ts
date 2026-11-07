@@ -176,7 +176,7 @@ function findById(nodes: readonly Category[], id: string): Category | null {
               formControlName="parentId"
               data-testid="category-parent-select"
             >
-              <option [ngValue]="null">— Top level —</option>
+              <option [ngValue]="null">Top level</option>
               @for (opt of parentOptions(); track opt.id) {
                 <option [ngValue]="opt.id">{{ indent(opt.depth) }}{{ opt.label }}</option>
               }
@@ -203,7 +203,7 @@ function findById(nodes: readonly Category[], id: string): Category | null {
               Category image (optional)
             </p>
             <p id="category-image-hint" class="text-xs tabular text-ink-muted">
-              Pick from the asset library — used on the storefront category card.
+              Pick from the asset library. Used on the storefront category card.
             </p>
             <div class="flex items-center gap-3 flex-wrap">
               @if (thumbUrl(); as src) {
@@ -441,15 +441,23 @@ export class CategoryFormPage implements OnInit, OnDestroy {
     });
   }
 
+  private deleteBody(current: Category): string {
+    const label = categoryLabel(
+      current,
+      this.authStore.locale(),
+      this.storeSettings.defaultLocale(),
+    );
+    const count = current.productCount ?? 0;
+    if (count === 0) return `"${label}" will be removed from the storefront.`;
+    return `"${label}" still has ${pluralize(count, 'product')}. The server refuses to delete it until they are reassigned.`;
+  }
+
   async confirmDelete(): Promise<void> {
     const current = this.current();
     if (!current || this.busy()) return;
     const ok = await openConfirmDialog(this.dialog, {
       title: 'Delete this category?',
-      body: `"${categoryLabel(current, this.authStore.locale(), this.storeSettings.defaultLocale())}" will be hidden from the storefront. Reassign its ${pluralize(
-        current.productCount ?? 0,
-        'product',
-      )} before deleting if you want them to stay visible.`,
+      body: this.deleteBody(current),
       confirmLabel: 'Delete',
       tone: 'destructive',
     });
@@ -465,8 +473,10 @@ export class CategoryFormPage implements OnInit, OnDestroy {
       error: (err: unknown) => {
         this.busy.set(false);
         this.action.set(null);
-        if (err instanceof ApiConflictError) {
-          this.error.set('Cannot delete — products still reference this category.');
+        if (err instanceof ApiConflictError && err.code === 'CATEGORY_HAS_PRODUCTS') {
+          this.error.set(
+            'Cannot delete: products still reference this category. Reassign them first.',
+          );
         } else {
           this.error.set(this.formatError(err, 'Could not delete category.'));
         }
@@ -587,7 +597,9 @@ export class CategoryFormPage implements OnInit, OnDestroy {
   private formatError(err: unknown, fallback = 'Could not load categories.'): string {
     if (err instanceof ApiNotFoundError) return 'Category not found.';
     if (err instanceof ApiForbiddenError) return 'You do not have permission to modify categories.';
-    if (err instanceof ApiConflictError) return 'Slug conflict — pick a different slug.';
+    if (err instanceof ApiConflictError && err.code === 'CATEGORY_SLUG_TAKEN') {
+      return 'Slug conflict: pick a different slug.';
+    }
     if (err instanceof ApiError && err.message) return err.message;
     return fallback;
   }

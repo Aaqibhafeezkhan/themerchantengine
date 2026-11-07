@@ -9,9 +9,15 @@ import type { z } from 'zod';
  */
 export interface PaymentProvider<TConfig = unknown> {
   readonly id: string;
+  /** Human name shown in the admin and on the storefront. */
+  readonly label: string;
+  /** Action types `createSession` may return. At least one. */
+  readonly actionTypes: readonly PaymentActionType[];
+  /** Config keys that hold secrets: masked on read, encrypted at rest. */
+  readonly secretFields: readonly string[];
   readonly configSchema: z.ZodType<TConfig>;
 
-  createSession(input: PaymentSessionInput<TConfig>): Promise<PaymentProviderResult>;
+  createSession(input: PaymentSessionInput<TConfig>): Promise<PaymentSessionResult>;
   authorize(input: PaymentOperationInput<TConfig>): Promise<PaymentProviderResult>;
   capture(input: PaymentCaptureInput<TConfig>): Promise<PaymentProviderResult>;
   refund(input: PaymentRefundInput<TConfig>): Promise<PaymentProviderResult>;
@@ -24,6 +30,10 @@ export interface PaymentSessionInput<TConfig = unknown> {
   orderId: string;
   amount: Prisma.Decimal;
   currencyCode: string;
+  /** Where a hosted page sends the shopper back. Only redirect providers read it. */
+  returnUrl?: string;
+  /** The shopper's email, so a hosted page can prefill it. */
+  customerEmail?: string;
   config: TConfig;
 }
 
@@ -63,10 +73,23 @@ export interface PaymentWebhookInput<TConfig = unknown> {
 export interface PaymentProviderResult {
   reference: string;
   status: PaymentStatus;
-  /** Hosted payment page the shopper is sent to, when the provider has one. */
-  redirectUrl?: string;
-  /** Client-side token for embedded payment forms, when the provider has one. */
-  clientSecret?: string;
+}
+
+/**
+ * What the shopper must do next to pay. The orders layer stores it and hands
+ * it to the storefront without reading it; only the provider and the
+ * storefront action handler know the shapes.
+ */
+export type PaymentAction =
+  | { type: 'none' }
+  | { type: 'redirect'; url: string }
+  | { type: 'form_post'; url: string; fields: Record<string, string> }
+  | { type: 'embedded'; clientToken: string; publicConfig?: Record<string, string> };
+
+export type PaymentActionType = PaymentAction['type'];
+
+export interface PaymentSessionResult extends PaymentProviderResult {
+  action: PaymentAction;
 }
 
 export interface PaymentWebhookEvent extends PaymentProviderResult {

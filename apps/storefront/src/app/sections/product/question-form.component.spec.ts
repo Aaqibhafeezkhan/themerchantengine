@@ -95,6 +95,23 @@ describe('QuestionFormComponent', () => {
     ).toContain('Server says no');
   });
 
+  it('hides the form error once the customer edits the question (sibling of S2-5)', async () => {
+    const fixture = await renderComponent(
+      QuestionFormComponent,
+      { externalError: 'Server says no' },
+      [provideRouter([]), LocaleService],
+    );
+    const errorSelector = '[data-testid="product-question-form-error"]';
+    expect(fixture.nativeElement.querySelector(errorSelector)).not.toBeNull();
+    const ta = fixture.nativeElement.querySelector(
+      '[data-testid="product-question-form-question"]',
+    ) as HTMLTextAreaElement;
+    ta.value = 'Does it ship to QA?';
+    ta.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector(errorSelector)).toBeNull();
+  });
+
   it('lays out actions on the inline axis', async () => {
     const fixture = await renderComponent(QuestionFormComponent, {}, [
       provideRouter([]),

@@ -27,6 +27,12 @@ const SENSITIVE: readonly SensitiveRoute[] = [
   { reason: 'payment capture', verb: 'Post', path: /^v1\/admin\/orders\/[^/]+\/payment\/capture$/ },
   { reason: 'payment refund', verb: 'Post', path: /^v1\/admin\/orders\/[^/]+\/payment\/refund$/ },
   { reason: 'payment cancel', verb: 'Post', path: /^v1\/admin\/orders\/[^/]+\/payment\/cancel$/ },
+  { reason: 'payment retry, storefront', verb: 'Post', path: /^v1\/orders\/[^/]+\/payment$/ },
+  {
+    reason: 'payment confirm, storefront',
+    verb: 'Post',
+    path: /^v1\/orders\/[^/]+\/payment\/confirm$/,
+  },
   { reason: 'stock adjustment', verb: 'Patch', path: /^v1\/admin\/inventory\/adjust$/ },
   { reason: 'stock transfer', verb: 'Post', path: /^v1\/admin\/inventory\/transfer$/ },
   { reason: 'webhook replay', verb: 'Post', path: /^v1\/admin\/webhooks\/[^/]+\/test$/ },

@@ -33,7 +33,9 @@ import { LocaleService } from '../../locale.service';
         </h3>
       </header>
       <p class="line">{{ formatLine() }}</p>
-      <p class="line">{{ address().phone }}</p>
+      <p class="line">
+        <bdi dir="ltr">{{ address().phone }}</bdi>
+      </p>
 
       <div class="actions">
         <button

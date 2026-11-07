@@ -29,11 +29,20 @@ const DEFAULT_RESULT = {
   timeline: [],
 };
 
-function makeOrders(opts: { trackResult?: unknown; trackThrows?: unknown }) {
+vi.mock('../../sections/checkout/payment-action', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../sections/checkout/payment-action')>();
+  return { ...actual, runPaymentAction: vi.fn(() => ({ kind: 'left' })) };
+});
+
+function makeOrders(opts: { trackResult?: unknown; trackThrows?: unknown; retryThrows?: unknown }) {
   return {
     track: vi.fn(async () => {
       if (opts.trackThrows) throw opts.trackThrows;
       return opts.trackResult ?? DEFAULT_RESULT;
+    }),
+    retryTrackedPayment: vi.fn(async () => {
+      if (opts.retryThrows) throw opts.retryThrows;
+      return { type: 'redirect', url: 'https://pay.example/x' };
     }),
   } as unknown as OrdersService;
 }
@@ -41,6 +50,7 @@ function makeOrders(opts: { trackResult?: unknown; trackThrows?: unknown }) {
 interface RenderResult {
   fixture: ComponentFixture<TrackPage>;
   ordersSpy: ReturnType<typeof vi.fn>;
+  retrySpy: ReturnType<typeof vi.fn>;
 }
 
 async function renderTrack(opts: {
@@ -48,11 +58,13 @@ async function renderTrack(opts: {
   prefill?: string;
   trackResult?: unknown;
   trackThrows?: unknown;
+  retryThrows?: unknown;
 }): Promise<RenderResult> {
   const stub = new StubLocaleService(opts.locale);
   const ordersSvc = makeOrders({
     trackResult: opts.trackResult,
     trackThrows: opts.trackThrows,
+    retryThrows: opts.retryThrows,
   });
 
   TestBed.overrideComponent(TrackPage, {
@@ -82,6 +94,8 @@ async function renderTrack(opts: {
   return {
     fixture,
     ordersSpy: (ordersSvc as unknown as { track: ReturnType<typeof vi.fn> }).track,
+    retrySpy: (ordersSvc as unknown as { retryTrackedPayment: ReturnType<typeof vi.fn> })
+      .retryTrackedPayment,
   };
 }
 
@@ -363,4 +377,97 @@ describe('TrackPage shipments and timeline', () => {
     expect(root.querySelectorAll('[data-testid="track-shipment"]').length).toBe(0);
     expect(root.querySelector('[data-testid="track-no-shipments"]')).not.toBeNull();
   });
+});
+
+describe('TrackPage pay again and cancelled state', () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+    document.head.innerHTML = '';
+  });
+  afterEach(() => {
+    TestBed.resetTestingModule();
+    document.head.innerHTML = '';
+  });
+
+  const UNPAID = {
+    ...DEFAULT_RESULT,
+    status: 'CONFIRMED',
+    paymentStatus: 'PENDING',
+    paymentRetryable: true,
+  };
+  const CANCELLED = {
+    ...DEFAULT_RESULT,
+    status: 'CANCELLED',
+    paymentStatus: 'PENDING',
+    paymentRetryable: false,
+  };
+
+  const clickPayAgain = async (fixture: ComponentFixture<TrackPage>, root: HTMLElement) => {
+    (root.querySelector('[data-testid="track-pay-again"]') as HTMLElement)
+      .querySelector('button')!
+      .click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+  };
+
+  it('shows Pay again only when the API says the payment is retryable', async () => {
+    const { fixture } = await renderTrack({ locale: 'en', trackResult: UNPAID });
+    const root = await fillAndSubmit(fixture);
+    expect(root.querySelector('[data-testid="track-pay-again"]')).not.toBeNull();
+  });
+
+  it('hides Pay again when the payment is not retryable', async () => {
+    const { fixture } = await renderTrack({ locale: 'en' });
+    const root = await fillAndSubmit(fixture);
+    expect(root.querySelector('[data-testid="track-pay-again"]')).toBeNull();
+  });
+
+  it('hides Pay again and shows the cancelled note for a cancelled order', async () => {
+    const { fixture } = await renderTrack({ locale: 'en', trackResult: CANCELLED });
+    const root = await fillAndSubmit(fixture);
+    expect(root.querySelector('[data-testid="track-pay-again"]')).toBeNull();
+    expect(root.querySelector('[data-testid="track-cancelled-note"]')?.textContent?.trim()).toBe(
+      getChromeStrings('en').track.cancelledNote,
+    );
+  });
+
+  it('sends the submitted lookup and a UUID key, then runs the payment action', async () => {
+    const { fixture, retrySpy } = await renderTrack({ locale: 'en', trackResult: UNPAID });
+    const root = await fillAndSubmit(fixture);
+    // Editing the form after the lookup must not change who is paying.
+    setInput(root, 'track-email-input', 'other@example.com');
+    await clickPayAgain(fixture, root);
+    expect(retrySpy).toHaveBeenCalledWith(
+      { orderNumber: 'ORD-2026-000001', email: 'real@example.com' },
+      expect.stringMatching(/^[0-9a-f-]{36}$/),
+    );
+  });
+
+  for (const locale of ['en', 'fr', 'ar'] as const) {
+    it(`maps payment errors to stable copy under ${locale}`, async () => {
+      const errors = getChromeStrings(locale).checkout.errors;
+      const cases: Array<[string | null, string]> = [
+        ['ORDER_PAYMENT_NOT_RETRYABLE', errors.paymentNotRetryable],
+        ['ORDER_PAYMENT_METHOD_UNAVAILABLE', errors.paymentMethodUnavailable],
+        ['PAYMENT_PROVIDER_UNAVAILABLE', errors.paymentProviderUnavailable],
+        ['PAYMENT_PROVIDER_REJECTED', errors.paymentProviderUnavailable],
+        ['PAYMENT_CONFIG_ENCRYPTION_UNAVAILABLE', errors.paymentProviderUnavailable],
+        ['ORDER_PAYMENT_NOT_OPENED', errors.paymentProviderUnavailable],
+        ['SOMETHING_ELSE', errors.generic],
+      ];
+      for (const [code, message] of cases) {
+        TestBed.resetTestingModule();
+        const { fixture } = await renderTrack({
+          locale,
+          trackResult: UNPAID,
+          retryThrows: Object.assign(new Error('x'), { code }),
+        });
+        const root = await fillAndSubmit(fixture);
+        await clickPayAgain(fixture, root);
+        expect(root.querySelector('[data-testid="track-payment-error"]')?.textContent?.trim()).toBe(
+          message,
+        );
+      }
+    });
+  }
 });

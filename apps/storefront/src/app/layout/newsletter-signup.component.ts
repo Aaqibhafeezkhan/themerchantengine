@@ -131,6 +131,7 @@ import { TurnstileComponent } from '../sections/auth/turnstile.component';
             [attr.aria-invalid]="showInvalid() ? 'true' : null"
             [attr.aria-describedby]="showInvalid() ? 'newsletter-error' : null"
             (focus)="arm()"
+            (input)="clearError()"
             data-testid="newsletter-email"
           />
           <!-- Honeypot — must stay empty. Off-screen + tab-skipped + aria-hidden so
@@ -201,6 +202,10 @@ export class NewsletterSignupComponent {
   /** Lazy-load the Turnstile widget only once the user engages the form. */
   protected arm(): void {
     if (this.captchaRequired) this.captchaArmed.set(true);
+  }
+
+  protected clearError(): void {
+    if (this.status() === 'error') this.status.set('idle');
   }
 
   protected onCaptchaToken(token: string | null): void {

@@ -2,6 +2,7 @@ import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   IsArray,
+  IsDefined,
   IsInt,
   IsOptional,
   IsString,
@@ -27,10 +28,12 @@ export const MAX_PRODUCT_SPECS = 50;
  * a silent overwrite of the uniqueness key (§3.5).
  */
 export class ProductSpecItemAdminDto {
+  @IsDefined()
   @ValidateNested()
   @Type(() => TranslatableDto)
   label: TranslatableDto;
 
+  @IsDefined()
   @ValidateNested()
   @Type(() => TranslatableDto)
   value: TranslatableDto;

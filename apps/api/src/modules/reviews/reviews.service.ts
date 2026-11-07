@@ -19,6 +19,8 @@ import type { AnswerQuestionDto } from './dto/answer-question.dto';
 import type { AnswerQuestionAdminDto } from './dto/answer-question-admin.dto';
 import { ReviewVerifiedPurchaseRequiredException } from './review-eligibility.exception';
 import { ReviewDuplicateException } from './review-duplicate.exception';
+import { ReviewAlreadyPublishedException } from './review-already-published.exception';
+import { QuestionAlreadyPublishedException } from './question-already-published.exception';
 import { QuestionNotAvailableForAnswerException } from './question-not-available.exception';
 import { QuestionAlreadyAnsweredException } from './question-already-answered.exception';
 import { ReviewProductNotFoundException } from './review-product-not-found.exception';
@@ -463,6 +465,7 @@ export class ReviewsService {
 
   async approveReview(reviewId: string, performedBy: string): Promise<unknown> {
     const review = await this.loadReview(reviewId);
+    if (review.status === ReviewStatus.PUBLISHED) throw new ReviewAlreadyPublishedException();
 
     const updated = await this.prisma.review.update({
       where: { id: reviewId },
@@ -785,6 +788,7 @@ export class ReviewsService {
 
   async approveQuestion(questionId: string, performedBy: string): Promise<unknown> {
     const question = await this.loadQuestion(questionId);
+    if (question.status === QuestionStatus.PUBLISHED) throw new QuestionAlreadyPublishedException();
 
     const updated = await this.prisma.productQuestion.update({
       where: { id: questionId },

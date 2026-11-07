@@ -6,28 +6,34 @@ Every item links to an issue or a discussion. If an item has no link, it is not 
 
 ## How to read it
 
-- **Now**: being worked on for the current v1.0.x line. Issues are open and claimable.
-- **Next**: committed for v1.1. Badii builds the base first, then adapter issues open for contributors.
+- **Shipped**: released, with the version that carried it.
+- **Now**: being worked on. Issues are open and claimable.
+- **Next**: agreed and ordered, no date. Badii builds the base first, then adapter issues open for contributors.
 - **Later**: agreed direction, no date. Design happens in a discussion first.
 - **Exploring**: ideas from users and contributors. Nothing here is promised.
 
-## Now: v1.0.x (November 2026)
+Versions are attached only to what has shipped. A release that adds a payment adapter bumps the third number (1.0.2, 1.0.3 and so on).
+
+## Shipped
+
+- **v1.0.1: card payment at checkout.** Stripe is offered at checkout, embedded or hosted. The operator enters the keys in the admin and secrets are encrypted at rest. More providers plug in behind the same `PaymentProvider` interface.
+- **v1.0.0: first public release** under the MIT License.
+
+## Now
 
 Goal: make the first contribution easy and fast to review.
 
+- **Payment adapters.** Each provider is its own issue: Mollie, PayPal, Paymob, Konnect, Flouci, Tap and CMI. One class behind `PaymentProvider`, one line in `PAYMENT_PROVIDER_IMPLEMENTATIONS`, and the conformance suite must pass. See [Add a payment provider](docs/site/customize/recipes/api/add-a-payment-provider.md). Label: `help wanted`, `payments`.
 - **Admin services fail cleanly on bad input.** Many admin services validate with `schema.parse()` before the Observable exists, so bad input throws instead of reaching the error handler. One issue per service, released in small batches. Label: `good first issue`.
 - **More storefront languages.** The storefront ships French, English and Arabic. Adding a language is one registry entry plus a string file, and a partial file is fine because missing keys fall back to the default language. Spanish, German, Turkish and Portuguese are open first. Label: `good first issue`, `i18n`.
 - **Install and docs fixes.** Every install report that hits a wall becomes a docs issue. Label: `documentation`.
 
-## Next: v1.1 (December 2026 to February 2027)
+## Next
 
-Goal: the three gaps the README lists as "planned, not built yet".
-
-- **Card payment at checkout.** Badii builds the storefront step that collects the card and confirms the session. After that, payment providers are open for contributors behind the existing `PaymentProvider` interface and its conformance suite. First candidates: Mollie, PayPal, Paymob, Konnect, Flouci, Tap, CMI. Label: `help wanted`, `payments`.
 - **Mail transport interface.** Badii adds a transport interface so Resend is one adapter among others. Then an SMTP adapter opens for contributors. Label: `help wanted`, `mail`.
 - **Deploy guides.** One guide per host, written and tested by someone who deployed there (Hetzner, DigitalOcean, Railway, Coolify, a plain VPS). Label: `documentation`, `help wanted`.
 
-## Later (2027)
+## Later
 
 - **Live shipping rates and labels.** An interface for carrier rates and label printing, then one adapter per carrier.
 - **Extensions.** A documented way to add a module, a payment provider or a shipping adapter without forking. Design starts in a discussion.
@@ -50,3 +56,4 @@ Votes help, but they do not decide alone. Fit with the engine and the cost of ke
 ## Change log
 
 - 2026-10-30: first version.
+- 2026-11-07: card checkout shipped in v1.0.1. Dropped the v1.1 milestone and the date ranges. Sections are now Shipped, Now, Next, Later. Payment adapters moved to Now as one issue per provider.

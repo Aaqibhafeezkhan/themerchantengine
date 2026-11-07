@@ -80,6 +80,7 @@ type PageState = 'idle' | 'loading' | 'ready' | 'error';
             [saving]="saving()"
             [externalError]="formError()"
             (submit)="onSubmit($event)"
+            (edited)="onProfileEdited()"
           />
           <!-- Finding N7: the backend accepted password and email changes all
                along; only the fields were missing, which is why the page's own
@@ -220,6 +221,11 @@ export class AccountProfilePageComponent implements OnInit {
       }
       this.state.set('error');
     }
+  }
+
+  protected onProfileEdited(): void {
+    this.formError.set(null);
+    this.savedMessage.set(null);
   }
 
   protected async onSubmit(payload: UpdateProfileRequest): Promise<void> {

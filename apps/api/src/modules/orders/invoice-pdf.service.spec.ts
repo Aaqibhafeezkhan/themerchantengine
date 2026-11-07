@@ -700,7 +700,7 @@ describe('invoice layout helpers', () => {
     it('falls back through the store default for a Translatable with no entry', () => {
       const storeDefault = storeLocales.current().defaultLocale;
       const other = storeDefault === 'en' ? 'fr' : 'en';
-      expect(pickTranslatable({ [storeDefault]: 'default', [other]: 'other' }, 'de')).toBe(
+      expect(pickTranslatable({ [storeDefault]: 'default', [other]: 'other' }, 'de' as never)).toBe(
         'default',
       );
       expect(pickTranslatable({ ar: 'مرحبا' }, 'fr')).toBe('مرحبا');

@@ -103,6 +103,22 @@ describe('GiftCardFormComponent', () => {
     ).toBeGreaterThan(0);
   });
 
+  it('emits edited when the customer types, so the page can clear a stale error (S2-14)', async () => {
+    const fixture = await renderComponent(
+      GiftCardFormComponent,
+      { error: 'This gift card is not valid right now.' },
+      [provideRouter([]), LocaleService],
+    );
+    let edits = 0;
+    fixture.componentInstance.edited.subscribe(() => edits++);
+    const input = fixture.nativeElement.querySelector(
+      'input[data-testid="cart-gift-card-input"]',
+    ) as HTMLInputElement;
+    input.value = 'ABCD1234';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(edits).toBe(1);
+  });
+
   it('axe — zero serious / critical violations on form state', async () => {
     const fixture = await renderComponent(GiftCardFormComponent, {}, [
       provideRouter([]),

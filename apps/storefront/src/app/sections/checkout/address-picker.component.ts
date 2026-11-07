@@ -65,7 +65,9 @@ let nextHintId = 0;
                   }
                 </span>
                 <span class="row-line">{{ formatLine(a) }}</span>
-                <span class="row-line">{{ a.phone }}</span>
+                <span class="row-line"
+                  ><bdi dir="ltr">{{ a.phone }}</bdi></span
+                >
               </span>
             </label>
           }
@@ -78,6 +80,8 @@ let nextHintId = 0;
           class="form"
           [formGroup]="form"
           (ngSubmit)="onSubmit()"
+          (input)="formError.set(null)"
+          (change)="formError.set(null)"
           novalidate
           data-testid="address-form"
         >
@@ -210,7 +214,7 @@ let nextHintId = 0;
                   <option [value]="option.code">{{ option.label }}</option>
                 }
               </select>
-              @if (countryOptions().length) {
+              @if (countryOptions().length && strings().checkout.steps.address.fields.countryHint) {
                 <span [id]="countryHintId" class="helper">
                   {{ strings().checkout.steps.address.fields.countryHint }}
                 </span>

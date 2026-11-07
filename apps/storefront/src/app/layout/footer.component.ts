@@ -236,7 +236,7 @@ const SOCIAL_DISPLAY_NAMES: Readonly<Record<string, string>> = {
                   [href]="'tel:' + dialable(number)"
                   data-testid="footer-contact-phone"
                 >
-                  {{ number }}
+                  <bdi dir="ltr">{{ number }}</bdi>
                 </a>
               </p>
             }

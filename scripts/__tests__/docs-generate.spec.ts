@@ -229,6 +229,9 @@ const IDEMPOTENT_TODAY = [
   'POST /v1/admin/seo/submit',
   'POST /v1/admin/webhooks/{id}/test',
   'POST /v1/orders',
+  'POST /v1/orders/track/payment',
+  'POST /v1/orders/{id}/payment',
+  'POST /v1/orders/{id}/payment/confirm',
 ];
 
 describe('scanIdempotentRoutes', () => {
@@ -277,8 +280,8 @@ describe('scanIdempotentRoutes', () => {
     ]);
   });
 
-  it('finds the ten routes of the committed controllers', () => {
-    expect(scanIdempotentRoutes(controllerFiles())).toEqual(IDEMPOTENT_TODAY);
+  it('finds the thirteen routes of the committed controllers', () => {
+    expect([...scanIdempotentRoutes(controllerFiles())].sort()).toEqual(IDEMPOTENT_TODAY);
   });
 });
 
@@ -706,7 +709,7 @@ describe('the HTTP file and the Postman collection', () => {
       const parsed = JSON.parse(fs.readFileSync(path.join(out, '_generated', file), 'utf8'));
       expect(Object.keys(parsed)[0]).toBe('x-generated-by');
     }
-    // The idempotency header lands on the seven scanned routes of both audiences, and nowhere else.
+    // The idempotency header lands on the scanned routes of both audiences, and nowhere else.
     const collection: PostmanCollection = JSON.parse(
       fs.readFileSync(path.join(out, '_generated', 'postman-collection.json'), 'utf8'),
     );
@@ -720,7 +723,7 @@ describe('the HTTP file and the Postman collection', () => {
       )
       .sort();
     expect(marked).toEqual(IDEMPOTENT_TODAY);
-    expect(http.match(/X-Idempotency-Key/g)).toHaveLength(1);
+    expect(http.match(/X-Idempotency-Key/g)).toHaveLength(4);
     expect(http).toContain(
       'POST {{baseUrl}}/v1/orders\nAccept-Language: {{locale}}\nContent-Type: application/json\nX-Idempotency-Key: {{$guid}}\n',
     );

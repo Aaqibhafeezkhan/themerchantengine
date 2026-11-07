@@ -32,6 +32,14 @@ describe('AddressCardComponent', () => {
     expect(lines[0].textContent?.trim()).toBe('1 Pearl Blvd, Apt 5, Lyon, QA');
   });
 
+  it('isolates the phone as left-to-right so a leading plus stays first in RTL (S2-19)', async () => {
+    const fixture = await renderComponent(AddressCardComponent, { address: baseAddress }, [
+      LocaleService,
+    ]);
+    const phone = fixture.nativeElement.querySelector('bdi[dir="ltr"]');
+    expect(phone?.textContent?.trim()).toBe('+97412345678');
+  });
+
   it('shows the default badge only when isDefaultShipping is true', async () => {
     const fixture = await renderComponent(
       AddressCardComponent,

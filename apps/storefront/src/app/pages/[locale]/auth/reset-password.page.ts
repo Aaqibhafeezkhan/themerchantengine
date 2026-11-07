@@ -60,6 +60,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
           class="form"
           [formGroup]="form"
           (ngSubmit)="onSubmit()"
+          (input)="errorMessage.set(null)"
           novalidate
           data-testid="auth-reset-form"
           [attr.aria-describedby]="errorMessage() ? errorId : null"

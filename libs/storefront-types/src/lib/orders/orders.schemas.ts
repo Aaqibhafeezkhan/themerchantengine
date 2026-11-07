@@ -127,6 +127,8 @@ export const trackingResponseSchema = z
     orderNumber: z.string(),
     status: z.string(),
     createdAt: z.string().nullable().optional(),
+    paymentStatus: z.string().optional(),
+    paymentRetryable: z.boolean().default(false),
     shipments: z.array(trackingShipmentSchema).default([]),
     timeline: z
       .array(
@@ -151,6 +153,39 @@ export const invoiceResponseSchema = z
     currency: z.string().length(3),
   })
   .passthrough();
+
+const httpUrlSchema = z
+  .string()
+  .url()
+  .refine((value) => /^https?:\/\//i.test(value), 'url must be http or https');
+
+/**
+ * What the customer must do next to pay, as `POST /v1/orders` and
+ * `POST /v1/orders/:id/payment` send it. Mirrors the API `PaymentAction`.
+ * The storefront switches on `type` only and never on the provider, so a new
+ * provider needs no change here.
+ */
+export const paymentActionSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('none') }),
+  z.object({ type: z.literal('redirect'), url: httpUrlSchema }),
+  z.object({
+    type: z.literal('form_post'),
+    url: httpUrlSchema,
+    fields: z.record(z.string(), z.string()),
+  }),
+  z.object({
+    type: z.literal('embedded'),
+    clientToken: z.string().min(1),
+    publicConfig: z.record(z.string(), z.string()).optional(),
+  }),
+]);
+export type PaymentAction = z.infer<typeof paymentActionSchema>;
+
+/** The order a successful `POST /v1/orders` returns, plus the payment step. */
+export const placedOrderSchema = orderSchema.extend({
+  paymentAction: paymentActionSchema.default({ type: 'none' }),
+});
+export type PlacedOrder = z.infer<typeof placedOrderSchema>;
 
 export { orderSchema };
 export type { Order, OrderLine, OrderStatus, PaymentStatus } from '../shared/entities';

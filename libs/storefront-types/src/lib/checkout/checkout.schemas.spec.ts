@@ -47,6 +47,18 @@ describe('storefrontCheckoutSettingsSchema', () => {
     expect(parsed.paymentMethods).toEqual([]);
   });
 
+  it('reads requiresPayment from the wire and defaults it to false when absent', () => {
+    const card = storefrontPaymentMethodSchema.parse({
+      code: 'card',
+      name: 'Card',
+      provider: 'stripe',
+      requiresPayment: true,
+    });
+    expect(card.requiresPayment).toBe(true);
+    const cod = storefrontPaymentMethodSchema.parse(settings.paymentMethods[0]);
+    expect(cod.requiresPayment).toBe(false);
+  });
+
   it('rejects a checkout group missing the guest flag', () => {
     // Copy-and-delete rather than a destructured throwaway: the binding was
     // unused, and `_`-prefixed names are not exempt from no-unused-vars here.

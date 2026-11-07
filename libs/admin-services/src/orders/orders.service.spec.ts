@@ -342,6 +342,44 @@ describe('OrdersService', () => {
     http.expectNone(`/api/v1/admin/orders/${ORDER_ID}/shipments/${SHIPMENT_ID}`);
   });
 
+  it.each([
+    ['capturePayment', 'capture'],
+    ['refundPayment', 'refund'],
+    ['cancelPayment', 'cancel'],
+  ] as const)('%s() POSTs /payment/%s with a UUID v4 idempotency key', (method, segment) => {
+    let result: unknown;
+    service[method](ORDER_ID).subscribe((order) => (result = order));
+    const req = http.expectOne(`/api/v1/admin/orders/${ORDER_ID}/payment/${segment}`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.withCredentials).toBe(true);
+    expect(req.request.headers.get('X-Idempotency-Key')).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+    );
+    req.flush({ data: { ...orderFixture, paymentStatus: 'REFUNDED' } });
+    expect(result).toMatchObject({ id: ORDER_ID, paymentStatus: 'REFUNDED' });
+  });
+
+  it('capturePayment() reuses a caller key so a retry replays the same action', () => {
+    service.capturePayment(ORDER_ID, 'key-1').subscribe();
+    const req = http.expectOne(`/api/v1/admin/orders/${ORDER_ID}/payment/capture`);
+    expect(req.request.headers.get('X-Idempotency-Key')).toBe('key-1');
+    req.flush({ data: orderFixture });
+  });
+
+  it('refundPayment() surfaces 409 on a disallowed payment transition', () => {
+    let status = 0;
+    service.refundPayment(ORDER_ID).subscribe({
+      error: (e: HttpErrorResponse) => (status = e.status),
+    });
+    http
+      .expectOne(`/api/v1/admin/orders/${ORDER_ID}/payment/refund`)
+      .flush(
+        { error: { code: 'PAYMENT_TRANSITION_NOT_ALLOWED' } },
+        { status: 409, statusText: 'Conflict' },
+      );
+    expect(status).toBe(409);
+  });
+
   it('addNote() POSTs the note body', (done) => {
     service.addNote(ORDER_ID, { note: 'follow up' }).subscribe(() => done());
     const req = http.expectOne(`/api/v1/admin/orders/${ORDER_ID}/notes`);

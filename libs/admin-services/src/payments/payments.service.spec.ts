@@ -207,6 +207,49 @@ describe('PaymentMethodsService', () => {
     );
   });
 
+  describe('providers()', () => {
+    const canary = {
+      id: 'canary_pay',
+      label: 'Canary Pay',
+      actionTypes: ['redirect'],
+      secretFields: ['merchantPassword'],
+      configJsonSchema: {
+        type: 'object',
+        properties: { merchantId: { type: 'string' }, merchantPassword: { type: 'string' } },
+        required: ['merchantId'],
+      },
+    };
+
+    it('fetches the provider catalogue', (done) => {
+      service.providers().subscribe((entries) => {
+        expect(entries).toHaveLength(1);
+        expect(entries[0].id).toBe('canary_pay');
+        expect(entries[0].secretFields).toEqual(['merchantPassword']);
+        done();
+      });
+      http.expectOne('/api/v1/admin/payment-providers').flush({ data: [canary] });
+    });
+
+    it('accepts a provider id the admin has never heard of in a method', (done) => {
+      service.get('pm-9').subscribe((m) => {
+        expect(m.provider).toBe('canary_pay');
+        done();
+      });
+      http
+        .expectOne('/api/v1/admin/payment-methods/pm-9')
+        .flush({ data: { ...methodFixture, id: 'pm-9', provider: 'canary_pay' } });
+    });
+
+    it('accepts an unknown provider id on create', () => {
+      service
+        .create({ code: 'canary', name: { default: 'Canary' }, provider: 'canary_pay' })
+        .subscribe();
+      http.expectOne('/api/v1/admin/payment-methods').flush({
+        data: { ...methodFixture, provider: 'canary_pay' },
+      });
+    });
+  });
+
   it('reorder() propagates a 404 when ids are unknown', (done) => {
     service.reorder({ ids: ['xxx'] }).subscribe({
       next: () => done.fail('should have errored'),

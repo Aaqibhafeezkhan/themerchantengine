@@ -7,7 +7,7 @@ import type { Output } from './cli/ui';
 import { fakePorts } from './ports/fake';
 import { runSetup, runStepper } from './run';
 import { recordingShell } from './runner/recording-shell';
-import { readState } from './state/state-file';
+import { emptyState, readState, writeState } from './state/state-file';
 import { STEPS, stepsFor } from './steps';
 
 const ROOT = path.resolve(__dirname, '..', '..', '..');
@@ -75,6 +75,30 @@ describe('the example answers files', () => {
       expect(getPath(persisted.answers, secret)).toBeUndefined();
     expect(fs.readFileSync(stateFile, 'utf8')).not.toContain('CorrectHorse9x');
     expect(out.text).toContain('[1/');
+  });
+
+  it('takes no answer from an earlier run when a document drives it', async () => {
+    const stateFile = path.join(dir, 'state.json');
+    writeState(stateFile, {
+      ...emptyState(),
+      completedSteps: ['identity', 'mail'],
+      answers: { mail: { fromName: 'Old Store' } },
+    });
+    const state = await runStepper(
+      {
+        profile: null,
+        answersFile: LOCAL_EXAMPLE,
+        dryRun: false,
+        stateFile,
+        root: ROOT,
+        reset: false,
+        help: false,
+        version: false,
+      },
+      { out: output(), ports: fakePorts(), isTTY: false },
+    );
+    expect(state.answers.mail?.fromName).toBe('Atlas Demo');
+    expect(readState(stateFile).answers.mail?.fromName).toBe('Atlas Demo');
   });
 
   it('answers every server step with the hosts resolving to this box', async () => {

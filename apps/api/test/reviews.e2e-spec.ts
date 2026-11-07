@@ -301,6 +301,14 @@ describe('Reviews (e2e)', () => {
       expect(res.body.data.status).toBe('PUBLISHED');
     });
 
+    it('PATCH /v1/admin/reviews/:id/approve — 409 REVIEW_ALREADY_PUBLISHED on a second approve', async () => {
+      const res = await api()
+        .patch(`/v1/admin/reviews/${reviewId}/approve`)
+        .set('Cookie', adminCookie);
+      expect(res.status).toBe(409);
+      expect(res.body.error.code).toBe('REVIEW_ALREADY_PUBLISHED');
+    });
+
     it('GET /v1/products/:slug/reviews — shows approved review', async () => {
       const res = await api().get(`/v1/products/${productSlug}/reviews`).expect(200);
 

@@ -25,11 +25,11 @@ import {
   PaymentMethodsService,
   type CreatePaymentMethodRequest,
   type PaymentProvider,
+  type PaymentProviderCatalogueEntry,
 } from '@admin-services';
 import { ApiConflictError, ApiError, ApiForbiddenError } from '@admin-types';
 import { Subject, takeUntil } from 'rxjs';
 import { translatableRequired } from '../../shared/validators/translatable-required.validator';
-import { providerLabel } from './payments.utils';
 
 const CODE_REGEX = /^[a-z0-9_]+$/;
 
@@ -136,10 +136,30 @@ function codeFormat(control: AbstractControl): ValidationErrors | null {
             data-testid="pm-new-provider"
           >
             <option value="" disabled>— Select provider —</option>
-            @for (p of providerOptions; track p) {
-              <option [value]="p">{{ providerLabel(p) }}</option>
+            @for (p of providers(); track p.id) {
+              <option [value]="p.id">{{ p.label }}</option>
             }
           </select>
+          <div role="alert">
+            @if (providersError()) {
+              <p class="mt-2 text-xs text-ink" data-testid="pm-new-providers-error">
+                {{ providersError() }}
+                <button
+                  type="button"
+                  class="underline min-h-[44px] px-2"
+                  (click)="reloadProviders()"
+                  data-testid="pm-new-providers-retry"
+                >
+                  Retry
+                </button>
+              </p>
+            }
+          </div>
+          @if (!providersError() && providersLoaded() && providers().length === 0) {
+            <p class="mt-2 text-xs text-ink-muted" data-testid="pm-new-providers-empty">
+              No payment provider is registered on this server.
+            </p>
+          }
         </app-form-field>
 
         <div class="grid gap-4 md:grid-cols-2 items-start">
@@ -214,15 +234,10 @@ export class PaymentMethodNewPage implements OnInit, OnDestroy {
   readonly topError = signal<string | null>(null);
   readonly conflict = signal(false);
 
-  protected readonly providerLabel = providerLabel;
-
-  readonly providerOptions: readonly PaymentProvider[] = [
-    'stripe',
-    'paypal',
-    'cod',
-    'manual',
-    'gift_card',
-  ];
+  /** The API catalogue decides which providers exist, so a new one needs no admin change. */
+  readonly providers = signal<readonly PaymentProviderCatalogueEntry[]>([]);
+  readonly providersLoaded = signal(false);
+  readonly providersError = signal<string | null>(null);
 
   readonly form = this.fb.nonNullable.group({
     code: [
@@ -275,6 +290,23 @@ export class PaymentMethodNewPage implements OnInit, OnDestroy {
     this.form.controls.code.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
       if (this.conflict()) this.conflict.set(false);
     });
+    this.reloadProviders();
+  }
+
+  reloadProviders(): void {
+    this.providersError.set(null);
+    this.service
+      .providers()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (entries) => {
+          this.providers.set(entries);
+          this.providersLoaded.set(true);
+        },
+        error: () => {
+          this.providersError.set('Could not load the provider list.');
+        },
+      });
   }
 
   ngOnDestroy(): void {

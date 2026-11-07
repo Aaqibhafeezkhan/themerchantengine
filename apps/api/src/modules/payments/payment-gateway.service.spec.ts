@@ -1,16 +1,29 @@
 import { PaymentStatus, Prisma } from '@prisma/client';
 import { z } from 'zod';
+import { ConfigService } from '@nestjs/config';
+import { PaymentConfigCrypto } from './payment-config-crypto';
 import { PaymentGatewayService } from './payment-gateway.service';
 import { PaymentProviderRegistry } from './payment-provider.registry';
 import { PaymentProviderUnknownException } from './payment-provider-unknown.exception';
 import type { PaymentProvider } from './providers/payment-provider.interface';
 
-function fakeProvider(id: string): jest.Mocked<PaymentProvider<{ secret: string }>> {
+type FakeProvider = Omit<jest.Mocked<PaymentProvider<{ secret: string }>>, 'secretFields'> & {
+  secretFields: string[];
+};
+
+function fakeProvider(id: string): FakeProvider {
   const result = jest.fn(async () => ({ reference: `${id}-ref`, status: PaymentStatus.CAPTURED }));
   return {
     id,
+    label: id,
+    actionTypes: ['none'],
+    secretFields: [],
     configSchema: z.object({ secret: z.string() }),
-    createSession: jest.fn(async () => ({ reference: `${id}-ref`, status: PaymentStatus.PENDING })),
+    createSession: jest.fn(async () => ({
+      reference: `${id}-ref`,
+      status: PaymentStatus.PENDING,
+      action: { type: 'none' as const },
+    })),
     authorize: result,
     capture: result,
     refund: result,
@@ -21,8 +34,11 @@ function fakeProvider(id: string): jest.Mocked<PaymentProvider<{ secret: string 
       reference: `${id}-ref`,
       status: PaymentStatus.CAPTURED,
     })),
-  };
+  } as unknown as FakeProvider;
 }
+
+const KEY = Buffer.alloc(32, 9).toString('base64');
+const crypto = new PaymentConfigCrypto(new ConfigService({ PAYMENT_CONFIG_ENCRYPTION_KEY: KEY }));
 
 describe('PaymentGatewayService', () => {
   let provider: ReturnType<typeof fakeProvider>;
@@ -40,6 +56,7 @@ describe('PaymentGatewayService', () => {
     gateway = new PaymentGatewayService(
       prisma as never,
       new PaymentProviderRegistry([provider as PaymentProvider]),
+      crypto,
     );
   });
 
@@ -62,7 +79,11 @@ describe('PaymentGatewayService', () => {
       currencyCode: 'KWD',
       config: { secret: 's3' },
     });
-    expect(result).toEqual({ reference: 'fake-ref', status: PaymentStatus.PENDING });
+    expect(result).toEqual({
+      reference: 'fake-ref',
+      status: PaymentStatus.PENDING,
+      action: { type: 'none' },
+    });
   });
 
   it('refuses a config that fails the provider schema', async () => {
@@ -125,6 +146,15 @@ describe('PaymentGatewayService', () => {
     expect(provider.cancel).toHaveBeenCalledWith({ ...mutation, config: { secret: 's3' } });
   });
 
+  it('reads the live status from the provider with the config attached', async () => {
+    const op = { reference: 'fake-ref', status: PaymentStatus.PENDING };
+
+    const result = await gateway.getStatus('fake-card', op);
+
+    expect(provider.getStatus).toHaveBeenCalledWith({ ...op, config: { secret: 's3' } });
+    expect(result).toEqual(await provider.getStatus.mock.results[0].value);
+  });
+
   it('resolves soft-deleted methods for operations on existing orders', async () => {
     const op = { reference: 'fake-ref', status: PaymentStatus.PENDING };
     const amount = new Prisma.Decimal(5);
@@ -156,6 +186,16 @@ describe('PaymentGatewayService', () => {
 
   it('reports the provider id behind a method code', async () => {
     await expect(gateway.providerIdFor('fake-card')).resolves.toBe('fake');
+  });
+
+  it('says a method collects payment online only when its provider has a shopper step', async () => {
+    await expect(gateway.collectsPaymentOnline('fake-card')).resolves.toBe(false);
+
+    provider.actionTypes = ['redirect'];
+    await expect(gateway.collectsPaymentOnline('fake-card')).resolves.toBe(true);
+
+    provider.actionTypes = ['none', 'embedded'];
+    await expect(gateway.collectsPaymentOnline('fake-card')).resolves.toBe(true);
   });
 
   it('parses a webhook with the config of a method for that provider', async () => {
@@ -243,5 +283,34 @@ describe('PaymentGatewayService', () => {
       PaymentProviderUnknownException,
     );
     expect(provider.parseWebhook).not.toHaveBeenCalled();
+  });
+
+  it('decrypts the secret fields before the provider sees the config', async () => {
+    provider.secretFields = ['secret'];
+    const stored = crypto.encrypt({ secret: 's3' }, ['secret']);
+    findFirst.mockResolvedValue({ provider: 'fake', config: stored });
+
+    await gateway.openSession('fake-card', {
+      orderId: 'order-1',
+      amount: new Prisma.Decimal(1),
+      currencyCode: 'KWD',
+    });
+
+    expect(provider.createSession).toHaveBeenCalledWith(
+      expect.objectContaining({ config: { secret: 's3' } }),
+    );
+  });
+
+  it('decrypts the secret fields for webhook verification', async () => {
+    provider.secretFields = ['secret'];
+    findMany.mockResolvedValue([
+      { code: 'fake-card', provider: 'fake', config: crypto.encrypt({ secret: 's3' }, ['secret']) },
+    ]);
+
+    await gateway.parseWebhook('fake', {}, Buffer.from('{}'));
+
+    expect(provider.parseWebhook).toHaveBeenCalledWith(
+      expect.objectContaining({ config: { secret: 's3' } }),
+    );
   });
 });

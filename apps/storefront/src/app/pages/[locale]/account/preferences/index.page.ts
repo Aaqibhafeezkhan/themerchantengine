@@ -87,6 +87,7 @@ type PageState = 'idle' | 'loading' | 'ready' | 'error';
             [saving]="saving()"
             [externalError]="formError()"
             (submit)="onSubmit($event)"
+            (edited)="onPreferencesEdited()"
           />
         }
       }
@@ -215,6 +216,11 @@ export class AccountPreferencesPageComponent implements OnInit {
       }
       this.state.set('error');
     }
+  }
+
+  protected onPreferencesEdited(): void {
+    this.formError.set(null);
+    this.savedMessage.set(null);
   }
 
   protected async onSubmit(payload: UpdateNotificationPreferencesRequest): Promise<void> {

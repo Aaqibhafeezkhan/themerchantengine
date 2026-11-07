@@ -2,6 +2,7 @@ import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
+  IsDefined,
   IsInt,
   IsOptional,
   IsString,
@@ -69,6 +70,7 @@ export class CreateAdminOrderDto {
   @Type(() => AdminOrderItemDto)
   items!: AdminOrderItemDto[];
 
+  @IsDefined()
   @ValidateNested()
   @Type(() => AdminOrderAddressDto)
   shippingAddress!: AdminOrderAddressDto;

@@ -381,6 +381,9 @@ interface ShipmentInfo {
                     </h3>
                     <p id="account-order-cancel-body">
                       {{ strings().account.orderDetail.cancel.confirmBody }}
+                      @if (order()?.paymentStatus === 'AUTHORIZED') {
+                        {{ strings().account.orderDetail.cancel.confirmCardHold }}
+                      }
                     </p>
                     <div class="confirm-actions">
                       <app-button variant="tertiary" size="md" (clicked)="dismissCancel()">
@@ -515,16 +518,16 @@ interface ShipmentInfo {
         padding-block: 0.5rem;
         border-block-end: 1px solid var(--brand-border);
       }
-      /* Inline padding as well as block. Without it the narrow, right-aligned
-         Qty and Unit-price columns butt straight up against each other and
-         read as one token: "1QAR 480.00". */
-      .items-table thead th,
       .review-link {
         display: block;
         margin-block-start: 0.25rem;
         font-size: var(--brand-text-micro);
         color: var(--brand-primary);
       }
+      /* Inline padding as well as block. Without it the narrow, right-aligned
+         Qty and Unit-price columns butt straight up against each other and
+         read as one token: "1QAR 480.00". */
+      .items-table thead th,
       .items-table tbody td {
         padding-inline: 0.5rem;
       }
@@ -780,6 +783,7 @@ export class AccountOrderDetailPageComponent implements OnInit {
     const o = this.order();
     if (!o || o.invoice != null) return null;
     const copy = this.strings().account.orderDetail.invoice;
+    if (o.status === 'CANCELLED') return copy.reasonCancelled;
     return o.status === 'PENDING' ? copy.reasonNotConfirmed : copy.reasonPreparing;
   });
 

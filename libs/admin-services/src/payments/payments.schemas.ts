@@ -1,8 +1,24 @@
 import * as z from 'zod';
 import { entityIdSchema, paginationMetaSchema, translatableSchema } from '@admin-types';
 
-export const paymentProviderSchema = z.enum(['stripe', 'paypal', 'cod', 'manual', 'gift_card']);
+/** Provider ids come from the API catalogue, so a new provider needs no admin change. */
+export const paymentProviderSchema = z.string().regex(/^[a-z][a-z0-9_]*$/);
 export type PaymentProvider = z.infer<typeof paymentProviderSchema>;
+
+export const paymentActionTypeSchema = z.enum(['none', 'redirect', 'form_post', 'embedded']);
+export type PaymentActionType = z.infer<typeof paymentActionTypeSchema>;
+
+/** One registered provider as `GET /v1/admin/payment-providers` returns it. */
+export const paymentProviderCatalogueEntrySchema = z.object({
+  id: paymentProviderSchema,
+  label: z.string(),
+  actionTypes: z.array(paymentActionTypeSchema),
+  secretFields: z.array(z.string()),
+  configJsonSchema: z.record(z.string(), z.unknown()),
+});
+export type PaymentProviderCatalogueEntry = z.infer<typeof paymentProviderCatalogueEntrySchema>;
+
+export const paymentProviderCatalogueResponseSchema = z.array(paymentProviderCatalogueEntrySchema);
 
 export const paymentMethodSchema = z.object({
   id: entityIdSchema,

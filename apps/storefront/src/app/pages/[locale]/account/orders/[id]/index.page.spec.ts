@@ -181,6 +181,18 @@ describe('AccountOrderDetailPage', () => {
     expect(root.querySelector('[data-testid="account-order-items-table"]')).not.toBeNull();
   });
 
+  it('keeps the items table header cells in one row (S2-18)', async () => {
+    // A grouped selector gave the header cells `display: block`, so Items, Qty,
+    // Unit price and Line total stacked in one column over the rows.
+    const { fixture } = await renderDetail({ locale: 'en', authed: true });
+    const root = fixture.nativeElement as HTMLElement;
+    const cells = root.querySelectorAll('[data-testid="account-order-items-table"] thead th');
+    expect(cells.length).toBe(4);
+    for (const cell of Array.from(cells)) {
+      expect(getComputedStyle(cell).display).not.toBe('block');
+    }
+  });
+
   it('links an order item to the product it was bought from', async () => {
     // The name cell was plain text, so an order was a dead end: nothing led
     // back to the product. The storefront schema already tolerated
@@ -389,6 +401,40 @@ describe('AccountOrderDetailPage', () => {
     expect(ordersSvc.cancel).toHaveBeenCalledWith(sampleOrder.id);
   });
 
+  it('tells the shopper a card hold is released when cancelling an authorized order', async () => {
+    const { fixture } = await renderDetail({
+      locale: 'en',
+      authed: true,
+      getByIdResult: { ...sampleOrder, paymentStatus: 'AUTHORIZED' } as Order,
+    });
+    const root = fixture.nativeElement as HTMLElement;
+    (
+      Array.from(root.querySelectorAll('button')).find((b) =>
+        (b.textContent ?? '').toLowerCase().includes('cancel order'),
+      ) as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+    const body = root.querySelector('#account-order-cancel-body')?.textContent ?? '';
+    expect(body).toContain(getChromeStrings('en').account.orderDetail.cancel.confirmCardHold);
+  });
+
+  it('does not mention a card hold when the order has no authorized payment', async () => {
+    const { fixture } = await renderDetail({
+      locale: 'en',
+      authed: true,
+      getByIdResult: { ...sampleOrder, paymentStatus: 'PENDING' } as Order,
+    });
+    const root = fixture.nativeElement as HTMLElement;
+    (
+      Array.from(root.querySelectorAll('button')).find((b) =>
+        (b.textContent ?? '').toLowerCase().includes('cancel order'),
+      ) as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+    const body = root.querySelector('#account-order-cancel-body')?.textContent ?? '';
+    expect(body).not.toContain(getChromeStrings('en').account.orderDetail.cancel.confirmCardHold);
+  });
+
   it('renders the cancel error inline when cancel returns 409 conflict', async () => {
     const { fixture } = await renderDetail({
       locale: 'en',
@@ -580,6 +626,18 @@ describe('AccountOrderDetailPage honest invoice, payment, tracking and totals (M
     expect(invoiceButton(fixture).disabled).toBe(true);
     expect(reasonText(fixture)).toBe(
       getChromeStrings('en').account.orderDetail.invoice.reasonPreparing,
+    );
+  });
+
+  it('says a cancelled order with no invoice will not get one', async () => {
+    const { fixture } = await renderDetail({
+      locale: 'en',
+      authed: true,
+      getByIdResult: orderWith({ status: 'CANCELLED', invoice: null }),
+    });
+    expect(invoiceButton(fixture).disabled).toBe(true);
+    expect(reasonText(fixture)).toBe(
+      getChromeStrings('en').account.orderDetail.invoice.reasonCancelled,
     );
   });
 

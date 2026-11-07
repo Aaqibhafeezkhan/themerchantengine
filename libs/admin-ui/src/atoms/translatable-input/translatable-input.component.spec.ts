@@ -125,6 +125,13 @@ describe('TranslatableInputComponent', () => {
     expect(field.value).toBe('');
   });
 
+  it('marks the control touched when the text field loses focus', () => {
+    expect(host.control.touched).toBe(false);
+    const field = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+    field.dispatchEvent(new Event('focusout', { bubbles: true }));
+    expect(host.control.touched).toBe(true);
+  });
+
   it('writes per-locale edits into the control value', () => {
     switchLocale('en');
     typeInActive('Hi there');

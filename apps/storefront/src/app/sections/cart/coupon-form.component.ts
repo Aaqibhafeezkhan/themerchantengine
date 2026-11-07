@@ -71,6 +71,7 @@ export interface CouponFormGroup {
               [attr.aria-invalid]="error() ? 'true' : null"
               [attr.aria-describedby]="describedBy()"
               data-testid="cart-coupon-input"
+              (input)="edited.emit()"
             />
             <app-button
               type="submit"
@@ -214,6 +215,7 @@ export class CouponFormComponent {
 
   readonly apply = output<string>();
   readonly remove = output<void>();
+  readonly edited = output<void>();
 
   protected readonly Number = Number;
   protected readonly inputId = `cart-coupon-input-${Math.random().toString(36).slice(2, 8)}`;

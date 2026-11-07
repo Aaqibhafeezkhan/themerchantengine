@@ -5,6 +5,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ProductStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CategoriesService } from './categories.service';
+import { CategorySlugTakenException } from './category-slug-taken.exception';
+import { CategoryHasProductsException } from './category-has-products.exception';
 import { CATEGORIES_REDIS_CLIENT } from './categories.constants';
 import { CATEGORY_TREE_CACHE_KEY } from './categories.constants';
 
@@ -315,6 +317,15 @@ describe('CategoriesService', () => {
   // ── create ──────────────────────────────────────────────────────────────────
 
   describe('create', () => {
+    it('rejects a slug already used by another category with a stable code', async () => {
+      mockPrisma.category.findFirst.mockResolvedValueOnce(makeCategory({ slug: 'electronics' }));
+
+      await expect(
+        service.create({ name: { default: 'Electronics' }, slug: 'electronics' }),
+      ).rejects.toThrow(CategorySlugTakenException);
+      expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+    });
+
     it('creates a root category with correct path /id/', async () => {
       const created = makeCategory({ id: 'new-id', path: '/', depth: 0 });
       const updated = makeCategory({ id: 'new-id', path: '/new-id/', depth: 0 });
@@ -420,6 +431,19 @@ describe('CategoriesService', () => {
       expectScrubbed(create.mock.calls[0][0].data.description);
     });
 
+    it('rejects a slug change to one owned by another category', async () => {
+      const existing = makeCategory({ id: 'cat-1', parentId: null, slug: 'old' });
+      mockPrisma.category.findUnique.mockResolvedValueOnce(existing);
+      mockPrisma.category.findFirst.mockResolvedValueOnce(
+        makeCategory({ id: 'cat-2', slug: 'taken' }),
+      );
+
+      await expect(service.update('cat-1', { slug: 'taken' })).rejects.toThrow(
+        CategorySlugTakenException,
+      );
+      expect(mockPrisma.category.update).not.toHaveBeenCalled();
+    });
+
     it('scrubs the description on a plain update', async () => {
       const existing = makeCategory({ id: 'cat-1', parentId: null });
       mockPrisma.category.findUnique.mockResolvedValueOnce(existing);
@@ -480,7 +504,7 @@ describe('CategoriesService', () => {
       mockPrisma.category.findUnique.mockResolvedValueOnce(makeCategory());
       mockPrisma.productCategory.count.mockResolvedValueOnce(3);
 
-      await expect(service.delete('cat-1')).rejects.toThrow(ConflictException);
+      await expect(service.delete('cat-1')).rejects.toThrow(CategoryHasProductsException);
     });
 
     it('throws NotFoundException for unknown id', async () => {

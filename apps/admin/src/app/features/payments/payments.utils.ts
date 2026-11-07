@@ -1,22 +1,24 @@
 import type { BadgeTone } from '@admin-ui';
-import type { PaymentMethod, PaymentProvider } from '@admin-services';
+import type {
+  PaymentMethod,
+  PaymentProvider,
+  PaymentProviderCatalogueEntry,
+} from '@admin-services';
 import { pickTranslation, type Translatable } from '@admin-types';
 
-export function providerLabel(provider: PaymentProvider | string): string {
-  switch (provider) {
-    case 'stripe':
-      return 'Stripe';
-    case 'paypal':
-      return 'PayPal';
-    case 'cod':
-      return 'Cash on delivery';
-    case 'manual':
-      return 'Manual / bank transfer';
-    case 'gift_card':
-      return 'Gift card / store credit';
-    default:
-      return provider;
-  }
+export function findProvider(
+  provider: PaymentProvider | string,
+  catalogue: readonly PaymentProviderCatalogueEntry[],
+): PaymentProviderCatalogueEntry | null {
+  return catalogue.find((entry) => entry.id === provider) ?? null;
+}
+
+/** The label comes from the API catalogue, so a new provider needs no admin change. */
+export function providerLabel(
+  provider: PaymentProvider | string,
+  catalogue: readonly PaymentProviderCatalogueEntry[] = [],
+): string {
+  return findProvider(provider, catalogue)?.label ?? provider;
 }
 
 export function activeTone(isActive: boolean): BadgeTone {
@@ -41,7 +43,8 @@ export function methodLabel(
 }
 
 const MASKED_VALUE = '***';
-const SECRET_KEYS = new Set([
+/** Same legacy names the API masks for rows whose provider has no catalogue entry. */
+const LEGACY_SECRET_KEYS = new Set([
   'apiKey',
   'webhookSecret',
   'clientSecret',
@@ -49,8 +52,11 @@ const SECRET_KEYS = new Set([
   'signingSecret',
 ]);
 
-export function isSecretKey(key: string): boolean {
-  return SECRET_KEYS.has(key);
+export function isSecretKey(
+  key: string,
+  entry?: Pick<PaymentProviderCatalogueEntry, 'secretFields'> | null,
+): boolean {
+  return LEGACY_SECRET_KEYS.has(key) || (entry?.secretFields.includes(key) ?? false);
 }
 
 export function isMasked(value: unknown): boolean {
@@ -58,9 +64,13 @@ export function isMasked(value: unknown): boolean {
 }
 
 /** Display helper — mask-aware preview for a config value. */
-export function displayConfigValue(key: string, value: unknown): string {
+export function displayConfigValue(
+  key: string,
+  value: unknown,
+  entry?: Pick<PaymentProviderCatalogueEntry, 'secretFields'> | null,
+): string {
   if (value === null || value === undefined) return '—';
-  if (isSecretKey(key) && typeof value === 'string') {
+  if (isSecretKey(key, entry) && typeof value === 'string') {
     return value === MASKED_VALUE ? 'Stored (hidden)' : value;
   }
   if (typeof value === 'boolean') return value ? 'Yes' : 'No';

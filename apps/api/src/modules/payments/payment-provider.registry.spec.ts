@@ -18,8 +18,11 @@ function fakeProvider(id: string): PaymentProvider {
   const result = async () => ({ reference: `${id}-ref`, status: PaymentStatus.PENDING });
   return {
     id,
+    label: id,
+    actionTypes: ['none'],
+    secretFields: [],
     configSchema: z.object({}),
-    createSession: result,
+    createSession: async () => ({ ...(await result()), action: { type: 'none' } }),
     authorize: result,
     capture: result,
     refund: result,
@@ -121,8 +124,8 @@ describe('payment provider module array', () => {
     expect(new Set(PAYMENT_PROVIDER_IDS).size).toBe(PAYMENT_PROVIDER_IDS.length);
   });
 
-  it('offers the storefront only the registered providers that need no checkout flow', () => {
-    expect(STOREFRONT_PAYMENT_PROVIDERS).toEqual(['cod', 'manual']);
+  it('offers the storefront every registered provider that declares itself checkout-ready', () => {
+    expect(STOREFRONT_PAYMENT_PROVIDERS).toEqual(['cod', 'manual', 'stripe']);
     for (const id of STOREFRONT_PAYMENT_PROVIDERS) {
       expect(REGISTERED_PAYMENT_PROVIDER_IDS).toContain(id);
     }

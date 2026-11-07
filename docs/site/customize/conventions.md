@@ -66,8 +66,9 @@ A sensitive write takes `X-Idempotency-Key` through `@IdempotencyKey(Idempotency
 - The return refund, `apps/api/src/modules/returns/returns.controller.ts`.
 - The manual search-engine submission, `apps/api/src/modules/seo/seo.controller.ts`.
 - The webhook test delivery, `apps/api/src/modules/webhooks/webhooks.controller.ts`.
+- The payment retry and the payment confirm on an order, `POST /v1/orders/:id/payment` and `POST /v1/orders/:id/payment/confirm`, in `apps/api/src/modules/orders/orders.controller.ts`.
 
-Gift-card redemption is not its own endpoint: `redeem` in `apps/api/src/modules/gift-cards/gift-cards.service.ts` runs inside order creation and rides the order's key. No card payment provider exists, so no payment endpoint carries one yet.
+Gift-card redemption is not its own endpoint: `redeem` in `apps/api/src/modules/gift-cards/gift-cards.service.ts` runs inside order creation and rides the order's key.
 
 `apps/api/src/common/idempotency.service.ts` owns the state machine:
 

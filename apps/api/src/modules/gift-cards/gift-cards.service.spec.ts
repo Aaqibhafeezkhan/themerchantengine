@@ -54,7 +54,9 @@ function makePrismaMock() {
     },
     giftCardTransaction: {
       create: jest.fn(),
+      findMany: jest.fn(),
     },
+    $transaction: jest.fn(),
   };
 }
 
@@ -166,6 +168,54 @@ describe('GiftCardsService', () => {
   });
 
   // ── redeem ─────────────────────────────────────────────────────────────────
+
+  describe('restoreForOrder', () => {
+    beforeEach(() => {
+      prisma.$transaction.mockImplementation((cb: (tx: unknown) => Promise<unknown>) => cb(prisma));
+    });
+
+    it('credits back what the order spent and writes a restore row', async () => {
+      prisma.giftCardTransaction.findMany.mockResolvedValue([
+        { giftCardId: 'gc-1', amount: -40, note: 'Order redemption' },
+      ]);
+      prisma.giftCard.updateMany.mockResolvedValue({ count: 1 });
+
+      await service.restoreForOrder('order-1');
+
+      expect(prisma.giftCard.updateMany).toHaveBeenCalledWith({
+        where: { id: 'gc-1' },
+        data: { currentBalance: { increment: 40 } },
+      });
+      expect(prisma.giftCardTransaction.create).toHaveBeenCalledWith({
+        data: {
+          giftCardId: 'gc-1',
+          amount: 40,
+          orderId: 'order-1',
+          note: 'Order cancellation restore',
+        },
+      });
+    });
+
+    it('does nothing when the card was already restored', async () => {
+      prisma.giftCardTransaction.findMany.mockResolvedValue([
+        { giftCardId: 'gc-1', amount: -40, note: 'Order redemption' },
+        { giftCardId: 'gc-1', amount: 40, note: 'Order cancellation restore' },
+      ]);
+
+      await service.restoreForOrder('order-1');
+
+      expect(prisma.giftCard.updateMany).not.toHaveBeenCalled();
+      expect(prisma.giftCardTransaction.create).not.toHaveBeenCalled();
+    });
+
+    it('does nothing when the order spent no gift card', async () => {
+      prisma.giftCardTransaction.findMany.mockResolvedValue([]);
+
+      await service.restoreForOrder('order-1');
+
+      expect(prisma.giftCard.updateMany).not.toHaveBeenCalled();
+    });
+  });
 
   describe('redeem', () => {
     it('atomically decrements balance and logs transaction', async () => {

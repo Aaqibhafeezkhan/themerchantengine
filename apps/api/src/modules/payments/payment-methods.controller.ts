@@ -36,6 +36,19 @@ export class PaymentMethodsController {
     return this.service.list(query);
   }
 
+  /** Before the `:id` route so `payment-providers` is its own path. */
+  @Get(ADMIN_API_ROUTES.paymentMethods.providers)
+  @Permissions('payment_methods:view')
+  @RateLimit.Admin()
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List registered payment providers with their config schema' })
+  @ApiResponse({ status: 200, description: 'Providers retrieved' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  providers() {
+    return this.service.providerCatalogue();
+  }
+
   /** Reorder before the `:id` route so the segment doesn't shadow. */
   @Post(ADMIN_API_ROUTES.paymentMethods.reorder)
   @Permissions('payment_methods:update')

@@ -93,6 +93,21 @@ describe('CouponFormComponent', () => {
     ).toContain('Bad coupon');
   });
 
+  it('emits edited when the customer types, so the page can clear a stale error (S2-14)', async () => {
+    const fixture = await renderComponent(CouponFormComponent, { error: 'Bad coupon' }, [
+      provideRouter([]),
+      LocaleService,
+    ]);
+    let edits = 0;
+    fixture.componentInstance.edited.subscribe(() => edits++);
+    const input = fixture.nativeElement.querySelector(
+      'input[data-testid="cart-coupon-input"]',
+    ) as HTMLInputElement;
+    input.value = 'SAVE1';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(edits).toBe(1);
+  });
+
   it('axe — zero serious / critical violations on form state', async () => {
     const fixture = await renderComponent(CouponFormComponent, {}, [
       provideRouter([]),

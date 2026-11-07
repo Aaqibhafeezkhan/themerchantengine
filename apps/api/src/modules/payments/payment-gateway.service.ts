@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PaymentConfigCrypto } from './payment-config-crypto';
 import { PaymentProviderRegistry } from './payment-provider.registry';
 import { PaymentProviderUnknownException } from './payment-provider-unknown.exception';
 import type {
@@ -10,6 +11,7 @@ import type {
   PaymentProviderResult,
   PaymentRefundInput,
   PaymentSessionInput,
+  PaymentSessionResult,
   PaymentWebhookEvent,
   PaymentWebhookInput,
 } from './providers/payment-provider.interface';
@@ -43,12 +45,13 @@ export class PaymentGatewayService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly registry: PaymentProviderRegistry,
+    private readonly crypto: PaymentConfigCrypto,
   ) {}
 
   async openSession(
     methodCode: string,
     input: WithoutConfig<PaymentSessionInput>,
-  ): Promise<PaymentProviderResult> {
+  ): Promise<PaymentSessionResult> {
     const { provider, config } = await this.resolveByCode(methodCode, { deletedAt: null });
     return provider.createSession({ ...input, config });
   }
@@ -59,6 +62,14 @@ export class PaymentGatewayService {
   ): Promise<PaymentProviderResult> {
     const { provider, config } = await this.resolveByCode(methodCode);
     return provider.authorize({ ...input, config });
+  }
+
+  async getStatus(
+    methodCode: string,
+    input: WithoutConfig<PaymentOperationInput>,
+  ): Promise<PaymentProviderResult> {
+    const { provider, config } = await this.resolveByCode(methodCode);
+    return provider.getStatus({ ...input, config });
   }
 
   async capture(
@@ -91,6 +102,16 @@ export class PaymentGatewayService {
   }
 
   /**
+   * Whether the shopper completes payment through the provider (a card form or
+   * a hosted page). Cash on delivery and bank transfer answer false: the
+   * money moves outside the engine, so there is nothing to pay again.
+   */
+  async collectsPaymentOnline(methodCode: string): Promise<boolean> {
+    const { provider } = await this.resolveByCode(methodCode);
+    return provider.actionTypes.some((type) => type !== 'none');
+  }
+
+  /**
    * Verifies and parses an inbound webhook against every method of the
    * provider. Returns the event from the first that verifies and the codes of
    * all that verify, so the caller only moves orders on those methods.
@@ -118,7 +139,7 @@ export class PaymentGatewayService {
         const parsed = await provider.parseWebhook({
           headers,
           rawBody,
-          config: provider.configSchema.parse(row.config),
+          config: this.parseConfig(provider, row.config),
         });
         event ??= parsed;
         methodCodes.push(row.code);
@@ -142,6 +163,14 @@ export class PaymentGatewayService {
     });
     if (!row) throw new PaymentProviderUnknownException(methodCode);
     const provider = this.registry.get(row.provider);
-    return { provider, config: provider.configSchema.parse(row.config) };
+    return { provider, config: this.parseConfig(provider, row.config) };
+  }
+
+  private parseConfig(provider: PaymentProvider, stored: unknown): unknown {
+    const plain = this.crypto.decrypt(
+      (stored ?? {}) as Record<string, unknown>,
+      provider.secretFields,
+    );
+    return provider.configSchema.parse(plain);
   }
 }

@@ -7,6 +7,7 @@ import {
   legalNextStatuses,
   manualStatusOptions,
   orderStatusTone,
+  paymentActionsFor,
   paymentStatusTone,
   shipmentStatusLabel,
 } from './orders.utils';
@@ -153,5 +154,20 @@ describe('orders.utils', () => {
     it('falls back to a raw string when Intl cannot format the ISO code', () => {
       expect(formatMoney(10, 'ZZZ')).toMatch(/10/);
     });
+  });
+});
+
+describe('paymentActionsFor', () => {
+  it.each([
+    ['PENDING', ['cancel']],
+    ['AUTHORIZED', ['capture', 'cancel']],
+    ['CAPTURED', ['refund']],
+    ['PARTIALLY_REFUNDED', []],
+    ['REFUNDED', []],
+    ['FAILED', []],
+    ['CANCELLED', []],
+    [undefined, []],
+  ])('%s offers %j', (status, expected) => {
+    expect(paymentActionsFor(status)).toEqual(expected);
   });
 });

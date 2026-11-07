@@ -1,4 +1,5 @@
 import {
+  IsDefined,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -25,14 +26,17 @@ export class PromotionalBannerConfigDto {
   @IsUUID()
   assetId: string;
 
+  @IsDefined()
   @ValidateNested()
   @Type(() => TranslatableDto)
   eyebrow: TranslatableDto;
 
+  @IsDefined()
   @ValidateNested()
   @Type(() => TranslatableDto)
   headline: TranslatableDto;
 
+  @IsDefined()
   @ValidateNested()
   @Type(() => TranslatableDto)
   body: TranslatableDto;

@@ -1,4 +1,4 @@
-import { isPlatformBrowser } from '@angular/common';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -17,7 +17,7 @@ import type {
   Address,
   Cart,
   CreateOrderRequest,
-  Order,
+  PaymentAction,
   ShippingMethodQuote,
   StorefrontCheckoutSettings,
   StorefrontPaymentMethod,
@@ -39,6 +39,7 @@ import {
   CheckoutStepShellComponent,
   type CheckoutStepState,
 } from '../../../sections/checkout/checkout-step-shell.component';
+import { EmbeddedPaymentHostComponent } from '../../../sections/checkout/embedded-payment-host.component';
 import { OrderSummaryComponent } from '../../../sections/checkout/order-summary.component';
 import { ShippingMethodStepComponent } from '../../../sections/checkout/shipping-method-step.component';
 import {
@@ -48,6 +49,10 @@ import {
 import { PaymentMethodStepComponent } from '../../../sections/checkout/payment-method-step.component';
 import { buildStepSummary } from '../../../sections/checkout/step-summary';
 import { PlaceOrderCtaComponent } from '../../../sections/checkout/place-order-cta.component';
+import {
+  browserPaymentActionEnv,
+  runPaymentAction,
+} from '../../../sections/checkout/payment-action';
 import { pageTitle } from '../../../../lib/seo';
 import { formatMoney } from '../../../../lib/money';
 import { resolveDiscountLabel } from '../../../sections/cart/discount-label';
@@ -75,6 +80,7 @@ type CheckoutStep = 1 | 2 | 3 | 4 | 5;
     AddressPickerComponent,
     ButtonComponent,
     CheckoutStepShellComponent,
+    EmbeddedPaymentHostComponent,
     GuestContactComponent,
     OrderSummaryComponent,
     PaymentMethodStepComponent,
@@ -143,6 +149,7 @@ type CheckoutStep = 1 | 2 | 3 | 4 | 5;
             [addresses]="addresses()"
             [guest]="isGuest()"
             (addressSelected)="onAddressSelected($event)"
+            (addressSaved)="onAddressSaved($event)"
           />
           @if (step1Complete()) {
             <div class="step-actions">
@@ -231,6 +238,16 @@ type CheckoutStep = 1 | 2 | 3 | 4 | 5;
             (placeOrder)="placeOrder()"
           />
         </app-checkout-step-shell>
+
+        @if (embeddedPayment(); as embedded) {
+          <section data-testid="checkout-embedded-payment">
+            <h2>{{ strings().orderConfirmation.paymentEmbeddedTitle }}</h2>
+            <app-embedded-payment-host
+              [action]="embedded.action"
+              [returnUrl]="returnUrl(embedded.orderNumber)"
+            />
+          </section>
+        }
       }
     </main>
   `,
@@ -378,8 +395,14 @@ export default class CheckoutPage implements OnInit, OnDestroy {
   private readonly meta = inject(Meta);
   private readonly title = inject(Title);
   private readonly locale = inject(LocaleService);
+  private readonly document = inject(DOCUMENT);
   private readonly storeConfig = inject(StoreConfigService);
   protected readonly strings = this.locale.strings;
+
+  protected returnUrl(orderNumber: string): string {
+    const path = APP_ROUTES.orderConfirmation(this.locale.locale(), orderNumber);
+    return `${this.document.location.origin}${path}`;
+  }
 
   protected readonly cartHref = computed(() => APP_ROUTES.cart(this.locale.locale()));
   protected readonly loginHref = computed(() => APP_ROUTES.auth.login(this.locale.locale()));
@@ -533,6 +556,10 @@ export default class CheckoutPage implements OnInit, OnDestroy {
 
   protected reload(): void {
     this.bootstrap();
+  }
+
+  protected onAddressSaved(addr: Address): void {
+    this.addresses.update((list) => (list.some((a) => a.id === addr.id) ? list : [...list, addr]));
   }
 
   protected async onAddressSelected(addr: Address): Promise<void> {
@@ -740,6 +767,13 @@ export default class CheckoutPage implements OnInit, OnDestroy {
     }
   }
 
+  /** Set when the provider needs a component on this page (`embedded`). */
+  protected readonly embeddedPayment = signal<{
+    orderId: string;
+    orderNumber: string;
+    action: Extract<PaymentAction, { type: 'embedded' }>;
+  } | null>(null);
+
   protected async placeOrder(): Promise<void> {
     const addr = this.selectedAddress();
     const key = this.idempotencyKey();
@@ -769,7 +803,7 @@ export default class CheckoutPage implements OnInit, OnDestroy {
       ...(c.giftCard?.code ? { giftCardCode: c.giftCard.code } : {}),
     } as CreateOrderRequest;
     try {
-      const order: Order = await this.orders.create(payload, key);
+      const order = await this.orders.create(payload, key);
       // On the create-success path, not on the confirmation page: a
       // confirmation-page hook re-fires on every reload, and a doubled
       // purchase doubles the revenue the operator reads. Not awaited, so a
@@ -783,6 +817,16 @@ export default class CheckoutPage implements OnInit, OnDestroy {
       // create per docs/storefront-api-reference.md:603. Ignore failures so the
       // post-success redirect is not blocked by a transient cart fetch error.
       this.cartSvc.get().catch(() => undefined);
+      const outcome = runPaymentAction(order.paymentAction, browserPaymentActionEnv);
+      if (outcome.kind === 'left') return;
+      if (outcome.kind === 'embedded') {
+        this.embeddedPayment.set({
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          action: outcome.action,
+        });
+        return;
+      }
       void this.router.navigateByUrl(
         APP_ROUTES.orderConfirmation(this.locale.locale(), order.orderNumber),
         { state: { orderId: order.id } },
@@ -821,6 +865,16 @@ export default class CheckoutPage implements OnInit, OnDestroy {
     if (code === 'SHIPPING_UNAVAILABLE') return errors.shippingUnavailable;
     if (code === 'ORDER_PAYMENT_METHOD_INVALID') return errors.paymentMethodInvalid;
     if (code === 'ORDER_PAYMENT_METHOD_UNAVAILABLE') return errors.paymentMethodUnavailable;
+    if (code === 'ORDER_PAYMENT_NOT_RETRYABLE') return errors.paymentNotRetryable;
+    if (
+      code === 'PAYMENT_PROVIDER_UNAVAILABLE' ||
+      code === 'PAYMENT_PROVIDER_REJECTED' ||
+      code === 'PAYMENT_CONFIG_ENCRYPTION_UNAVAILABLE' ||
+      code === 'PAYMENT_PROVIDER_UNKNOWN' ||
+      code === 'ORDER_PAYMENT_NOT_OPENED'
+    ) {
+      return errors.paymentProviderUnavailable;
+    }
     if (code === 'ORDER_GUEST_CHECKOUT_DISABLED') return errors.guestCheckoutDisabled;
     if (err instanceof StorefrontUnauthorizedError) {
       // The submit handler navigates to login; surface a transient message

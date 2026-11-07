@@ -358,7 +358,7 @@ import {
                             Edit
                           </app-button>
                         }
-                        @if (canCreate() && s.status === 'active' && !isSuperAdmin(s)) {
+                        @if (canDelete() && s.status === 'active' && !isSuperAdmin(s)) {
                           <app-button
                             variant="destructive"
                             size="sm"
@@ -426,6 +426,9 @@ export class StaffListPage implements OnInit, OnDestroy {
 
   readonly canCreate = computed(() =>
     this.authStore.hasAnyPermission(['admin_users:create', 'admin_users:manage']),
+  );
+  readonly canDelete = computed(() =>
+    this.authStore.hasAnyPermission(['admin_users:delete', 'admin_users:manage']),
   );
   readonly canEdit = computed(() =>
     this.authStore.hasAnyPermission(['admin_users:update', 'admin_users:manage']),

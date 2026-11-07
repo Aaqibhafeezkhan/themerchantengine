@@ -131,6 +131,13 @@ describe('AuthRegisterPage', () => {
     ) as HTMLElement;
     expect(err?.textContent?.trim().length).toBeGreaterThan(0);
     expect(fixture.nativeElement.querySelector('[data-testid="auth-register-success"]')).toBeNull();
+
+    // sibling of S2-5: the banner describes the previous attempt, so editing clears it
+    (fixture.nativeElement.querySelector('form input') as HTMLInputElement).dispatchEvent(
+      new Event('input', { bubbles: true }),
+    );
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[data-testid="auth-register-error"]')).toBeNull();
   });
 
   it('renders zero serious or critical axe violations', async () => {

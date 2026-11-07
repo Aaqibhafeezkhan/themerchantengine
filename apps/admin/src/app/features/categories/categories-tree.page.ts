@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  Injector,
   OnDestroy,
   OnInit,
   computed,
@@ -10,6 +11,7 @@ import {
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import {
+  CDK_DROP_LIST,
   CdkDrag,
   CdkDragDrop,
   CdkDragHandle,
@@ -121,6 +123,7 @@ import { StoreSettingsStore } from '../../core/stores/store-settings.store';
         } @else {
           <ul
             cdkDropList
+            #rootList="cdkDropList"
             [cdkDropListData]="tree()"
             [cdkDropListDisabled]="!canReorder() || reordering()"
             (cdkDropListDropped)="drop($event, null)"
@@ -130,7 +133,11 @@ import { StoreSettingsStore } from '../../core/stores/store-settings.store';
           >
             @for (node of tree(); track node.id) {
               <ng-container
-                *ngTemplateOutlet="rowTemplate; context: { $implicit: node, parentId: null }"
+                *ngTemplateOutlet="
+                  rowTemplate;
+                  context: { $implicit: node, parentId: null };
+                  injector: dropListInjector(rootList)
+                "
               ></ng-container>
             }
           </ul>
@@ -200,6 +207,7 @@ import { StoreSettingsStore } from '../../core/stores/store-settings.store';
         @if (isExpanded(node.id) && node.children.length > 0) {
           <ul
             cdkDropList
+            #childList="cdkDropList"
             [cdkDropListData]="node.children"
             [cdkDropListDisabled]="!canReorder() || reordering()"
             (cdkDropListDropped)="drop($event, node.id)"
@@ -209,7 +217,11 @@ import { StoreSettingsStore } from '../../core/stores/store-settings.store';
           >
             @for (child of node.children; track child.id) {
               <ng-container
-                *ngTemplateOutlet="rowTemplate; context: { $implicit: child, parentId: node.id }"
+                *ngTemplateOutlet="
+                  rowTemplate;
+                  context: { $implicit: child, parentId: node.id };
+                  injector: dropListInjector(childList)
+                "
               ></ng-container>
             }
           </ul>
@@ -223,6 +235,8 @@ export class CategoriesTreePage implements OnInit, OnDestroy {
   private readonly authStore = inject(AuthStore);
   private readonly storeSettings = inject(StoreSettingsStore);
   private readonly destroy$ = new Subject<void>();
+  private readonly parentInjector = inject(Injector);
+  private readonly dropListInjectors = new WeakMap<CdkDropList, Injector>();
 
   readonly loading = signal(true);
   readonly reordering = signal(false);
@@ -239,6 +253,24 @@ export class CategoriesTreePage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.fetch();
+  }
+
+  /**
+   * The row template is declared once at the component root, so a `cdkDrag`
+   * stamped from it cannot find its drop list through the element tree and
+   * never registers. This injector hands each row the list it renders in.
+   * Cached per list so the outlet does not re-stamp rows on every change.
+   */
+  dropListInjector(list: CdkDropList): Injector {
+    let injector = this.dropListInjectors.get(list);
+    if (!injector) {
+      injector = Injector.create({
+        providers: [{ provide: CDK_DROP_LIST, useValue: list }],
+        parent: this.parentInjector,
+      });
+      this.dropListInjectors.set(list, injector);
+    }
+    return injector;
   }
 
   ngOnDestroy(): void {

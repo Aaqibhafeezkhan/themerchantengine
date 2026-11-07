@@ -42,6 +42,7 @@ export interface QuestionFormSubmit {
         <textarea
           [id]="fieldId('question')"
           formControlName="question"
+          (input)="formError.set(null)"
           rows="3"
           maxlength="1000"
           required

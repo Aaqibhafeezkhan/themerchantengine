@@ -1,9 +1,10 @@
 import { IsEnabledLocaleValue } from '../../../common/dto/translatable-locale-keys.dto';
 import { Type } from 'class-transformer';
 import {
+  IsDefined,
+  IsISO8601,
   IsIn,
   IsInt,
-  IsISO8601,
   IsObject,
   IsOptional,
   IsString,
@@ -32,10 +33,12 @@ export class CreateCampaignDto {
   @MaxLength(200)
   name!: string;
 
+  @IsDefined()
   @ValidateNested()
   @Type(() => CampaignTranslatableDto)
   subject!: CampaignTranslatableDto;
 
+  @IsDefined()
   @ValidateNested()
   @Type(() => CampaignTranslatableDto)
   body!: CampaignTranslatableDto;

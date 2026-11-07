@@ -70,6 +70,7 @@ export interface TranslatableValue {
         [attr.aria-labelledby]="idPrefix() + '-' + activeLocale()"
         [attr.lang]="activeLocale()"
         [attr.dir]="activeDir()"
+        (focusout)="onTouched()"
       >
         @if (multiline()) {
           <app-textarea
@@ -182,7 +183,7 @@ export class TranslatableInputComponent implements ControlValueAccessor {
   );
 
   private onChange: (v: TranslatableValue) => void = () => undefined;
-  private onTouched: () => void = () => undefined;
+  protected onTouched: () => void = () => undefined;
 
   panelId(locale: string): string {
     return `${this.idPrefix()}-panel-${locale}`;

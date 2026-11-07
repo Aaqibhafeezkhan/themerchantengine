@@ -30,6 +30,7 @@ import { ButtonComponent } from '../../ui/button.component';
       class="form"
       [formGroup]="form"
       (ngSubmit)="onSubmit()"
+      (change)="onEdit()"
       novalidate
       data-testid="account-preferences-form"
     >
@@ -168,6 +169,7 @@ export class PreferencesFormComponent implements OnChanges {
   readonly externalError = input<string | null>(null);
 
   @Output() readonly submit = new EventEmitter<UpdateNotificationPreferencesRequest>();
+  @Output() readonly edited = new EventEmitter<void>();
 
   private readonly fb = inject(FormBuilder);
   private readonly locale = inject(LocaleService);
@@ -193,6 +195,12 @@ export class PreferencesFormComponent implements OnChanges {
     if (changes['externalError']) {
       this.formError.set(this.externalError());
     }
+  }
+
+  // A DOM event, not valueChanges: form.reset after a save would also emit and wipe the fresh banner.
+  protected onEdit(): void {
+    this.formError.set(null);
+    this.edited.emit();
   }
 
   protected onSubmit(): void {

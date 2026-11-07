@@ -9,7 +9,7 @@ import {
   STOREFRONT_API_CLIENT,
   type ApiClient,
 } from '@storefront-services';
-import { StorefrontUnauthorizedError } from '@storefront-types';
+import { StorefrontUnauthorizedError, type PaymentAction } from '@storefront-types';
 
 import { LocaleService } from '../../../locale.service';
 import { AuthStateService } from '../../../services/auth-state.service';
@@ -63,7 +63,24 @@ class StubOrdersService extends OrdersService {
     if (this.failure === 'not-found' && id === 'ord-missing') {
       throw new Error('not found');
     }
-    return seedOrder as never;
+    return this.order as never;
+  }
+  order: unknown = seedOrder;
+  confirmCalls: string[] = [];
+  retryCalls: string[] = [];
+  confirmResult: string | Error = 'CAPTURED';
+  retryResult: PaymentAction | Error = { type: 'redirect', url: 'https://pay.example/retry' };
+  override async confirmPayment(id: string, key: string): Promise<string> {
+    expect(key).toMatch(/^[0-9a-f-]{36}$/);
+    this.confirmCalls.push(id);
+    if (this.confirmResult instanceof Error) throw this.confirmResult;
+    return this.confirmResult;
+  }
+  override async retryPayment(id: string, key: string): Promise<PaymentAction> {
+    expect(key).toMatch(/^[0-9a-f-]{36}$/);
+    this.retryCalls.push(id);
+    if (this.retryResult instanceof Error) throw this.retryResult;
+    return this.retryResult;
   }
   override async list(): Promise<never> {
     return { data: [seedOrder], meta: { page: 1, pageSize: 5, total: 1, totalPages: 1 } } as never;
@@ -182,6 +199,23 @@ describe('OrderConfirmationPage', () => {
     ) as HTMLElement;
     expect(number?.textContent).toContain('AKL-0001');
     history.replaceState({}, '');
+  });
+
+  // Finding C24/C30. Stripe appends the PaymentIntent client secret to the
+  // return URL; it must not stay in the address bar, history or a shared link.
+  it('removes the provider return params from the address bar and keeps the rest', async () => {
+    history.replaceState(
+      { orderId: 'ord-1' },
+      '',
+      '/en/order-confirmation/AKL-0001?payment_intent=pi_1&payment_intent_client_secret=pi_1_secret_x&redirect_status=succeeded&ref=mail',
+    );
+    const fixture = await renderComponent(OrderConfirmationPage, {}, commonProviders('AKL-0001'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(window.location.search).toBe('?ref=mail');
+    expect(history.state).toMatchObject({ orderId: 'ord-1' });
+    history.replaceState({}, '', '/');
   });
 
   it('offers the public track page to an anonymous visitor with no hint', async () => {
@@ -323,6 +357,186 @@ describe('OrderConfirmationPage', () => {
     expect(row.textContent).toContain(
       getChromeStrings(locale).account.orderDetail.payment.cashOnDelivery,
     );
+  });
+
+  describe('payment state', () => {
+    const pendingOrder = {
+      ...seedOrder,
+      paymentStatus: 'PENDING',
+      paymentMethodCode: 'card',
+      paymentRetryable: true,
+    };
+
+    async function render(stub: StubOrdersService) {
+      const fixture = await renderComponent(OrderConfirmationPage, {}, [
+        ...commonProviders('AKL-0001'),
+        { provide: OrdersService, useValue: stub },
+      ]);
+      await fixture.whenStable();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    function makeStub(order: unknown): StubOrdersService {
+      const stub = new StubOrdersService(noopApi);
+      stub.order = order;
+      return stub;
+    }
+
+    it('re-reads the payment status once when the order is still payable', async () => {
+      const stub = makeStub(pendingOrder);
+      const fixture = await render(stub);
+      expect(stub.confirmCalls).toEqual(['ord-1']);
+      const status = fixture.nativeElement.querySelector(
+        '[data-testid="order-confirmation-payment-status"]',
+      ) as HTMLElement;
+      const locale = TestBed.inject(LocaleService).locale();
+      expect(status.textContent).toContain(
+        getChromeStrings(locale).orderConfirmation.paymentStatus.CAPTURED,
+      );
+    });
+
+    it('does not ask the provider again for an order that is not retryable', async () => {
+      const stub = makeStub({ ...seedOrder, paymentStatus: 'CAPTURED', paymentRetryable: false });
+      await render(stub);
+      expect(stub.confirmCalls).toEqual([]);
+    });
+
+    it('does not call a cancelled order confirmed and offers no pay again', async () => {
+      const stub = makeStub({ ...pendingOrder, status: 'CANCELLED', paymentRetryable: false });
+      const fixture = await render(stub);
+      const strings = getChromeStrings(TestBed.inject(LocaleService).locale());
+      const root = fixture.nativeElement as HTMLElement;
+      expect(root.querySelector('.heading')?.textContent).toContain(
+        strings.orderConfirmation.cancelledHeading,
+      );
+      expect(root.querySelector('.heading')?.textContent).not.toContain(
+        strings.orderConfirmation.heading,
+      );
+      expect(root.querySelector('[data-testid="order-confirmation-pay-again"]')).toBeNull();
+    });
+
+    it('says pay on delivery, not waiting for payment, for an offline method', async () => {
+      const stub = makeStub({
+        ...seedOrder,
+        paymentStatus: 'PENDING',
+        paymentMethodCode: 'cod',
+        paymentRetryable: false,
+      });
+      const fixture = await render(stub);
+      const strings = getChromeStrings(TestBed.inject(LocaleService).locale());
+      const text = (
+        fixture.nativeElement.querySelector(
+          '[data-testid="order-confirmation-payment-status"]',
+        ) as HTMLElement
+      ).textContent;
+      expect(text).toContain(strings.orderConfirmation.paymentOnDelivery);
+      expect(text).not.toContain(strings.orderConfirmation.paymentStatus.PENDING);
+    });
+
+    it('shows the pay again button only while the order is retryable', async () => {
+      const stub = makeStub(pendingOrder);
+      stub.confirmResult = 'PENDING';
+      const fixture = await render(stub);
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="order-confirmation-pay-again"]'),
+      ).not.toBeNull();
+
+      const paid = makeStub({
+        ...pendingOrder,
+        paymentStatus: 'CAPTURED',
+        paymentRetryable: false,
+      });
+      TestBed.resetTestingModule();
+      const paidFixture = await render(paid);
+      expect(
+        paidFixture.nativeElement.querySelector('[data-testid="order-confirmation-pay-again"]'),
+      ).toBeNull();
+    });
+
+    it.each(['AUTHORIZED', 'CAPTURED'])(
+      'hides pay again once the return confirmation says %s',
+      async (confirmed) => {
+        const stub = makeStub(pendingOrder);
+        stub.confirmResult = confirmed;
+        const fixture = await render(stub);
+        expect(stub.confirmCalls).toEqual(['ord-1']);
+        expect(
+          fixture.nativeElement.querySelector('[data-testid="order-confirmation-pay-again"]'),
+        ).toBeNull();
+      },
+    );
+
+    it('keeps pay again when the return confirmation says FAILED', async () => {
+      const stub = makeStub(pendingOrder);
+      stub.confirmResult = 'FAILED';
+      const fixture = await render(stub);
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="order-confirmation-pay-again"]'),
+      ).not.toBeNull();
+    });
+
+    it('runs the retry result through the payment action handler', async () => {
+      const stub = makeStub(pendingOrder);
+      stub.confirmResult = 'FAILED';
+      stub.retryResult = { type: 'embedded', clientToken: 'tok', publicConfig: {} } as never;
+      const fixture = await render(stub);
+      (
+        fixture.nativeElement.querySelector(
+          '[data-testid="order-confirmation-pay-again"]',
+        ) as HTMLButtonElement
+      ).click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(stub.retryCalls).toEqual(['ord-1']);
+      expect(
+        fixture.nativeElement.querySelector('[data-testid="order-confirmation-embedded"]'),
+      ).not.toBeNull();
+    });
+
+    it('maps ORDER_PAYMENT_NOT_RETRYABLE to a localized message', async () => {
+      const stub = makeStub(pendingOrder);
+      stub.confirmResult = 'PENDING';
+      stub.retryResult = Object.assign(new Error('nope'), { code: 'ORDER_PAYMENT_NOT_RETRYABLE' });
+      const fixture = await render(stub);
+      (
+        fixture.nativeElement.querySelector(
+          '[data-testid="order-confirmation-pay-again"]',
+        ) as HTMLButtonElement
+      ).click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      const locale = TestBed.inject(LocaleService).locale();
+      const alert = fixture.nativeElement.querySelector(
+        '[data-testid="order-confirmation-payment-error"]',
+      ) as HTMLElement;
+      expect(alert.textContent).toContain(
+        getChromeStrings(locale).checkout.errors.paymentNotRetryable,
+      );
+    });
+
+    it('maps PAYMENT_PROVIDER_UNAVAILABLE to a localized message', async () => {
+      const stub = makeStub(pendingOrder);
+      stub.confirmResult = 'PENDING';
+      stub.retryResult = Object.assign(new Error('down'), { code: 'PAYMENT_PROVIDER_UNAVAILABLE' });
+      const fixture = await render(stub);
+      (
+        fixture.nativeElement.querySelector(
+          '[data-testid="order-confirmation-pay-again"]',
+        ) as HTMLButtonElement
+      ).click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      const locale = TestBed.inject(LocaleService).locale();
+      const alert = fixture.nativeElement.querySelector(
+        '[data-testid="order-confirmation-payment-error"]',
+      ) as HTMLElement;
+      expect(alert.textContent).toContain(
+        getChromeStrings(locale).checkout.errors.paymentProviderUnavailable,
+      );
+    });
   });
 
   it('links the public track page by order number, alongside the authed order link', async () => {

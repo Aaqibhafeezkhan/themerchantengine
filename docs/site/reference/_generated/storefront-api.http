@@ -264,6 +264,16 @@ Accept-Language: {{locale}}
 GET {{baseUrl}}/v1/orders/{{id}}/invoice/pdf
 Accept-Language: {{locale}}
 
+### Retry the payment of an order
+POST {{baseUrl}}/v1/orders/{{id}}/payment
+Accept-Language: {{locale}}
+X-Idempotency-Key: {{$guid}}
+
+### Confirm the payment status of an order with the provider
+POST {{baseUrl}}/v1/orders/{{id}}/payment/confirm
+Accept-Language: {{locale}}
+X-Idempotency-Key: {{$guid}}
+
 ### Create return request
 POST {{baseUrl}}/v1/orders/{{orderId}}/returns
 Accept-Language: {{locale}}
@@ -289,6 +299,17 @@ Content-Type: application/json
 POST {{baseUrl}}/v1/orders/track
 Accept-Language: {{locale}}
 Content-Type: application/json
+
+{
+  "orderNumber": "orderNumber",
+  "email": "email"
+}
+
+### Retry the payment of a tracked order
+POST {{baseUrl}}/v1/orders/track/payment
+Accept-Language: {{locale}}
+Content-Type: application/json
+X-Idempotency-Key: {{$guid}}
 
 {
   "orderNumber": "orderNumber",

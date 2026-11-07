@@ -15,6 +15,7 @@ const methods: StorefrontPaymentMethod[] = [
     description: null,
     provider: 'cod',
     sortOrder: 0,
+    requiresPayment: false,
   },
   {
     code: 'bank',
@@ -22,6 +23,7 @@ const methods: StorefrontPaymentMethod[] = [
     description: 'IBAN',
     provider: 'manual',
     sortOrder: 1,
+    requiresPayment: false,
   },
 ];
 

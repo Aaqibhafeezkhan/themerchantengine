@@ -2,7 +2,7 @@
 title: "Error codes"
 description: "Every error code the API can answer with, its HTTP status, its messages and the module that raises it, read from the exception sites in the code."
 primaryQuery: "ecommerce rest api error codes reference"
-updated: 2026-10-27
+updated: 2026-11-07
 schema: TechArticle
 ---
 
@@ -174,6 +174,13 @@ HTTP 409.
 - Cannot set a descendant as parent
 - Thrown in `apps/api/src/modules/categories/categories.service.ts`.
 
+### CATEGORY_HAS_PRODUCTS
+
+HTTP 409.
+
+- Cannot delete category: ${productCount} product(s) are assigned to it. Reassign them first.
+- Thrown in `apps/api/src/modules/categories/category-has-products.exception.ts`.
+
 ### CATEGORY_NOT_FOUND
 
 HTTP 404.
@@ -185,6 +192,13 @@ HTTP 404.
 HTTP 404.
 
 - Thrown in `apps/api/src/modules/categories/category-parent-not-found.exception.ts`.
+
+### CATEGORY_SLUG_TAKEN
+
+HTTP 409.
+
+- Slug "${slug}" is already taken
+- Thrown in `apps/api/src/modules/categories/category-slug-taken.exception.ts`.
 
 ### COUPON_INVALID
 
@@ -463,6 +477,13 @@ HTTP 409.
 - Order ${orderId} has no open payment session
 - Thrown in `apps/api/src/modules/orders/order-payment-not-opened.exception.ts`.
 
+### ORDER_PAYMENT_NOT_RETRYABLE
+
+HTTP 409.
+
+- Order ${orderId} cannot take a new payment attempt
+- Thrown in `apps/api/src/modules/orders/order-payment-not-retryable.exception.ts`.
+
 ### ORDER_SHIPMENT_ITEM_NOT_IN_ORDER
 
 HTTP 400.
@@ -524,6 +545,13 @@ HTTP 401.
 
 - Authenticated user required
 - Thrown in `libs/shared/common/src/guards/owner-guard.exceptions.ts`.
+
+### PAYMENT_CONFIG_ENCRYPTION_UNAVAILABLE
+
+HTTP 503.
+
+- Payment secrets cannot be stored until an encryption key is configured
+- Thrown in `apps/api/src/modules/payments/payment-config-encryption-unavailable.exception.ts`.
 
 ### PAYMENT_PROVIDER_REJECTED
 
@@ -706,12 +734,26 @@ HTTP 409.
 - This question has already been answered
 - Thrown in `apps/api/src/modules/reviews/question-already-answered.exception.ts`.
 
+### QUESTION_ALREADY_PUBLISHED
+
+HTTP 409.
+
+- This question is already published
+- Thrown in `apps/api/src/modules/reviews/question-already-published.exception.ts`.
+
 ### QUESTION_NOT_AVAILABLE_FOR_ANSWER
 
 HTTP 400.
 
 - This question is not available for answers
 - Thrown in `apps/api/src/modules/reviews/question-not-available.exception.ts`.
+
+### REVIEW_ALREADY_PUBLISHED
+
+HTTP 409.
+
+- This review is already published
+- Thrown in `apps/api/src/modules/reviews/review-already-published.exception.ts`.
 
 ### REVIEW_DUPLICATE
 

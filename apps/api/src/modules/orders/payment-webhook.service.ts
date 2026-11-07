@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { PaymentWebhookIgnoredException } from '../payments/payment-webhook-ignored.exception';
 import { PaymentGatewayService } from '../payments/payment-gateway.service';
 import type { PaymentWebhookInput } from '../payments/providers/payment-provider.interface';
 import { ProcessedWebhookService } from '../webhooks/processed-webhook.service';
@@ -19,11 +20,15 @@ export class PaymentWebhookService {
     headers: PaymentWebhookInput['headers'],
     rawBody: Buffer,
   ): Promise<{ ok: true; replay: boolean }> {
-    const { event, methodCodes } = await this.paymentGateway.parseWebhook(
-      providerId,
-      headers,
-      rawBody,
-    );
+    let parsed: Awaited<ReturnType<PaymentGatewayService['parseWebhook']>>;
+    try {
+      parsed = await this.paymentGateway.parseWebhook(providerId, headers, rawBody);
+    } catch (error) {
+      // Verified but not ours to act on: a 2xx stops the provider retrying it.
+      if (error instanceof PaymentWebhookIgnoredException) return { ok: true, replay: false };
+      throw error;
+    }
+    const { event, methodCodes } = parsed;
     const dedupKey = `payments:${providerId}`;
 
     if (await this.processedWebhooks.isProcessed(dedupKey, event.eventId)) {

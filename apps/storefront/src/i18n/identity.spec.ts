@@ -28,6 +28,22 @@ describe('chrome identity substitution', () => {
     expect((out['nested']['deep'] as Record<string, string>)['leaf']).toBe('© Acme Supply');
   });
 
+  it('drops a sentence that needs a country when the store has none', () => {
+    const source = {
+      hint: 'We deliver within {country}.',
+      title: '{store}',
+    } as unknown as ChromeStrings;
+
+    const out = applyChromeIdentity(
+      source,
+      { storeName: 'Acme Supply', country: '' },
+      'en',
+    ) as unknown as Record<string, string>;
+
+    expect(out['hint']).toBe('');
+    expect(out['title']).toBe('Acme Supply');
+  });
+
   it('leaves the counting and query placeholders alone', () => {
     // `{count}`, `{q}` and `{platform}` are filled at the call site with a
     // runtime value. Substituting them here would consume them silently.

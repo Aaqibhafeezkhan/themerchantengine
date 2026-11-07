@@ -21,6 +21,7 @@ import {
   PaymentMethodsService,
   type ListPaymentMethodsQuery,
   type PaymentMethod,
+  type PaymentProviderCatalogueEntry,
 } from '@admin-services';
 import { ApiError, ApiForbiddenError, ApiNotFoundError } from '@admin-types';
 import { Subject, takeUntil } from 'rxjs';
@@ -220,7 +221,7 @@ import { StoreSettingsStore } from '../../core/stores/store-settings.store';
                       <code class="font-mono">{{ m.code }}</code>
                     </td>
                     <td class="px-4 py-3 tabular text-sm text-ink-muted">
-                      {{ providerLabel(m.provider) }}
+                      {{ providerName(m.provider) }}
                     </td>
                     <td class="px-4 py-3">
                       <div class="flex items-center gap-2 flex-wrap">
@@ -294,11 +295,24 @@ export class PaymentMethodsListPage implements OnInit, OnDestroy {
 
   protected readonly label = (m: Pick<PaymentMethod, 'name' | 'code'>): string =>
     methodLabel(m, this.authStore.locale(), this.storeSettings.defaultLocale());
-  protected readonly providerLabel = providerLabel;
   protected readonly activeTone = activeTone;
   protected readonly testModeTone = testModeTone;
 
+  readonly providers = signal<readonly PaymentProviderCatalogueEntry[]>([]);
+
+  protected providerName(id: string): string {
+    return providerLabel(id, this.providers());
+  }
+
   ngOnInit(): void {
+    this.service
+      .providers()
+      .pipe(takeUntil(this.destroy$))
+      // query-error-guard: allow, a catalogue failure only costs the pretty labels.
+      .subscribe({
+        next: (entries) => this.providers.set(entries),
+        error: () => undefined,
+      });
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(() => this.fetch());
   }
 

@@ -24,6 +24,8 @@ import {
   GIFT_CARD_SORT_FIELDS,
 } from './gift-cards.constants';
 
+const RESTORE_NOTE = 'Order cancellation restore';
+
 // ── Public interface types ─────────────────────────────────────────────────────
 
 export type GiftCardBalanceResult = {
@@ -203,6 +205,42 @@ export class GiftCardsService {
       amountDebited: amount,
       remainingBalance,
     };
+  }
+
+  /**
+   * Gives back what an order spent from gift cards. Called once when the order
+   * is cancelled. The ledger is the source: every debit row of the order is
+   * credited back unless a restore row already exists for that card, so a
+   * second call changes nothing.
+   */
+  async restoreForOrder(orderId: string): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      const rows = await tx.giftCardTransaction.findMany({
+        where: { orderId },
+        select: { giftCardId: true, amount: true, note: true },
+      });
+
+      const restored = new Set(
+        rows.filter((r) => r.note === RESTORE_NOTE).map((r) => r.giftCardId),
+      );
+      const spent = new Map<string, number>();
+      for (const row of rows) {
+        if (row.note === RESTORE_NOTE || toNum(row.amount) >= 0) continue;
+        spent.set(row.giftCardId, roundMoney((spent.get(row.giftCardId) ?? 0) - toNum(row.amount)));
+      }
+
+      for (const [giftCardId, amount] of spent) {
+        if (restored.has(giftCardId)) continue;
+        await tx.giftCard.updateMany({
+          where: { id: giftCardId },
+          data: { currentBalance: { increment: amount } },
+        });
+        await tx.giftCardTransaction.create({
+          data: { giftCardId, amount, orderId, note: RESTORE_NOTE },
+        });
+        this.logger.log(`restore: cardId=${giftCardId} amount=${amount} orderId=${orderId}`);
+      }
+    });
   }
 
   // ── Admin: CRUD ────────────────────────────────────────────────────────────

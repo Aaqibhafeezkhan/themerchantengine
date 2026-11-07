@@ -61,9 +61,13 @@ export function applyChromeIdentity(
 ): ChromeStrings {
   const country = countryName(identity.country, locale);
   const fill = (leaf: string): string =>
-    leaf.replace(PLACEHOLDER, (_match, key: string) =>
-      key === 'store' ? identity.storeName : country,
-    );
+    // A sentence built around the country reads as a bare full stop without
+    // one, so it is dropped and the template hides the empty line.
+    !country && leaf.includes('{country}')
+      ? ''
+      : leaf.replace(PLACEHOLDER, (_match, key: string) =>
+          key === 'store' ? identity.storeName : country,
+        );
   return substitute(strings, fill);
 }
 

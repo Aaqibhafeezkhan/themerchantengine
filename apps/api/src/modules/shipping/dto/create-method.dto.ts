@@ -1,6 +1,7 @@
 import {
   IsArray,
   IsBoolean,
+  IsDefined,
   IsEnum,
   IsInt,
   IsNumber,
@@ -54,6 +55,7 @@ export class CreateShippingMethodAdminDto {
   @IsString()
   zoneId: string;
 
+  @IsDefined()
   @ValidateNested()
   @Type(() => TranslatableDto)
   name: TranslatableDto;

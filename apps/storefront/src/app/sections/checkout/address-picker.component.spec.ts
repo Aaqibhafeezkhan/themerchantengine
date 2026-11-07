@@ -65,6 +65,18 @@ describe('AddressPickerComponent', () => {
     expect(checked.value).toBe('addr-1');
   });
 
+  it('isolates each phone as left-to-right so a leading plus stays first in RTL (S2-19)', async () => {
+    const fixture = await renderComponent(
+      AddressPickerComponent,
+      { addresses: [seedAddress, otherAddress] },
+      [provideRouter([]), LocaleService, { provide: UsersService, useClass: FakeUsersService }],
+    );
+    const phones = Array.from(
+      fixture.nativeElement.querySelectorAll('.row-line bdi[dir="ltr"]') as NodeListOf<HTMLElement>,
+    ).map((el) => el.textContent?.trim());
+    expect(phones).toEqual(['+97412345678', '+97487654321']);
+  });
+
   it('emits addressSelected for the default on init', async () => {
     const events: Address[] = [];
     const fixture = await renderComponent(
@@ -106,6 +118,33 @@ describe('AddressPickerComponent', () => {
     fixture.detectChanges();
     await cmp['onSubmit']();
     expect(users.createAddress).not.toHaveBeenCalled();
+  });
+
+  it('clears a stale save error as soon as the customer edits a field (sibling of S2-5)', async () => {
+    const users = new FakeUsersService();
+    users.createAddress.mockRejectedValueOnce(new Error('boom'));
+    const fixture = await renderComponent(AddressPickerComponent, { addresses: [] }, [
+      provideRouter([]),
+      LocaleService,
+      { provide: UsersService, useValue: users },
+    ]);
+    const cmp = fixture.componentInstance as AddressPickerComponent;
+    cmp['form'].patchValue({
+      fullName: 'Jane Customer',
+      phone: '+97412345678',
+      addressLine1: '1 X',
+      city: 'Lyon',
+      country: 'QA',
+    });
+    await cmp['onSubmit']();
+    fixture.detectChanges();
+    const selector = '[data-testid="address-form-error"]';
+    expect(fixture.nativeElement.querySelector(selector)).not.toBeNull();
+    (fixture.nativeElement.querySelector('form input') as HTMLInputElement).dispatchEvent(
+      new Event('input', { bubbles: true }),
+    );
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector(selector)).toBeNull();
   });
 
   it('persists a new address and emits addressSaved + addressSelected', async () => {

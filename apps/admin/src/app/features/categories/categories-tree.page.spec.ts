@@ -2,7 +2,9 @@ import { ApiError, ApiForbiddenError, ApiNotFoundError } from '@admin-types';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { CategoriesService } from '@admin-services';
+import { CdkDrag, CdkDropList } from '@angular/cdk/drag-drop';
 import type { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { By } from '@angular/platform-browser';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { Subject, of, throwError } from 'rxjs';
 import { AuthStore } from '../../core/stores/auth.store';
@@ -163,6 +165,20 @@ describe('CategoriesTreePage', () => {
     const handles = fixture.nativeElement.querySelectorAll('[data-testid^="drag-handle-"]');
     // Tree has 3 roots and an expanded Alpha with 2 children = 5 visible rows.
     expect(handles.length).toBe(5);
+  });
+
+  it('every row is registered with the drop list of its own sibling group', () => {
+    configure(['categories:update']);
+    const rows = fixture.debugElement.queryAll(By.directive(CdkDrag));
+    expect(rows).toHaveLength(5);
+    for (const row of rows) {
+      const drag = row.injector.get(CdkDrag);
+      expect(drag.dropContainer).toBeTruthy();
+      const list = fixture.debugElement
+        .queryAll(By.directive(CdkDropList))
+        .find((l) => l.nativeElement === row.nativeElement.parentElement);
+      expect(drag.dropContainer).toBe(list?.injector.get(CdkDropList));
+    }
   });
 
   it('drop calls reorder with the new sibling order and re-fetches on success', () => {

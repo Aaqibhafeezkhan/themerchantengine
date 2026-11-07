@@ -55,6 +55,7 @@ function makePrismaMock() {
     promotionUsage: {
       create: jest.fn(),
       count: jest.fn(),
+      deleteMany: jest.fn(),
     },
     $transaction: jest.fn(),
   };
@@ -107,6 +108,15 @@ describe('PromotionsService', () => {
       expect(result.discountAmount).toBeCloseTo(20); // 100 × 20%
       expect(result.code).toBe('SUMMER20');
       expect(result.type).toBe(PromotionType.PERCENTAGE);
+    });
+
+    it('matches the code case-insensitively and ignores surrounding spaces', async () => {
+      prisma.promotion.findFirst.mockResolvedValue(makePromotion({ value: 20 }));
+      prisma.promotionUsage.count.mockResolvedValue(0);
+
+      await service.validateCoupon(' summer20 ', 100, CART_ITEMS);
+
+      expect(prisma.promotion.findFirst.mock.calls[0][0].where.couponCode).toBe('SUMMER20');
     });
 
     it('throws COUPON_INVALID for unknown code', async () => {
@@ -427,6 +437,56 @@ describe('PromotionsService', () => {
     });
   });
 
+  describe('create validation', () => {
+    const base = {
+      name: { default: 'Sale' },
+      type: PromotionType.PERCENTAGE,
+      applicationMethod: PromotionApplicationMethod.COUPON,
+      couponCode: 'SALE10',
+      value: 10,
+    };
+
+    it('refuses a percentage above 100', async () => {
+      await expect(service.create({ ...base, value: 500 })).rejects.toMatchObject({
+        response: { error: { code: 'PROMOTION_PERCENT_OUT_OF_RANGE' } },
+      });
+      expect(prisma.promotion.create).not.toHaveBeenCalled();
+    });
+
+    it('refuses an end date before the start date', async () => {
+      await expect(
+        service.create({
+          ...base,
+          startsAt: '2026-12-01T00:00:00.000Z',
+          endsAt: '2026-11-01T00:00:00.000Z',
+        }),
+      ).rejects.toMatchObject({ response: { error: { code: 'PROMOTION_DATES_INVALID' } } });
+      expect(prisma.promotion.create).not.toHaveBeenCalled();
+    });
+
+    it('stores the coupon code trimmed and upper-cased', async () => {
+      prisma.promotion.create.mockResolvedValue(makePromotion());
+      await service.create({ ...base, couponCode: '  summer20 ' });
+      expect(prisma.promotion.create.mock.calls[0][0].data.couponCode).toBe('SUMMER20');
+    });
+
+    it('refuses a coupon code with inner spaces or symbols', async () => {
+      await expect(service.create({ ...base, couponCode: 'SAVE 10!' })).rejects.toMatchObject({
+        response: { error: { code: 'PROMOTION_COUPON_CODE_INVALID' } },
+      });
+    });
+  });
+
+  describe('update validation', () => {
+    it('refuses a percentage above 100 on a percentage promotion', async () => {
+      prisma.promotion.findUnique.mockResolvedValue(makePromotion());
+      await expect(service.update('promo-1', { value: 500 })).rejects.toMatchObject({
+        response: { error: { code: 'PROMOTION_PERCENT_OUT_OF_RANGE' } },
+      });
+      expect(prisma.promotion.update).not.toHaveBeenCalled();
+    });
+  });
+
   describe('update', () => {
     it('throws NotFoundException when promotion does not exist', async () => {
       prisma.promotion.findUnique.mockResolvedValue(null);
@@ -509,6 +569,18 @@ describe('PromotionsService', () => {
           }),
         }),
       );
+    });
+  });
+
+  describe('releaseUsageForOrder', () => {
+    it('deletes the usage rows of the order', async () => {
+      prisma.promotionUsage.deleteMany.mockResolvedValue({ count: 1 });
+
+      await service.releaseUsageForOrder('order-1');
+
+      expect(prisma.promotionUsage.deleteMany).toHaveBeenCalledWith({
+        where: { orderId: 'order-1' },
+      });
     });
   });
 

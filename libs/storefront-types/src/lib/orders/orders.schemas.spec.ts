@@ -5,6 +5,8 @@ import {
   listOrdersQuerySchema,
   orderAddressInputSchema,
   orderSchema,
+  paymentActionSchema,
+  placedOrderSchema,
   trackOrderRequestSchema,
   trackingResponseSchema,
 } from './orders.schemas';
@@ -185,7 +187,32 @@ describe('trackingResponseSchema', () => {
    */
   it('does not declare the phantom top-level tracking fields', () => {
     const shape = Object.keys(trackingResponseSchema.shape).sort();
-    expect(shape).toEqual(['createdAt', 'orderNumber', 'shipments', 'status', 'timeline']);
+    expect(shape).toEqual([
+      'createdAt',
+      'orderNumber',
+      'paymentRetryable',
+      'paymentStatus',
+      'shipments',
+      'status',
+      'timeline',
+    ]);
+  });
+
+  it('defaults paymentRetryable to false and keeps paymentStatus optional', () => {
+    const parsed = trackingResponseSchema.parse({ orderNumber: 'ORD-1', status: 'PENDING' });
+    expect(parsed.paymentRetryable).toBe(false);
+    expect(parsed.paymentStatus).toBeUndefined();
+  });
+
+  it('carries the payment fields the API sends', () => {
+    const parsed = trackingResponseSchema.parse({
+      orderNumber: 'ORD-1',
+      status: 'PENDING',
+      paymentStatus: 'FAILED',
+      paymentRetryable: true,
+    });
+    expect(parsed.paymentStatus).toBe('FAILED');
+    expect(parsed.paymentRetryable).toBe(true);
   });
 });
 
@@ -453,4 +480,55 @@ describe('createOrderRequestSchema giftCardCode range', () => {
       expect(() => createOrderRequestSchema.parse({ ...base, giftCardCode })).toThrow();
     },
   );
+});
+
+describe('paymentActionSchema', () => {
+  it.each([
+    { type: 'none' },
+    { type: 'redirect', url: 'https://pay.example.com/s/1' },
+    { type: 'form_post', url: 'https://pay.example.com/post', fields: { a: 'b' } },
+    { type: 'embedded', clientToken: 'tok', publicConfig: { publishableKey: 'pk_test_x' } },
+    { type: 'embedded', clientToken: 'tok' },
+  ])('accepts %j', (action) => {
+    expect(paymentActionSchema.parse(action)).toMatchObject(action);
+  });
+
+  it('rejects an action type the storefront does not know', () => {
+    expect(() => paymentActionSchema.parse({ type: 'qr_code', url: 'x' })).toThrow();
+  });
+
+  it('rejects a redirect without a url', () => {
+    expect(() => paymentActionSchema.parse({ type: 'redirect' })).toThrow();
+  });
+
+  it('rejects a redirect to a non-http(s) url', () => {
+    expect(() =>
+      paymentActionSchema.parse({ type: 'redirect', url: 'javascript:alert(1)' }),
+    ).toThrow();
+  });
+});
+
+describe('placedOrderSchema', () => {
+  const order = {
+    id: '3f1c1c7e-5b0e-4a53-9c43-0c5d8f0a1111',
+    orderNumber: 'ORD-1',
+    status: 'PENDING',
+    paymentStatus: 'PENDING',
+    subtotal: '10.00',
+    total: '10.00',
+    currency: 'USD',
+    createdAt: '2026-11-04T10:00:00.000Z',
+  };
+
+  it('defaults a missing paymentAction to none', () => {
+    expect(placedOrderSchema.parse(order).paymentAction).toEqual({ type: 'none' });
+  });
+
+  it('carries the paymentAction the API sends', () => {
+    const parsed = placedOrderSchema.parse({
+      ...order,
+      paymentAction: { type: 'redirect', url: 'https://pay.example.com/s/1' },
+    });
+    expect(parsed.paymentAction).toEqual({ type: 'redirect', url: 'https://pay.example.com/s/1' });
+  });
 });

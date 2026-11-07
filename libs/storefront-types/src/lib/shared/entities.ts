@@ -458,6 +458,12 @@ export const orderSchema = z
      */
     cancellable: z.boolean().optional(),
     /**
+     * Server-computed: the payment is unpaid or failed and the order is not
+     * cancelled, which is exactly when `POST /orders/:id/payment` accepts a
+     * retry. Optional because the list projection does not carry it.
+     */
+    paymentRetryable: z.boolean().optional(),
+    /**
      * Every recorded status transition, oldest first, projected by the API to
      * the two fields the timeline renders (finding AD6). Typed rather than left
      * to `.passthrough()` so the order-detail page cannot silently read

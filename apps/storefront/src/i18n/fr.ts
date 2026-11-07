@@ -124,6 +124,9 @@ const fr: ChromeStrings = {
     trackingNumberLabel: 'Numéro de suivi',
     carrierLink: 'Ouvrir le suivi transporteur',
     noShipments: 'Le suivi apparaîtra ici dès l’expédition de votre commande.',
+    payAgain: 'Payer à nouveau',
+    paymentPendingNote: 'Cette commande n’est pas encore payée.',
+    cancelledNote: 'Cette commande a été annulée.',
   },
   newsletter: {
     heading: 'Lettre d’information',
@@ -697,12 +700,16 @@ const fr: ChromeStrings = {
           'Vous pouvez réessayer sans risque : un double clic ne crée pas de seconde commande.',
       },
     },
+    paymentPayCta: 'Payer maintenant',
+    paymentPayBusy: 'Paiement en cours...',
+    paymentCardNumber: 'Numéro de carte',
     errors: {
       addressRequired: 'Choisissez ou ajoutez une adresse de livraison.',
       invalidPhone: 'Saisissez un numéro de téléphone valide.',
       invalidCountry: 'Le pays doit être un code à deux lettres (ex. TN).',
       invalidPostalCode: 'Saisissez un code postal valide.',
       requiredField: 'Ce champ est obligatoire.',
+      termsRequired: 'Acceptez les conditions pour passer votre commande.',
       outOfStock: 'Un ou plusieurs articles de votre panier viennent de passer en rupture.',
       outOfStockCta: 'Retour au panier',
       paymentRefused:
@@ -719,6 +726,15 @@ const fr: ChromeStrings = {
         'Ce moyen de paiement n’est plus disponible. Choisissez-en un à nouveau.',
       paymentMethodUnavailable:
         'Aucun moyen de paiement n’est disponible pour le moment, cette commande ne peut pas être validée.',
+      paymentNotRetryable:
+        'Le paiement de cette commande ne peut plus être relancé. Contactez-nous si besoin.',
+      paymentProviderUnavailable:
+        'Le paiement par carte est momentanément indisponible. Réessayez plus tard ou choisissez un autre moyen de paiement.',
+      paymentEmbeddedUnsupported:
+        'Ce formulaire de paiement est indisponible pour le moment. Contactez-nous si besoin.',
+      paymentCardDeclined:
+        'Votre carte a été refusée. Essayez une autre carte ou un autre moyen de paiement.',
+      paymentFailed: 'Le paiement n’a pas abouti. Vérifiez vos informations et réessayez.',
       invalidEmail: 'Saisissez une adresse e-mail valide.',
       guestCheckoutDisabled:
         'La commande sans compte n’est pas disponible. Connectez-vous pour continuer.',
@@ -730,8 +746,8 @@ const fr: ChromeStrings = {
     guestTrackBody:
       'Nous ne pouvons pas afficher cette commande ici sans votre session. Retrouvez-la avec son numéro et l’e-mail utilisé pour commander.',
     meta: {
-      title: 'Commande confirmée',
-      description: 'Votre commande est confirmée et en préparation.',
+      title: 'Votre commande',
+      description: 'Le détail de votre commande et l’état du paiement.',
     },
     heading: 'Merci, votre commande est confirmée',
     subheading: 'Commande {orderNumber}',
@@ -739,7 +755,22 @@ const fr: ChromeStrings = {
     deliveryEstimateUnknown: 'Livraison estimée : nous vous confirmons la date sous peu.',
     trackingCta: 'Suivre ma commande',
     publicTrackCta: 'Suivre sans me connecter',
+    cancelledHeading: 'Commande annulée',
+    paymentOnDelivery: 'Paiement à la livraison',
     continueShoppingCta: 'Continuer mes achats',
+    payAgainCta: 'Payer à nouveau',
+    payAgainBusy: 'Ouverture du paiement...',
+    paymentStatusLabel: 'Statut du paiement',
+    paymentStatus: {
+      PENDING: 'En attente de paiement',
+      AUTHORIZED: 'Paiement autorisé',
+      CAPTURED: 'Paiement reçu',
+      FAILED: 'Paiement échoué',
+      REFUNDED: 'Remboursé',
+      PARTIALLY_REFUNDED: 'Partiellement remboursé',
+      CANCELLED: 'Paiement annulé',
+    },
+    paymentEmbeddedTitle: 'Finalisez votre paiement',
     summarySection: {
       title: 'Récapitulatif',
       subtotal: 'Sous-total',
@@ -898,6 +929,7 @@ const fr: ChromeStrings = {
         cta: 'Annuler la commande',
         confirmTitle: 'Annuler cette commande ?',
         confirmBody: 'Cette action est définitive. Le stock est remis en inventaire.',
+        confirmCardHold: 'Le montant bloqué sur votre carte sera libéré.',
         confirmYes: 'Oui, annuler la commande',
         confirmNo: 'Conserver la commande',
         success: 'Votre commande a été annulée.',
@@ -913,6 +945,8 @@ const fr: ChromeStrings = {
         error: 'Impossible de charger la facture pour le moment.',
         reasonNotConfirmed: 'Votre facture sera disponible dès la confirmation de votre commande.',
         reasonPreparing: 'Votre facture est en cours de préparation. Elle apparaîtra ici sous peu.',
+        reasonCancelled:
+          "Cette commande a été annulée avant sa confirmation, elle n'a donc pas de facture.",
       },
       notFound: {
         title: 'Commande introuvable',
@@ -1016,7 +1050,7 @@ const fr: ChromeStrings = {
       heading: 'Mon profil',
       emailLabel: 'E-mail',
       emailReadOnlyHint:
-        'La modification de l’e-mail n’est pas encore disponible. Contactez-nous pour cela.',
+        'Pour changer votre e-mail, utilisez le formulaire « Changer d’adresse e-mail » de la section Sécurité.',
       firstNameLabel: 'Prénom',
       lastNameLabel: 'Nom',
       phoneLabel: 'Téléphone',

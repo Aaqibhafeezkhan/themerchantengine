@@ -196,6 +196,8 @@ async function ensureApi(): Promise<void> {
       // The specs sign unsubscribe tokens with the auth secret; a `.env` value would win over it.
       UNSUBSCRIBE_TOKEN_SECRET: E2E_BETTER_AUTH_SECRET,
       STRIPE_WEBHOOK_SECRET: E2E_STRIPE_WEBHOOK_SECRET,
+      // Test doubles for the card flow; the API refuses this flag in production.
+      PAYMENT_FAKE_PROVIDERS: 'true',
     },
     stdio: ['ignore', logFd, logFd],
   });

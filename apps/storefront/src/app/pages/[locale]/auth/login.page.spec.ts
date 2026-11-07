@@ -199,6 +199,13 @@ describe('AuthLoginPage', () => {
     ) as HTMLElement;
     expect(err?.textContent?.trim().length).toBeGreaterThan(0);
     expect(TestBed.inject(AuthStateService).isAuthed()).toBe(false);
+
+    // sibling of S2-5: the banner describes the previous attempt, so editing clears it
+    (fixture.nativeElement.querySelector('form input') as HTMLInputElement).dispatchEvent(
+      new Event('input', { bubbles: true }),
+    );
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[data-testid="auth-login-error"]')).toBeNull();
   });
 
   /**

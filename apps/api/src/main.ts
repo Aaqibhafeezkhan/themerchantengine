@@ -11,6 +11,7 @@ import { toNodeHandler } from 'better-auth/node';
 import { AppModule } from './app.module';
 import { StoreLocaleRegistry } from './modules/settings/store-locale.registry';
 import { applyCacheControlHardening } from './bootstrap/cache-control-hardening';
+import { corsOriginCheck } from './bootstrap/cors-origin';
 import { applyEngineFingerprint } from './bootstrap/engine-fingerprint';
 import { assertFtsIntegrity } from './bootstrap/fts-integrity';
 import { serveLocalUploads } from './bootstrap/local-uploads';
@@ -114,15 +115,7 @@ async function bootstrap() {
   }
 
   app.enableCors({
-    origin: (
-      origin: string | undefined,
-      callback: (err: Error | null, allow?: boolean) => void,
-    ) => {
-      // Allow requests with no origin (server-to-server, curl, Postman in dev)
-      if (!origin) return callback(null, true);
-      if (corsOrigins.includes(origin)) return callback(null, true);
-      callback(new Error(`CORS policy: origin '${origin}' not allowed`));
-    },
+    origin: corsOriginCheck(corsOrigins),
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     allowedHeaders: [

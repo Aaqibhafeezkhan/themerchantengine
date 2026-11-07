@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { PaymentStatus } from '@prisma/client';
 import { PaymentGatewayService } from '../payments/payment-gateway.service';
+import { PaymentWebhookIgnoredException } from '../payments/payment-webhook-ignored.exception';
 import { PaymentWebhookUnsupportedException } from '../payments/payment-webhook-unsupported.exception';
 import { ProcessedWebhookService } from '../webhooks/processed-webhook.service';
 import { OrdersService } from './orders.service';
@@ -76,6 +77,19 @@ describe('PaymentWebhookService', () => {
     await expect(service.process('cod', headers, rawBody)).rejects.toBeInstanceOf(
       PaymentWebhookUnsupportedException,
     );
+    expect(processed.isProcessed).not.toHaveBeenCalled();
+    expect(orders.applyPaymentWebhookEvent).not.toHaveBeenCalled();
+  });
+
+  it('acknowledges a verified event the provider does not act on, without a write', async () => {
+    gateway.parseWebhook.mockRejectedValueOnce(
+      new PaymentWebhookIgnoredException('stripe', 'checkout.session.completed'),
+    );
+
+    await expect(service.process('stripe', headers, rawBody)).resolves.toEqual({
+      ok: true,
+      replay: false,
+    });
     expect(processed.isProcessed).not.toHaveBeenCalled();
     expect(orders.applyPaymentWebhookEvent).not.toHaveBeenCalled();
   });

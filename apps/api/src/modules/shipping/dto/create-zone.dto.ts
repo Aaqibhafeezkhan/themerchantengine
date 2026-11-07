@@ -1,8 +1,17 @@
-import { IsArray, IsBoolean, IsInt, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsDefined,
+  IsInt,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { TranslatableDto } from './translatable.dto';
 
 export class CreateShippingZoneAdminDto {
+  @IsDefined()
   @ValidateNested()
   @Type(() => TranslatableDto)
   name: TranslatableDto;

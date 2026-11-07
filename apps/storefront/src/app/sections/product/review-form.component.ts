@@ -43,6 +43,7 @@ const STARS = [1, 2, 3, 4, 5] as const;
       class="form"
       [formGroup]="form"
       (ngSubmit)="onSubmit()"
+      (input)="formError.set(null)"
       novalidate
       [attr.aria-labelledby]="titleId"
       [attr.data-testid]="'product-review-form-' + (initialReview()?.id ?? 'new')"
@@ -358,6 +359,7 @@ export class ReviewFormComponent implements OnChanges {
   }
 
   protected setRating(value: number): void {
+    this.formError.set(null);
     this.ratingValue.set(value);
     this.form.controls.rating.setValue(value);
     this.form.controls.rating.markAsDirty();

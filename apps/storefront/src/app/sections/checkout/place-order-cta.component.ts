@@ -91,7 +91,7 @@ import { ButtonComponent } from '../../ui/button.component';
       }
       @if (termsRequiredVisible()) {
         <p class="error" role="alert" data-testid="place-order-terms-required">
-          {{ strings().checkout.errors.requiredField }}
+          {{ strings().checkout.errors.termsRequired }}
         </p>
       }
       <app-button type="submit" variant="primary" size="lg" [loading]="submitting()">

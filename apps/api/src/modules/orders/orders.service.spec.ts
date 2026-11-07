@@ -34,6 +34,7 @@ import { OrderIdempotencyInFlightException } from './order-idempotency-in-flight
 import { OrderPaymentNotOpenedException } from './order-payment-not-opened.exception';
 import { OrderNothingToRefundException } from './order-nothing-to-refund.exception';
 import { OrderNotFoundException } from './order-not-found.exception';
+import { CouponInvalidException } from '../promotions/coupon-invalid.exception';
 import { storeMoney } from '@common/money';
 import { MoneyFormatterService } from '../currencies/money-formatter.service';
 
@@ -149,6 +150,7 @@ function makePrisma() {
       findFirst: jest.fn(),
       create: jest.fn(),
       delete: jest.fn(),
+      deleteMany: jest.fn().mockResolvedValue({ count: 1 }),
     },
     shipment: {
       findFirst: jest.fn(),
@@ -211,6 +213,7 @@ function makePromotions() {
     validateCoupon: jest.fn(),
     getApplicableAutomatic: jest.fn(),
     recordUsage: jest.fn(),
+    releaseUsageForOrder: jest.fn().mockResolvedValue(undefined),
   };
 }
 
@@ -218,6 +221,7 @@ function makeGiftCards() {
   return {
     checkBalance: jest.fn().mockResolvedValue({ currentBalance: 0 }),
     redeem: jest.fn(),
+    restoreForOrder: jest.fn().mockResolvedValue(undefined),
     issueStoreCredit: jest.fn(),
   };
 }
@@ -303,6 +307,8 @@ describe('OrdersService', () => {
     refund: jest.Mock;
     cancel: jest.Mock;
     providerIdFor: jest.Mock;
+    getStatus: jest.Mock;
+    collectsPaymentOnline: jest.Mock;
   };
   let storage: { read: jest.Mock; save: jest.Mock; signUrl: jest.Mock; delete: jest.Mock };
 
@@ -364,6 +370,8 @@ describe('OrdersService', () => {
         status: PaymentStatus.CANCELLED,
       })),
       providerIdFor: jest.fn().mockResolvedValue('cod'),
+      collectsPaymentOnline: jest.fn().mockResolvedValue(true),
+      getStatus: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -885,10 +893,112 @@ describe('OrdersService', () => {
       expect(Object.keys(result).sort()).toEqual([
         'createdAt',
         'orderNumber',
+        'paymentRetryable',
+        'paymentStatus',
         'shipments',
         'status',
         'timeline',
       ]);
+    });
+
+    // ── payment state on the track response (finding C13) ─────────────────
+
+    it('sends the payment state and whether the payment can be retried', async () => {
+      prisma.order.findUnique.mockResolvedValue(
+        trackable({
+          status: OrderStatus.PENDING,
+          paymentStatus: PaymentStatus.PENDING,
+          paymentMethodCode: 'card',
+        }),
+      );
+
+      const result = (await service.trackOrder({
+        orderNumber: 'ORD-1',
+        email: 'guest@example.test',
+      })) as { paymentStatus: string; paymentRetryable: boolean };
+
+      expect(result.paymentStatus).toBe(PaymentStatus.PENDING);
+      expect(result.paymentRetryable).toBe(true);
+    });
+
+    it('sends paymentRetryable false for a cancelled order', async () => {
+      prisma.order.findUnique.mockResolvedValue(
+        trackable({
+          status: OrderStatus.CANCELLED,
+          paymentStatus: PaymentStatus.PENDING,
+          paymentMethodCode: 'card',
+        }),
+      );
+
+      const result = (await service.trackOrder({
+        orderNumber: 'ORD-1',
+        email: 'guest@example.test',
+      })) as { paymentRetryable: boolean };
+
+      expect(result.paymentRetryable).toBe(false);
+    });
+  });
+
+  describe('retryTrackedPayment (guest pay again behind the email challenge)', () => {
+    const action = { type: 'redirect', url: 'https://pay.example.test/s' };
+
+    function payable(overrides: Record<string, unknown> = {}) {
+      return makeOrder({
+        userId: null,
+        guestSessionId: 'sess-other',
+        user: null,
+        guestEmail: 'guest@example.test',
+        paymentMethodCode: 'card',
+        paymentStatus: PaymentStatus.PENDING,
+        paymentReference: 'pi_old',
+        ...overrides,
+      });
+    }
+
+    it('opens a new session when the email matches, with no cart session needed', async () => {
+      prisma.order.findUnique.mockResolvedValue(payable());
+      paymentGateway.openSession.mockResolvedValueOnce({
+        reference: 'pi_new',
+        status: PaymentStatus.PENDING,
+        action,
+      });
+
+      const result = await service.retryTrackedPayment(
+        { orderNumber: 'ORD-2026-000001', email: ' Guest@Example.test ' },
+        'en',
+      );
+
+      expect(result).toEqual({ paymentAction: action });
+      expect(paymentGateway.openSession).toHaveBeenCalledWith(
+        'card',
+        expect.objectContaining({
+          returnUrl: 'https://storefront.example.test/en/order-confirmation/ORD-2026-000001',
+        }),
+      );
+    });
+
+    it('answers not found for the wrong email and opens nothing', async () => {
+      prisma.order.findUnique.mockResolvedValue(payable());
+
+      await expect(
+        service.retryTrackedPayment(
+          { orderNumber: 'ORD-2026-000001', email: 'someone@else.test' },
+          'en',
+        ),
+      ).rejects.toMatchObject({ response: { error: { code: 'ORDER_NOT_FOUND' } } });
+      expect(paymentGateway.openSession).not.toHaveBeenCalled();
+    });
+
+    it('refuses a payment that is not retryable', async () => {
+      prisma.order.findUnique.mockResolvedValue(payable({ status: OrderStatus.CANCELLED }));
+
+      await expect(
+        service.retryTrackedPayment(
+          { orderNumber: 'ORD-2026-000001', email: 'guest@example.test' },
+          'en',
+        ),
+      ).rejects.toMatchObject({ response: { error: { code: 'ORDER_PAYMENT_NOT_RETRYABLE' } } });
+      expect(paymentGateway.openSession).not.toHaveBeenCalled();
     });
   });
 
@@ -1234,6 +1344,7 @@ describe('OrdersService', () => {
 
       it('opens a provider session and stores its reference and status on the order', async () => {
         setupCreate();
+        prisma.user.findFirst.mockResolvedValue({ email: 'test@example.com' });
         await service.createOrder(
           { ...BASE_ORDER_DTO, paymentMethodCode: 'cod' } as never,
           'user-1',
@@ -1246,10 +1357,34 @@ describe('OrdersService', () => {
           orderId: 'order-1',
           amount: expect.any(Prisma.Decimal),
           currencyCode: order.currency,
+          returnUrl: `https://storefront.example.test/en/order-confirmation/${order.orderNumber}`,
+          customerEmail: 'test@example.com',
         });
         expect(prisma.order.update).toHaveBeenCalledWith({
           where: { id: 'order-1' },
           data: { paymentReference: 'cod_order-1', paymentStatus: PaymentStatus.PENDING },
+        });
+      });
+
+      it('returns the session action next to the order, without storing it', async () => {
+        setupCreate();
+        const action = { type: 'embedded', clientToken: 'tok_1', publicConfig: { k: 'pk' } };
+        paymentGateway.openSession.mockResolvedValueOnce({
+          reference: 'pi_1',
+          status: PaymentStatus.PENDING,
+          action,
+        });
+        const result = (await service.createOrder(
+          { ...BASE_ORDER_DTO, paymentMethodCode: 'cod' } as never,
+          'user-1',
+          'idem-pm-act',
+          'en',
+        )) as unknown as Record<string, unknown>;
+
+        expect(result['paymentAction']).toEqual(action);
+        expect(prisma.order.update).toHaveBeenCalledWith({
+          where: { id: 'order-1' },
+          data: { paymentReference: 'pi_1', paymentStatus: PaymentStatus.PENDING },
         });
       });
 
@@ -1279,7 +1414,13 @@ describe('OrdersService', () => {
           ),
         ).rejects.toThrow('provider down');
 
+        // OrderItem.order is onDelete: Restrict, so a bare order.delete always
+        // fails once the lines exist and leaves an orphan PENDING order.
+        expect(prisma.orderItem.deleteMany).toHaveBeenCalledWith({ where: { orderId: 'order-1' } });
         expect(prisma.order.delete).toHaveBeenCalledWith({ where: { id: 'order-1' } });
+        expect(prisma.orderItem.deleteMany.mock.invocationCallOrder[0]).toBeLessThan(
+          prisma.order.delete.mock.invocationCallOrder[0],
+        );
         expect(inventory.incrementStock).toHaveBeenCalled();
         expect(cartService.clearCart).not.toHaveBeenCalled();
         expect(idempotency.completeRequest).not.toHaveBeenCalled();
@@ -1969,6 +2110,27 @@ describe('OrdersService', () => {
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(giftCards.redeem).not.toHaveBeenCalled();
     });
+
+    it('refuses the order when the caller typed a coupon that does not validate', async () => {
+      // A silent drop charged the full price with no hint the code failed.
+      setupCreate();
+      cartService.getCart.mockResolvedValue(makeCartResponse());
+      promotions.validateCoupon.mockRejectedValue(new CouponInvalidException());
+
+      await expect(
+        service.createOrder({ ...BASE_ORDER_DTO, couponCode: 'NOPE' } as never, 'user-1', 'idem-1'),
+      ).rejects.toBeInstanceOf(CouponInvalidException);
+    });
+
+    it('still drops a coupon that only sits on the cart and died since', async () => {
+      setupCreate();
+      cartService.getCart.mockResolvedValue(makeCartResponse({ couponCode: 'OLD10' }));
+      promotions.validateCoupon.mockRejectedValue(new CouponInvalidException());
+
+      await expect(
+        service.createOrder(BASE_ORDER_DTO as never, 'user-1', 'idem-1'),
+      ).resolves.toBeDefined();
+    });
   });
 
   // ── Idempotency ─────────────────────────────────────────────────────────
@@ -2131,7 +2293,7 @@ describe('OrdersService', () => {
     });
 
     it('refunds the full order total', async () => {
-      mockPaymentOrder({ paymentStatus: PaymentStatus.CAPTURED });
+      mockPaymentOrder({ status: OrderStatus.CONFIRMED, paymentStatus: PaymentStatus.CAPTURED });
 
       await service.refundPayment('order-1', 'admin-1', 'pay-key');
 
@@ -2151,6 +2313,7 @@ describe('OrdersService', () => {
 
     it('refunds only what processed returns have not given back', async () => {
       mockPaymentOrder({
+        status: OrderStatus.CONFIRMED,
         paymentStatus: PaymentStatus.CAPTURED,
         returns: [{ refundAmount: new Prisma.Decimal('15.000') }, { refundAmount: null }],
       });
@@ -2190,6 +2353,47 @@ describe('OrdersService', () => {
       });
       expect(paymentGateway.refund).not.toHaveBeenCalled();
       expect(prisma.order.updateMany).not.toHaveBeenCalled();
+    });
+
+    describe('refund of an order nobody confirmed (E2)', () => {
+      it('cancels a PENDING order after a full refund so its stock is released', async () => {
+        mockPaymentOrder({ status: OrderStatus.PENDING, paymentStatus: PaymentStatus.CAPTURED });
+        const cancel = jest.spyOn(service, 'updateStatus').mockResolvedValue({} as never);
+
+        await service.refundPayment('order-1', 'admin-1', 'pay-key');
+
+        expect(cancel).toHaveBeenCalledWith('order-1', OrderStatus.CANCELLED, 'admin-1');
+      });
+
+      it('keeps a CONFIRMED order open after a full refund', async () => {
+        mockPaymentOrder({ status: OrderStatus.CONFIRMED, paymentStatus: PaymentStatus.CAPTURED });
+        const cancel = jest.spyOn(service, 'updateStatus').mockResolvedValue({} as never);
+
+        await service.refundPayment('order-1', 'admin-1', 'pay-key');
+
+        expect(cancel).not.toHaveBeenCalled();
+      });
+
+      it('keeps a PENDING order open when the provider only refunded part', async () => {
+        mockPaymentOrder({ status: OrderStatus.PENDING, paymentStatus: PaymentStatus.CAPTURED });
+        paymentGateway.refund.mockResolvedValueOnce({
+          status: PaymentStatus.PARTIALLY_REFUNDED,
+        });
+        const cancel = jest.spyOn(service, 'updateStatus').mockResolvedValue({} as never);
+
+        await service.refundPayment('order-1', 'admin-1', 'pay-key');
+
+        expect(cancel).not.toHaveBeenCalled();
+      });
+
+      it('does not cancel on capture or void', async () => {
+        mockPaymentOrder({ status: OrderStatus.PENDING });
+        const cancel = jest.spyOn(service, 'updateStatus').mockResolvedValue({} as never);
+
+        await service.capturePayment('order-1', 'admin-1', 'pay-key');
+
+        expect(cancel).not.toHaveBeenCalled();
+      });
     });
 
     it('refuses a full refund once part of the payment was refunded', async () => {
@@ -2236,7 +2440,7 @@ describe('OrdersService', () => {
     });
 
     it('keys a refund by the order and the amount, so a second request key cannot refund twice', async () => {
-      mockPaymentOrder({ paymentStatus: PaymentStatus.CAPTURED });
+      mockPaymentOrder({ status: OrderStatus.CONFIRMED, paymentStatus: PaymentStatus.CAPTURED });
 
       await service.refundPayment('order-1', 'admin-1', 'pay-key');
       await service.refundPayment('order-1', 'admin-1', 'other-key');
@@ -2543,6 +2747,89 @@ describe('OrdersService', () => {
       setupForTransition(from, to);
       const result = await service.updateStatus('order-1', to, 'admin-1');
       expect((result as { status: OrderStatus }).status).toBe(to);
+    });
+
+    // ── Cancel unwinds what the order spent (QA D9, C32, E3, G6, H1, H2) ──
+
+    describe('cancel unwinding', () => {
+      function setupCancel(overrides: Record<string, unknown>) {
+        setupForTransition(OrderStatus.PENDING, OrderStatus.CANCELLED);
+        prisma.order.findUnique.mockReset();
+        prisma.order.findUnique.mockResolvedValueOnce(
+          makeOrder({
+            status: OrderStatus.PENDING,
+            paymentMethodCode: 'stripe-card',
+            paymentReference: 'pi_1',
+            ...overrides,
+          }),
+        );
+      }
+
+      it('voids an authorized payment through the gateway and records the result', async () => {
+        setupCancel({ paymentStatus: PaymentStatus.AUTHORIZED });
+
+        await service.updateStatus('order-1', OrderStatus.CANCELLED, 'admin-1');
+
+        expect(paymentGateway.cancel).toHaveBeenCalledWith('stripe-card', {
+          reference: 'pi_1',
+          status: PaymentStatus.AUTHORIZED,
+          idempotencyKey: 'order-cancel:order-1',
+        });
+        expect(prisma.order.updateMany).toHaveBeenCalledWith({
+          where: { id: 'order-1', paymentStatus: PaymentStatus.AUTHORIZED },
+          data: { paymentStatus: PaymentStatus.CANCELLED },
+        });
+      });
+
+      it('closes the payment of a cancelled pending order', async () => {
+        setupCancel({ paymentStatus: PaymentStatus.PENDING });
+
+        await service.updateStatus('order-1', OrderStatus.CANCELLED, 'admin-1');
+
+        expect(paymentGateway.cancel).toHaveBeenCalledTimes(1);
+        expect(prisma.order.updateMany).toHaveBeenCalledWith({
+          where: { id: 'order-1', paymentStatus: PaymentStatus.PENDING },
+          data: { paymentStatus: PaymentStatus.CANCELLED },
+        });
+      });
+
+      it('leaves a captured payment alone, a refund is a separate action', async () => {
+        setupCancel({ paymentStatus: PaymentStatus.CAPTURED });
+
+        await service.updateStatus('order-1', OrderStatus.CANCELLED, 'admin-1');
+
+        expect(paymentGateway.cancel).not.toHaveBeenCalled();
+      });
+
+      it('restores the gift card balance and releases the promotion usage', async () => {
+        setupCancel({ paymentStatus: PaymentStatus.PENDING });
+
+        await service.updateStatus('order-1', OrderStatus.CANCELLED, 'admin-1');
+
+        expect(giftCards.restoreForOrder).toHaveBeenCalledWith('order-1');
+        expect(promotions.releaseUsageForOrder).toHaveBeenCalledWith('order-1');
+      });
+
+      it('still cancels when the provider void fails', async () => {
+        setupCancel({ paymentStatus: PaymentStatus.AUTHORIZED });
+        paymentGateway.cancel.mockRejectedValue(new Error('provider down'));
+
+        const result = await service.updateStatus('order-1', OrderStatus.CANCELLED, 'admin-1');
+
+        expect((result as { status: OrderStatus }).status).toBe(OrderStatus.CANCELLED);
+        expect(giftCards.restoreForOrder).toHaveBeenCalledWith('order-1');
+        expect(promotions.releaseUsageForOrder).toHaveBeenCalledWith('order-1');
+      });
+
+      it('does nothing extra for a non-cancel transition', async () => {
+        setupForTransition(OrderStatus.PENDING, OrderStatus.CONFIRMED);
+
+        await service.updateStatus('order-1', OrderStatus.CONFIRMED, 'admin-1');
+
+        expect(giftCards.restoreForOrder).not.toHaveBeenCalled();
+        expect(promotions.releaseUsageForOrder).not.toHaveBeenCalled();
+        expect(paymentGateway.cancel).not.toHaveBeenCalled();
+      });
     });
 
     // ── Invalid transitions ───────────────────────────────────────────────
@@ -3489,7 +3776,7 @@ describe('OrdersService', () => {
       prisma.order.findUnique.mockResolvedValue(makeOrder({ status: OrderStatus.PROCESSING }));
 
       await expect(
-        service.updateShipment('order-1', 'ship-1', { status: 'CANCELLED' }, 'admin-1'),
+        service.updateShipment('order-1', 'ship-1', { status: 'CANCELLED' as never }, 'admin-1'),
       ).rejects.toMatchObject({
         response: {
           error: {
@@ -3545,7 +3832,8 @@ describe('OrdersService', () => {
 
       await service.updateStatus('order-1', OrderStatus.CANCELLED, 'admin-1');
 
-      expect(calls).toEqual(['order', 'restore']);
+      // The payment close that follows is a second guarded order write.
+      expect(calls.slice(0, 2)).toEqual(['order', 'restore']);
     });
 
     it('loses a status race cleanly, and restores no stock when it does', async () => {
@@ -3665,6 +3953,49 @@ describe('OrdersService', () => {
       };
 
       expect(result.cancellable).toBe(true);
+    });
+
+    it('sends paymentRetryable true only where retryPayment would accept the order', async () => {
+      const read = async (overrides: Record<string, unknown>) => {
+        prisma.order.findUnique.mockResolvedValue(makeOrder(overrides));
+        const out = (await service.findOneStorefront('order-1', 'user-1')) as {
+          paymentRetryable: boolean;
+        };
+        return out.paymentRetryable;
+      };
+
+      expect(await read({ paymentMethodCode: 'card', paymentStatus: PaymentStatus.PENDING })).toBe(
+        true,
+      );
+      expect(await read({ paymentMethodCode: 'card', paymentStatus: PaymentStatus.FAILED })).toBe(
+        true,
+      );
+      expect(await read({ paymentMethodCode: 'card', paymentStatus: PaymentStatus.CAPTURED })).toBe(
+        false,
+      );
+      expect(await read({ paymentMethodCode: null, paymentStatus: PaymentStatus.PENDING })).toBe(
+        false,
+      );
+      expect(
+        await read({
+          paymentMethodCode: 'card',
+          paymentStatus: PaymentStatus.PENDING,
+          status: OrderStatus.CANCELLED,
+        }),
+      ).toBe(false);
+    });
+
+    it('sends paymentRetryable false for a method that collects no payment online', async () => {
+      paymentGateway.collectsPaymentOnline.mockResolvedValue(false);
+      prisma.order.findUnique.mockResolvedValue(
+        makeOrder({ paymentMethodCode: 'cod', paymentStatus: PaymentStatus.PENDING }),
+      );
+
+      const out = (await service.findOneStorefront('order-1', 'user-1')) as {
+        paymentRetryable: boolean;
+      };
+
+      expect(out.paymentRetryable).toBe(false);
     });
   });
 
@@ -3817,6 +4148,202 @@ describe('OrdersService', () => {
 
   // ── queries ─────────────────────────────────────────────────────────────
 
+  describe('confirmPayment', () => {
+    function pendingCard(overrides: Record<string, unknown> = {}) {
+      return makeOrder({
+        paymentMethodCode: 'card',
+        paymentStatus: PaymentStatus.PENDING,
+        paymentReference: 'pi_1',
+        ...overrides,
+      });
+    }
+
+    beforeEach(() => {
+      paymentGateway.providerIdFor.mockResolvedValue('stripe');
+      prisma.order.updateMany.mockResolvedValue({ count: 1 });
+    });
+
+    it('asks the provider and moves the order forward, then answers the stored status', async () => {
+      prisma.order.findUnique
+        .mockResolvedValueOnce(pendingCard())
+        .mockResolvedValueOnce(pendingCard())
+        .mockResolvedValueOnce(pendingCard({ paymentStatus: PaymentStatus.CAPTURED }));
+      paymentGateway.getStatus.mockResolvedValue({
+        reference: 'pi_1',
+        status: PaymentStatus.CAPTURED,
+      });
+
+      const result = await service.confirmPayment('order-1', { userId: 'user-1' });
+
+      expect(paymentGateway.getStatus).toHaveBeenCalledWith('card', {
+        reference: 'pi_1',
+        status: PaymentStatus.PENDING,
+      });
+      expect(prisma.order.updateMany).toHaveBeenCalledWith({
+        where: { id: 'order-1', paymentStatus: PaymentStatus.PENDING },
+        data: { paymentStatus: PaymentStatus.CAPTURED },
+      });
+      expect(result).toEqual({ paymentStatus: PaymentStatus.CAPTURED });
+    });
+
+    it('leaves the order alone when the provider still says pending', async () => {
+      prisma.order.findUnique.mockResolvedValue(pendingCard());
+      paymentGateway.getStatus.mockResolvedValue({
+        reference: 'pi_1',
+        status: PaymentStatus.PENDING,
+      });
+
+      const result = await service.confirmPayment('order-1', { userId: 'user-1' });
+
+      expect(prisma.order.updateMany).not.toHaveBeenCalled();
+      expect(result).toEqual({ paymentStatus: PaymentStatus.PENDING });
+    });
+
+    it('answers not found to a caller who does not own the order', async () => {
+      prisma.order.findUnique.mockResolvedValue(pendingCard());
+      await expect(service.confirmPayment('order-1', {})).rejects.toMatchObject({
+        response: { error: { code: 'ORDER_NOT_FOUND' } },
+      });
+      expect(paymentGateway.getStatus).not.toHaveBeenCalled();
+    });
+
+    it('does not call the provider for an order with no provider payment', async () => {
+      prisma.order.findUnique.mockResolvedValue(
+        pendingCard({ paymentMethodCode: null, paymentReference: null }),
+      );
+      const result = await service.confirmPayment('order-1', { userId: 'user-1' });
+      expect(paymentGateway.getStatus).not.toHaveBeenCalled();
+      expect(result).toEqual({ paymentStatus: PaymentStatus.PENDING });
+    });
+  });
+
+  describe('retryPayment', () => {
+    const action = { type: 'embedded', clientToken: 'tok_2' };
+
+    function retryable(overrides: Record<string, unknown> = {}) {
+      return makeOrder({
+        paymentMethodCode: 'card',
+        paymentStatus: PaymentStatus.FAILED,
+        paymentReference: 'pi_old',
+        ...overrides,
+      });
+    }
+
+    it('opens a fresh session for the owner and returns its action', async () => {
+      prisma.order.findUnique.mockResolvedValue(retryable());
+      paymentGateway.openSession.mockResolvedValueOnce({
+        reference: 'pi_new',
+        status: PaymentStatus.PENDING,
+        action,
+      });
+
+      const result = await service.retryPayment('order-1', {
+        userId: 'user-1',
+        acceptLanguage: 'en',
+      });
+
+      expect(paymentGateway.openSession).toHaveBeenCalledWith(
+        'card',
+        expect.objectContaining({
+          orderId: 'order-1',
+          currencyCode: 'LYD',
+          returnUrl: 'https://storefront.example.test/en/order-confirmation/ORD-2026-000001',
+        }),
+      );
+      expect(prisma.order.update).toHaveBeenCalledWith({
+        where: { id: 'order-1' },
+        data: { paymentReference: 'pi_new', paymentStatus: PaymentStatus.PENDING },
+      });
+      expect(result).toEqual({ paymentAction: action });
+    });
+
+    it('closes the previous attempt with a key tied to its reference', async () => {
+      prisma.order.findUnique.mockResolvedValue(retryable());
+      paymentGateway.openSession.mockResolvedValueOnce({
+        reference: 'pi_new',
+        status: PaymentStatus.PENDING,
+        action,
+      });
+
+      await service.retryPayment('order-1', { userId: 'user-1' });
+
+      expect(paymentGateway.cancel).toHaveBeenCalledWith(
+        'card',
+        expect.objectContaining({
+          reference: 'pi_old',
+          idempotencyKey: 'retry-cancel:pi_old',
+        }),
+      );
+    });
+
+    it('still opens a new session when the old one cannot be closed', async () => {
+      prisma.order.findUnique.mockResolvedValue(retryable());
+      paymentGateway.cancel.mockRejectedValueOnce(new Error('session gone'));
+      paymentGateway.openSession.mockResolvedValueOnce({
+        reference: 'pi_new',
+        status: PaymentStatus.PENDING,
+        action,
+      });
+
+      const result = await service.retryPayment('order-1', { userId: 'user-1' });
+
+      expect(result).toEqual({ paymentAction: action });
+    });
+
+    it('lets the guest session that placed the order retry', async () => {
+      prisma.order.findUnique.mockResolvedValue(
+        retryable({ userId: null, guestSessionId: 'sess-1' }),
+      );
+      await expect(
+        service.retryPayment('order-1', { sessionId: 'sess-1' }),
+      ).resolves.toHaveProperty('paymentAction');
+    });
+
+    it('answers not found to an anonymous caller who does not own the order', async () => {
+      prisma.order.findUnique.mockResolvedValue(retryable());
+      await expect(service.retryPayment('order-1', {})).rejects.toMatchObject({
+        response: { error: { code: 'ORDER_NOT_FOUND' } },
+      });
+      expect(paymentGateway.openSession).not.toHaveBeenCalled();
+    });
+
+    it.each([PaymentStatus.CAPTURED, PaymentStatus.REFUNDED, PaymentStatus.AUTHORIZED])(
+      'refuses with a stable code when the payment is %s',
+      async (paymentStatus) => {
+        prisma.order.findUnique.mockResolvedValue(retryable({ paymentStatus }));
+        await expect(service.retryPayment('order-1', { userId: 'user-1' })).rejects.toMatchObject({
+          response: { error: { code: 'ORDER_PAYMENT_NOT_RETRYABLE' } },
+        });
+        expect(paymentGateway.openSession).not.toHaveBeenCalled();
+      },
+    );
+
+    it('refuses when the method collects no payment online (cod, manual)', async () => {
+      paymentGateway.collectsPaymentOnline.mockResolvedValue(false);
+      prisma.order.findUnique.mockResolvedValue(
+        retryable({ paymentMethodCode: 'cod', paymentStatus: PaymentStatus.PENDING }),
+      );
+      await expect(service.retryPayment('order-1', { userId: 'user-1' })).rejects.toMatchObject({
+        response: { error: { code: 'ORDER_PAYMENT_NOT_RETRYABLE' } },
+      });
+      expect(paymentGateway.openSession).not.toHaveBeenCalled();
+    });
+
+    it('refuses on a cancelled order', async () => {
+      prisma.order.findUnique.mockResolvedValue(retryable({ status: OrderStatus.CANCELLED }));
+      await expect(service.retryPayment('order-1', { userId: 'user-1' })).rejects.toMatchObject({
+        response: { error: { code: 'ORDER_PAYMENT_NOT_RETRYABLE' } },
+      });
+    });
+
+    it('refuses when the order never chose a payment method', async () => {
+      prisma.order.findUnique.mockResolvedValue(retryable({ paymentMethodCode: null }));
+      await expect(service.retryPayment('order-1', { userId: 'user-1' })).rejects.toMatchObject({
+        response: { error: { code: 'ORDER_PAYMENT_NOT_RETRYABLE' } },
+      });
+    });
+  });
+
   describe('findOneStorefront', () => {
     it('returns order for the owner', async () => {
       prisma.order.findUnique.mockResolvedValue(makeOrder());
@@ -3886,6 +4413,7 @@ describe('OrdersService', () => {
           'items',
           'notes',
           'orderNumber',
+          'paymentRetryable',
           'paymentStatus',
           'shippingAddress',
           'shippingAmount',

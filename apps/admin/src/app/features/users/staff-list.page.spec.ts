@@ -129,6 +129,19 @@ describe('StaffListPage', () => {
     expect(page.rows()).toHaveLength(2);
   });
 
+  it('shows Deactivate only with admin_users:delete or admin_users:manage', () => {
+    configure(['admin_users:view', 'admin_users:create', 'admin_users:update']);
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('[data-testid^="staff-edit-"]')).toBeTruthy();
+    expect(host.querySelector('[data-testid^="staff-deactivate-"]')).toBeNull();
+  });
+
+  it('shows Deactivate with admin_users:delete', () => {
+    configure(['admin_users:view', 'admin_users:delete']);
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('[data-testid^="staff-deactivate-"]')).toBeTruthy();
+  });
+
   it('canCreate requires admin_users:create or admin_users:manage', () => {
     configure(['admin_users:view']);
     expect(page.canCreate()).toBe(false);

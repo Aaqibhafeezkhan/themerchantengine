@@ -1,8 +1,9 @@
-import { IsOptional, IsString, Matches, ValidateNested } from 'class-validator';
+import { IsDefined, IsOptional, IsString, Matches, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { TranslatableDto } from './translatable.dto';
 
 export class CreateProductTypeAdminDto {
+  @IsDefined()
   @ValidateNested()
   @Type(() => TranslatableDto)
   name: TranslatableDto;

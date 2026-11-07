@@ -104,6 +104,36 @@ function storeConfigOrderViolations(projects: ProjectLike[]): string[] {
   return violations;
 }
 
+const CARD_PAYMENT_SPEC = 'embedded-card-payment.journey.spec.ts';
+
+/**
+ * `embedded-card-payment.journey.spec.ts` activates a second payment method in
+ * the shared DB while it runs, and an order placed without a method code then
+ * fails with ORDER_PAYMENT_METHOD_INVALID. Every project that collects it must
+ * collect nothing else and must run after the projects that are not
+ * themselves ordered after it.
+ */
+function cardPaymentIsolationViolations(projects: ProjectLike[]): string[] {
+  const names = collectedBy(CARD_PAYMENT_SPEC, projects);
+  if (names.length === 0) return [`no project collects ${CARD_PAYMENT_SPEC}`];
+  const violations: string[] = [];
+  for (const project of projects.filter((p) => names.includes(p.name ?? '(unnamed)'))) {
+    const shared = specFiles().filter(
+      (file) => file !== CARD_PAYMENT_SPEC && collectedBy(file, [project]).length > 0,
+    );
+    if (shared.length > 0) violations.push(`${project.name} also collects ${shared.join(', ')}`);
+    // A project that depends on this one runs after it, so it is allowed to be absent here.
+    const missing = projects
+      .filter((p) => !names.includes(p.name ?? '(unnamed)'))
+      .filter((p) => !(p.dependencies ?? []).includes(project.name ?? '(unnamed)'))
+      .map((p) => p.name ?? '(unnamed)')
+      .filter((name) => !(project.dependencies ?? []).includes(name));
+    if (missing.length > 0)
+      violations.push(`${project.name} does not depend on ${missing.join(', ')}`);
+  }
+  return violations;
+}
+
 test.describe('storefront-e2e project coverage', () => {
   test('the config exposes projects to check, so this cannot pass vacuously', () => {
     const projects = (config.projects ?? []) as ProjectLike[];
@@ -126,6 +156,42 @@ test.describe('storefront-e2e project coverage', () => {
 
   test('store-config.journey runs alone, after every other project', () => {
     expect(storeConfigOrderViolations((config.projects ?? []) as ProjectLike[])).toEqual([]);
+  });
+
+  test('embedded-card-payment.journey runs alone, after the parallel projects', () => {
+    expect(cardPaymentIsolationViolations((config.projects ?? []) as ProjectLike[])).toEqual([]);
+  });
+
+  test.describe('card-payment isolation canaries', () => {
+    const parallel: ProjectLike = {
+      name: 'parallel',
+      testMatch: /visual-regression.journey\.spec\.ts$/,
+    };
+    const card = (overrides: Partial<ProjectLike>): ProjectLike => ({
+      name: 'card',
+      testMatch: /embedded-card-payment\.journey\.spec\.ts$/,
+      dependencies: ['parallel'],
+      ...overrides,
+    });
+
+    test('a card project that depends on the parallel project passes', () => {
+      expect(cardPaymentIsolationViolations([parallel, card({})])).toEqual([]);
+    });
+
+    test('a card project that shares a project with the visual suite fails', () => {
+      const shared = card({
+        testMatch: /(visual-regression.journey|embedded-card-payment\.journey)\.spec\.ts$/,
+      });
+      expect(cardPaymentIsolationViolations([parallel, shared])).toEqual([
+        'card also collects visual-regression.journey.spec.ts',
+      ]);
+    });
+
+    test('a card project missing a dependency fails', () => {
+      expect(cardPaymentIsolationViolations([parallel, card({ dependencies: [] })])).toEqual([
+        'card does not depend on parallel',
+      ]);
+    });
   });
 
   test.describe('store-config ordering canaries', () => {

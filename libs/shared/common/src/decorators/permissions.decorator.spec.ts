@@ -24,8 +24,12 @@ describe('permissions decorator runtime exports', () => {
   });
 
   describe('PERMISSION_MODULES', () => {
-    it('declares 25 module names', () => {
-      expect(PERMISSION_MODULES).toHaveLength(25);
+    it('declares 26 module names', () => {
+      expect(PERMISSION_MODULES).toHaveLength(26);
+    });
+
+    it('includes payments (separate from payment_methods, gates capture, refund and void)', () => {
+      expect(PERMISSION_MODULES).toContain('payments');
     });
 
     it('includes the six modules previously undeclared in agent_docs (§1.13 BLOCKER #2)', () => {

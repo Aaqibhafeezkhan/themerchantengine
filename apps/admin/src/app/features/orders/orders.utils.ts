@@ -134,3 +134,24 @@ export function formatMoney(
 ): string {
   return sharedFormatMoney(value, currency);
 }
+
+export type PaymentAction = 'capture' | 'refund' | 'cancel';
+
+/**
+ * Payment actions an admin may start from the order's payment status. Mirrors
+ * the API transition rules; the API stays the authority and answers 409 on
+ * anything else (offline methods and orders with no payment session included).
+ * Refund is full only, so a partial refund offers nothing further.
+ */
+export function paymentActionsFor(status: string | undefined): readonly PaymentAction[] {
+  switch (status) {
+    case 'PENDING':
+      return ['cancel'];
+    case 'AUTHORIZED':
+      return ['capture', 'cancel'];
+    case 'CAPTURED':
+      return ['refund'];
+    default:
+      return [];
+  }
+}

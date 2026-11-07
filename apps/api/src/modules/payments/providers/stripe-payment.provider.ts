@@ -1,5 +1,6 @@
 import { currencyEntry } from '@common/constants/currencies.constants';
-import { Injectable } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PaymentStatus, Prisma } from '@prisma/client';
 import Stripe from 'stripe';
@@ -8,7 +9,7 @@ import { PaymentProviderRejectedException } from '../payment-provider-rejected.e
 import { PaymentProviderUnavailableException } from '../payment-provider-unavailable.exception';
 import { PaymentTransitionNotAllowedException } from '../payment-transition-not-allowed.exception';
 import { PaymentWebhookSignatureInvalidException } from '../payment-webhook-signature-invalid.exception';
-import { PaymentWebhookUnsupportedException } from '../payment-webhook-unsupported.exception';
+import { PaymentWebhookIgnoredException } from '../payment-webhook-ignored.exception';
 import { CircuitBreaker, CircuitOpenError } from './circuit-breaker';
 import type {
   PaymentCaptureInput,
@@ -18,6 +19,7 @@ import type {
   PaymentProviderResult,
   PaymentRefundInput,
   PaymentSessionInput,
+  PaymentSessionResult,
   PaymentWebhookEvent,
   PaymentWebhookInput,
 } from './payment-provider.interface';
@@ -26,7 +28,13 @@ export const STRIPE_TIMEOUT_MS = 5000;
 export const STRIPE_FAILURE_THRESHOLD = 5;
 export const STRIPE_COOLDOWN_MS = 30_000;
 
-const stripeConfigSchema = z.object({});
+const stripeConfigSchema = z.object({
+  /** embedded: Payment Element on our page. redirect: hosted Stripe Checkout. */
+  checkoutMode: z.enum(['embedded', 'redirect']).default('embedded'),
+  secretKey: z.string().min(1).optional(),
+  webhookSecret: z.string().min(1).optional(),
+  publishableKey: z.string().min(1).optional(),
+});
 type StripeConfig = z.infer<typeof stripeConfigSchema>;
 
 const intentSchema = z.object({
@@ -34,8 +42,17 @@ const intentSchema = z.object({
   status: z.string(),
   client_secret: z.string().nullish(),
 });
+const checkoutSessionSchema = z.object({
+  id: z.string(),
+  url: z.string().nullish(),
+  payment_intent: z.string().nullish(),
+});
+const sessionListSchema = z.object({ data: z.array(z.object({ id: z.string() })) });
 const refundSchema = z.object({ status: z.string().nullish() });
-const intentEventSchema = z.object({ id: z.string() });
+const intentEventSchema = z.object({
+  id: z.string(),
+  metadata: z.record(z.string(), z.string()).nullish(),
+});
 const chargeEventSchema = z.object({
   payment_intent: z.string(),
   amount: z.number().int(),
@@ -59,13 +76,19 @@ const INTENT_EVENTS: Record<string, PaymentStatus> = {
 @Injectable()
 export class StripePaymentProvider implements PaymentProvider<StripeConfig> {
   static readonly providerId = 'stripe' as const;
-  /** No storefront step collects the card yet, so checkout must not offer it. */
-  static readonly offeredAtCheckout = false;
+  /** Checkout offers Stripe: the storefront runs its redirect and embedded actions. */
+  static readonly offeredAtCheckout = true;
+  private readonly logger = new Logger(StripePaymentProvider.name);
   readonly id = StripePaymentProvider.providerId;
+  readonly label = 'Stripe';
+  readonly actionTypes = ['embedded', 'redirect'] as const;
+  readonly secretFields = ['secretKey', 'webhookSecret'] as const;
   readonly configSchema = stripeConfigSchema;
 
   private readonly client: Stripe | undefined;
   private readonly webhookSecret: string | undefined;
+  private readonly envPublishableKey: string | undefined;
+  private readonly clients = new Map<string, Stripe>();
   private readonly breaker = new CircuitBreaker({
     threshold: STRIPE_FAILURE_THRESHOLD,
     cooldownMs: STRIPE_COOLDOWN_MS,
@@ -74,13 +97,17 @@ export class StripePaymentProvider implements PaymentProvider<StripeConfig> {
 
   constructor(config: ConfigService) {
     const apiKey = config.get<string>('STRIPE_API_KEY');
-    this.client = apiKey ? new Stripe(apiKey, { timeout: STRIPE_TIMEOUT_MS }) : undefined;
+    this.client = apiKey ? this.buildClient(apiKey) : undefined;
     this.webhookSecret = config.get<string>('STRIPE_WEBHOOK_SECRET') || undefined;
+    this.envPublishableKey = config.get<string>('STRIPE_PUBLISHABLE_KEY') || undefined;
   }
 
-  async createSession(input: PaymentSessionInput<StripeConfig>): Promise<PaymentProviderResult> {
-    const client = this.requireClient();
+  async createSession(input: PaymentSessionInput<StripeConfig>): Promise<PaymentSessionResult> {
+    const client = this.requireClient(input.config);
     const amount = this.toMinorUnits(input.amount, input.currencyCode);
+    if (input.config.checkoutMode === 'redirect') {
+      return this.createHostedSession(client, input, amount);
+    }
     const intent = await this.call(intentSchema, () =>
       client.paymentIntents.create(
         {
@@ -93,33 +120,80 @@ export class StripePaymentProvider implements PaymentProvider<StripeConfig> {
         { idempotencyKey: `checkout-session:${input.orderId}` },
       ),
     );
-    const result: PaymentProviderResult = {
+    if (!intent.client_secret) {
+      throw new PaymentProviderRejectedException(this.id, 'missing_client_secret');
+    }
+    const publicConfig: Record<string, string> = { provider: this.id };
+    const publishableKey = input.config.publishableKey ?? this.envPublishableKey;
+    if (publishableKey) publicConfig['publishableKey'] = publishableKey;
+    return {
       reference: intent.id,
       status: intentStatus(intent.status),
+      action: { type: 'embedded', clientToken: intent.client_secret, publicConfig },
     };
-    if (intent.client_secret) result.clientSecret = intent.client_secret;
-    return result;
+  }
+
+  /** Hosted Stripe Checkout. The reference is the session id until a PaymentIntent exists. */
+  private async createHostedSession(
+    client: Stripe,
+    input: PaymentSessionInput<StripeConfig>,
+    amount: number,
+  ): Promise<PaymentSessionResult> {
+    const returnUrl = input.returnUrl;
+    if (!returnUrl) throw new PaymentProviderRejectedException(this.id, 'missing_return_url');
+    const session = await this.call(checkoutSessionSchema, () =>
+      client.checkout.sessions.create(
+        {
+          mode: 'payment',
+          client_reference_id: input.orderId,
+          success_url: returnUrl,
+          cancel_url: returnUrl,
+          ...(input.customerEmail ? { customer_email: input.customerEmail } : {}),
+          line_items: [
+            {
+              quantity: 1,
+              price_data: {
+                currency: input.currencyCode.toLowerCase(),
+                unit_amount: amount,
+                product_data: { name: `Order ${input.orderId}` },
+              },
+            },
+          ],
+          payment_intent_data: {
+            capture_method: 'manual',
+            metadata: { orderId: input.orderId, checkoutMode: 'redirect' },
+          },
+        },
+        // A replayed key returns the first session, which may be expired or abandoned by Pay again.
+        { idempotencyKey: `checkout-session:${input.orderId}:${randomUUID()}` },
+      ),
+    );
+    if (!session.url) throw new PaymentProviderRejectedException(this.id, 'missing_checkout_url');
+    return {
+      reference: session.id,
+      status: PaymentStatus.PENDING,
+      action: { type: 'redirect', url: session.url },
+    };
   }
 
   async authorize(input: PaymentOperationInput<StripeConfig>): Promise<PaymentProviderResult> {
-    const client = this.requireClient();
+    const client = this.requireClient(input.config);
     this.assertFrom(input, 'authorize', [PaymentStatus.PENDING]);
-    const intent = await this.call(intentSchema, () =>
-      client.paymentIntents.retrieve(input.reference),
-    );
-    if (intentStatus(intent.status) !== PaymentStatus.AUTHORIZED) {
+    const intent = await this.retrieveIntent(client, input.reference);
+    if (!intent || intentStatus(intent.status) !== PaymentStatus.AUTHORIZED) {
       throw new PaymentTransitionNotAllowedException(this.id, input.status, 'authorize');
     }
     return { reference: input.reference, status: PaymentStatus.AUTHORIZED };
   }
 
   async capture(input: PaymentCaptureInput<StripeConfig>): Promise<PaymentProviderResult> {
-    const client = this.requireClient();
+    const client = this.requireClient(input.config);
     this.assertFrom(input, 'capture', [PaymentStatus.AUTHORIZED]);
     const amount = this.toMinorUnits(input.amount, input.currencyCode);
+    const intentId = await this.requireIntentId(client, input.reference);
     const intent = await this.call(intentSchema, () =>
       client.paymentIntents.capture(
-        input.reference,
+        intentId,
         { amount_to_capture: amount },
         { idempotencyKey: input.idempotencyKey },
       ),
@@ -128,24 +202,33 @@ export class StripePaymentProvider implements PaymentProvider<StripeConfig> {
   }
 
   async cancel(input: PaymentMutationInput<StripeConfig>): Promise<PaymentProviderResult> {
-    const client = this.requireClient();
+    const client = this.requireClient(input.config);
     this.assertFrom(input, 'cancel', [PaymentStatus.PENDING, PaymentStatus.AUTHORIZED]);
+    const intentId = await this.resolveIntentId(client, input.reference);
+    if (!intentId) {
+      // A hosted session nobody paid on: expire it so the link stops working.
+      await this.call(checkoutSessionSchema, () =>
+        client.checkout.sessions.expire(input.reference),
+      );
+      return { reference: input.reference, status: PaymentStatus.CANCELLED };
+    }
     const intent = await this.call(intentSchema, () =>
-      client.paymentIntents.cancel(input.reference, {}, { idempotencyKey: input.idempotencyKey }),
+      client.paymentIntents.cancel(intentId, {}, { idempotencyKey: input.idempotencyKey }),
     );
     return { reference: input.reference, status: intentStatus(intent.status) };
   }
 
   async refund(input: PaymentRefundInput<StripeConfig>): Promise<PaymentProviderResult> {
-    const client = this.requireClient();
+    const client = this.requireClient(input.config);
     this.assertFrom(input, 'refund', [PaymentStatus.CAPTURED, PaymentStatus.PARTIALLY_REFUNDED]);
     if (input.amount.lte(0) || input.amount.gt(input.refundableAmount)) {
       throw new PaymentTransitionNotAllowedException(this.id, input.status, 'refund');
     }
     const amount = this.toMinorUnits(input.amount, input.currencyCode);
+    const intentId = await this.requireIntentId(client, input.reference);
     const refund = await this.call(refundSchema, () =>
       client.refunds.create(
-        { payment_intent: input.reference, amount },
+        { payment_intent: intentId, amount },
         { idempotencyKey: input.idempotencyKey },
       ),
     );
@@ -159,11 +242,9 @@ export class StripePaymentProvider implements PaymentProvider<StripeConfig> {
   }
 
   async getStatus(input: PaymentOperationInput<StripeConfig>): Promise<PaymentProviderResult> {
-    const client = this.requireClient();
-    const intent = await this.call(intentSchema, () =>
-      client.paymentIntents.retrieve(input.reference),
-    );
-    const status = intentStatus(intent.status);
+    const client = this.requireClient(input.config);
+    const intent = await this.retrieveIntent(client, input.reference);
+    const status = intent ? intentStatus(intent.status) : PaymentStatus.PENDING;
     const refunded =
       input.status === PaymentStatus.REFUNDED || input.status === PaymentStatus.PARTIALLY_REFUNDED;
     return {
@@ -173,13 +254,14 @@ export class StripePaymentProvider implements PaymentProvider<StripeConfig> {
   }
 
   async parseWebhook(input: PaymentWebhookInput<StripeConfig>): Promise<PaymentWebhookEvent> {
-    if (!this.webhookSecret) throw new PaymentProviderUnavailableException(this.id);
+    const webhookSecret = input.config.webhookSecret || this.webhookSecret;
+    if (!webhookSecret) throw new PaymentProviderUnavailableException(this.id);
     const signature = input.headers['stripe-signature'];
     if (typeof signature !== 'string') throw new PaymentWebhookSignatureInvalidException(this.id);
 
     let event: Stripe.Event;
     try {
-      event = Stripe.webhooks.constructEvent(input.rawBody, signature, this.webhookSecret);
+      event = Stripe.webhooks.constructEvent(input.rawBody, signature, webhookSecret);
     } catch {
       throw new PaymentWebhookSignatureInvalidException(this.id);
     }
@@ -188,7 +270,8 @@ export class StripePaymentProvider implements PaymentProvider<StripeConfig> {
     const intentEventStatus = INTENT_EVENTS[event.type];
     if (intentEventStatus) {
       const intent = this.parse(intentEventSchema, object);
-      return { eventId: event.id, reference: intent.id, status: intentEventStatus };
+      const reference = await this.referenceFor(input.config, intent);
+      return { eventId: event.id, reference, status: intentEventStatus };
     }
     if (event.type === 'charge.refunded') {
       const charge = this.parse(chargeEventSchema, object);
@@ -196,14 +279,74 @@ export class StripePaymentProvider implements PaymentProvider<StripeConfig> {
         charge.amount_refunded >= charge.amount
           ? PaymentStatus.REFUNDED
           : PaymentStatus.PARTIALLY_REFUNDED;
-      return { eventId: event.id, reference: charge.payment_intent, status };
+      const reference = await this.referenceForIntent(input.config, charge.payment_intent);
+      return { eventId: event.id, reference, status };
     }
-    throw new PaymentWebhookUnsupportedException(this.id);
+    throw new PaymentWebhookIgnoredException(this.id, event.type);
   }
 
-  private requireClient(): Stripe {
-    if (!this.client) throw new PaymentProviderUnavailableException(this.id);
-    return this.client;
+  /** Redirect payments are stored under the session id, so a webhook maps the intent back to it. */
+  private async referenceFor(
+    config: StripeConfig,
+    intent: z.infer<typeof intentEventSchema>,
+  ): Promise<string> {
+    if (intent.metadata?.['checkoutMode'] !== 'redirect') return intent.id;
+    return this.referenceForIntent(config, intent.id);
+  }
+
+  /**
+   * A charge event carries no metadata, and the method may have flipped mode since the
+   * payment, so the session lookup does not depend on the current mode.
+   */
+  private async referenceForIntent(config: StripeConfig, intentId: string): Promise<string> {
+    const client = this.requireClient(config);
+    const sessions = await this.call(sessionListSchema, () =>
+      client.checkout.sessions.list({ payment_intent: intentId, limit: 1 }),
+    );
+    return sessions.data[0]?.id ?? intentId;
+  }
+
+  /** A cs_ reference is a hosted session; the intent exists only once the shopper paid. */
+  private async resolveIntentId(client: Stripe, reference: string): Promise<string | null> {
+    if (!reference.startsWith('cs_')) return reference;
+    const session = await this.call(checkoutSessionSchema, () =>
+      client.checkout.sessions.retrieve(reference),
+    );
+    return session.payment_intent ?? null;
+  }
+
+  private async requireIntentId(client: Stripe, reference: string): Promise<string> {
+    const intentId = await this.resolveIntentId(client, reference);
+    if (!intentId) throw new PaymentProviderRejectedException(this.id, 'payment_not_started');
+    return intentId;
+  }
+
+  private async retrieveIntent(
+    client: Stripe,
+    reference: string,
+  ): Promise<z.infer<typeof intentSchema> | null> {
+    const intentId = await this.resolveIntentId(client, reference);
+    if (!intentId) return null;
+    return this.call(intentSchema, () => client.paymentIntents.retrieve(intentId));
+  }
+
+  /** The method config key wins; the env key is the fallback. Clients are cached per key. */
+  private requireClient(config: StripeConfig): Stripe {
+    const apiKey = config.secretKey;
+    if (!apiKey) {
+      if (!this.client) throw new PaymentProviderUnavailableException(this.id);
+      return this.client;
+    }
+    let client = this.clients.get(apiKey);
+    if (!client) {
+      client = this.buildClient(apiKey);
+      this.clients.set(apiKey, client);
+    }
+    return client;
+  }
+
+  private buildClient(apiKey: string): Stripe {
+    return new Stripe(apiKey, { timeout: STRIPE_TIMEOUT_MS });
   }
 
   private async call<T>(schema: z.ZodType<T>, fn: () => Promise<unknown>): Promise<T> {
@@ -215,6 +358,9 @@ export class StripePaymentProvider implements PaymentProvider<StripeConfig> {
         throw new PaymentProviderUnavailableException(this.id);
       }
       if (error instanceof Stripe.errors.StripeError) {
+        this.logger.warn(
+          `Stripe rejected the call: type=${error.type} code=${error.code ?? 'none'} status=${error.statusCode ?? 'none'}`,
+        );
         throw new PaymentProviderRejectedException(this.id, error.code ?? error.type);
       }
       throw error;

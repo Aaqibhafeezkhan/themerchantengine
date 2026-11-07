@@ -29,6 +29,7 @@ describe('PaymentMethodDetailPage', () => {
   let getSpy: jest.Mock;
   let updateSpy: jest.Mock;
   let deleteSpy: jest.Mock;
+  let providersSpy: jest.Mock;
   let confirmSpy: jest.SpyInstance;
   let paramMap$: BehaviorSubject<ParamMap>;
 
@@ -43,7 +44,12 @@ describe('PaymentMethodDetailPage', () => {
         { provide: BOOTSTRAP_LOCALE, useValue: 'fr' },
         {
           provide: PaymentMethodsService,
-          useValue: { get: getSpy, update: updateSpy, delete: deleteSpy },
+          useValue: {
+            get: getSpy,
+            update: updateSpy,
+            delete: deleteSpy,
+            providers: providersSpy,
+          },
         },
         { provide: ActivatedRoute, useValue: { paramMap: paramMap$.asObservable() } },
       ],
@@ -62,6 +68,7 @@ describe('PaymentMethodDetailPage', () => {
       of({ ...methodFixture, ...body }),
     );
     deleteSpy = jest.fn(() => of(undefined));
+    providersSpy = jest.fn(() => of([]));
     confirmSpy = jest.spyOn(adminUi, 'openConfirmDialog').mockResolvedValue(true);
   });
 
@@ -199,6 +206,149 @@ describe('PaymentMethodDetailPage', () => {
     page.busy.set(true);
     page.save();
     expect(updateSpy).not.toHaveBeenCalled();
+  });
+
+  describe('schema-driven config for a provider admin never heard of', () => {
+    const canaryMethod = {
+      ...methodFixture,
+      id: 'pm-9',
+      code: 'canary_main',
+      provider: 'canary_pay',
+      config: { merchantId: 'm-1', merchantPassword: '***', sandbox: false, legacyNote: 'x' },
+    };
+    const canaryEntry = {
+      id: 'canary_pay',
+      label: 'Canary Pay',
+      actionTypes: ['redirect'],
+      secretFields: ['merchantPassword'],
+      configJsonSchema: {
+        type: 'object',
+        properties: {
+          merchantId: { type: 'string', description: 'Id from the Canary dashboard.' },
+          merchantPassword: { type: 'string' },
+          sandbox: { type: 'boolean' },
+          checkoutMode: { type: 'string', enum: ['embedded', 'redirect'] },
+          retries: { type: 'number' },
+        },
+      },
+    };
+
+    beforeEach(() => {
+      getSpy = jest.fn(() => of(canaryMethod));
+      providersSpy.mockReturnValue(of([canaryEntry]));
+    });
+
+    function field(key: string): HTMLInputElement | HTMLSelectElement {
+      return fixture.nativeElement.querySelector(`[data-testid="pm-field-${key}"]`);
+    }
+
+    it('renders one control per schema property with the right kind', () => {
+      configure('pm-9');
+      expect(field('merchantId').getAttribute('type')).toBe('text');
+      expect(field('merchantPassword').getAttribute('type')).toBe('password');
+      expect(field('sandbox').getAttribute('type')).toBe('checkbox');
+      expect(field('retries').getAttribute('type')).toBe('number');
+      const select = field('checkoutMode') as HTMLSelectElement;
+      expect(Array.from(select.options).map((o) => o.value)).toEqual(['embedded', 'redirect']);
+    });
+
+    it('labels each control with a readable name, not the raw key', () => {
+      configure('pm-9');
+      const label = (key: string): string =>
+        fixture.nativeElement
+          .querySelector(`[data-testid="pm-field-label-${key}"]`)
+          .textContent.trim();
+      expect(label('merchantPassword')).toBe('Merchant password');
+      expect(label('sandbox')).toBe('Sandbox');
+      expect(label('checkoutMode')).toBe('Checkout mode');
+    });
+
+    it('prefers the schema title for the label', () => {
+      providersSpy.mockReturnValue(
+        of([
+          {
+            ...canaryEntry,
+            configJsonSchema: {
+              type: 'object',
+              properties: { merchantId: { type: 'string', title: 'Merchant ID' } },
+            },
+          },
+        ]),
+      );
+      configure('pm-9');
+      expect(
+        fixture.nativeElement
+          .querySelector('[data-testid="pm-field-label-merchantId"]')
+          .textContent.trim(),
+      ).toBe('Merchant ID');
+    });
+
+    it('shows the schema description as helper text', () => {
+      configure('pm-9');
+      expect(fixture.nativeElement.textContent).toContain('Id from the Canary dashboard.');
+    });
+
+    it('never puts the stored secret in the DOM and does not resend the mask', () => {
+      configure('pm-9');
+      expect((field('merchantPassword') as HTMLInputElement).value).toBe('');
+      page.form.controls.sortOrder.setValue(3);
+      page.form.controls.sortOrder.markAsDirty();
+      page.onConfigInput('merchantId', { target: { value: 'm-2' } } as unknown as Event);
+      page.save();
+      const body = updateSpy.mock.calls[0][1];
+      expect(body.config.merchantId).toBe('m-2');
+      expect('merchantPassword' in body.config).toBe(false);
+    });
+
+    it('sends a new secret value when the admin types one', () => {
+      configure('pm-9');
+      page.onConfigInput('merchantPassword', {
+        target: { value: 'new-secret' },
+      } as unknown as Event);
+      page.save();
+      expect(updateSpy.mock.calls[0][1].config.merchantPassword).toBe('new-secret');
+    });
+
+    it('sends null to delete a stored secret', () => {
+      configure('pm-9');
+      page.removeConfigKey('merchantPassword');
+      page.save();
+      expect(updateSpy.mock.calls[0][1].config.merchantPassword).toBeNull();
+    });
+
+    it('stages a boolean and an enum as typed values', () => {
+      configure('pm-9');
+      page.onBooleanInput('sandbox', { target: { checked: true } } as unknown as Event);
+      page.onConfigInput('checkoutMode', { target: { value: 'redirect' } } as unknown as Event);
+      page.save();
+      const cfg = updateSpy.mock.calls[0][1].config;
+      expect(cfg.sandbox).toBe(true);
+      expect(cfg.checkoutMode).toBe('redirect');
+    });
+
+    it('stores a number field as a number', () => {
+      configure('pm-9');
+      page.onNumberInput('retries', { target: { value: '4' } } as unknown as Event);
+      page.save();
+      expect(updateSpy.mock.calls[0][1].config.retries).toBe(4);
+    });
+
+    it('keeps keys outside the schema in the generic rows', () => {
+      configure('pm-9');
+      expect(page.configRows().map((r) => r.key)).toEqual(['legacyNote']);
+    });
+
+    it('still renders the form when the catalogue fails to load', () => {
+      providersSpy.mockReturnValue(throwError(() => new ApiError({ code: 'X', message: 'down' })));
+      configure('pm-9');
+      expect(page.current()).not.toBeNull();
+      expect(page.configRows().map((r) => r.key)).toContain('merchantId');
+    });
+
+    it('has no axe violations', async () => {
+      configure('pm-9');
+      expect(await axe(fixture.nativeElement)).toHaveNoViolations();
+    });
   });
 
   it('hides the delete button for an admin without payment_methods:delete', () => {

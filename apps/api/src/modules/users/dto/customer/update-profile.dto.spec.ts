@@ -16,6 +16,17 @@ async function errorsFor(payload: object): Promise<string[]> {
   return errors.map((e) => e.property);
 }
 
+describe('UpdateProfileDto names', () => {
+  it('rejects a blank first or last name', async () => {
+    expect(await errorsFor({ firstName: '' })).toEqual(['firstName']);
+    expect(await errorsFor({ lastName: '' })).toEqual(['lastName']);
+  });
+
+  it('accepts a normal name', async () => {
+    expect(await errorsFor({ firstName: 'Sam', lastName: 'Lee' })).toEqual([]);
+  });
+});
+
 describe('UpdateProfileDto locale', () => {
   afterEach(() => storeLocales.set(NEUTRAL_LOCALE_SET));
 

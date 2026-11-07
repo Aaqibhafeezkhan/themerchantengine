@@ -100,6 +100,8 @@ The stepper asks (or reads) every answer, skips the live checks that need the ne
 
 The stepper writes `.setup-state.json` after every completed step. It holds the non-secret answers and the list of completed steps, so a crash, a Ctrl-C or a failed live check resumes at the step it stopped on, with every earlier answer offered as the default. It never holds a password, a key or a generated secret: those live in the environment file the installer writes with mode `0600`, and a resumed run reads them back from there.
 
+A run without a terminal takes every answer from its `--answers` document and none from the state file, so a field the document leaves out gets its default, not the value an earlier run saved.
+
 `--reset` ignores the state file and asks everything again. `--state <file>` puts the state file elsewhere, which matters when one checkout installs more than one profile.
 
 An install that already ran is safe to run again with the same document: every step is idempotent, secrets and certificates are kept, and the run ends with the same closing lines. That is how a store is updated, and it is what the engine's own CI asserts.

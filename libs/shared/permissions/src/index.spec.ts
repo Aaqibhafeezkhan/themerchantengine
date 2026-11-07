@@ -7,8 +7,8 @@ import {
 
 describe('permission catalogue', () => {
   describe('PERMISSION_MODULES', () => {
-    it('declares the 25 modules the api enforces', () => {
-      expect(PERMISSION_MODULES).toHaveLength(25);
+    it('declares the 26 modules the api enforces', () => {
+      expect(PERMISSION_MODULES).toHaveLength(26);
     });
 
     it('is sorted alphabetically (lock against diff churn)', () => {
@@ -41,8 +41,8 @@ describe('permission catalogue', () => {
   });
 
   describe('PERMISSION_STRINGS', () => {
-    it('is the full 25 x 5 cross product', () => {
-      expect(PERMISSION_STRINGS).toHaveLength(125);
+    it('is the full 26 x 5 cross product', () => {
+      expect(PERMISSION_STRINGS).toHaveLength(130);
     });
 
     it('holds only well-formed module:action pairs drawn from the two source tuples', () => {

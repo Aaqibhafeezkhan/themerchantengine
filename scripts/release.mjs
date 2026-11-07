@@ -14,7 +14,7 @@
 // The script does not choose the version. It reads package.json, requires a
 // CHANGELOG.md section for that version and a clean tree, and refuses a tag
 // that already exists; deciding the number is a person's job.
-import { execFileSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
@@ -108,11 +108,8 @@ if (dryRun) {
 
 // ── build the stepper ─────────────────────────────────────────────────────
 say('building the stepper bundle');
-execFileSync('npm', ['run', 'build:setup'], {
-  cwd: root,
-  stdio: 'inherit',
-  shell: process.platform === 'win32',
-});
+// One command string: npm is a .cmd on Windows and needs a shell, and an args array with a shell warns on Node 24.
+execSync('npm run build:setup', { cwd: root, stdio: 'inherit' });
 if (!fs.existsSync(bundle))
   refuse(`the build did not produce ${bundle}.`, 'Read the build output above.');
 

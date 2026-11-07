@@ -40,6 +40,7 @@ export const PERMISSION_MODULES = Object.freeze([
   'notifications',
   'orders',
   'payment_methods',
+  'payments',
   'products',
   'promotions',
   'returns',

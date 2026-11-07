@@ -1,6 +1,7 @@
 import {
   IsArray,
   IsBoolean,
+  IsDefined,
   IsInt,
   IsNumber,
   IsOptional,
@@ -13,6 +14,7 @@ import { Type } from 'class-transformer';
 import { TranslatableDto } from '../../products/dto/translatable.dto';
 
 export class CreateTaxZoneAdminDto {
+  @IsDefined()
   @ValidateNested()
   @Type(() => TranslatableDto)
   name: TranslatableDto;

@@ -59,6 +59,7 @@ const PASSWORD_PATTERN = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
           class="form"
           [formGroup]="form"
           (ngSubmit)="onSubmit()"
+          (input)="errorMessage.set(null)"
           novalidate
           data-testid="auth-register-form"
           [attr.aria-describedby]="errorMessage() ? errorId : null"

@@ -329,7 +329,7 @@
         {
           "name": "STRIPE_API_KEY",
           "example": "",
-          "comment": "",
+          "comment": "Stripe keys entered in the admin win; these are the fallback.",
           "section": "Payments",
           "optional": true
         },
@@ -337,6 +337,34 @@
           "name": "STRIPE_WEBHOOK_SECRET",
           "example": "",
           "comment": "",
+          "section": "Payments",
+          "optional": true
+        },
+        {
+          "name": "STRIPE_PUBLISHABLE_KEY",
+          "example": "",
+          "comment": "",
+          "section": "Payments",
+          "optional": true
+        },
+        {
+          "name": "PAYMENT_FAKE_PROVIDERS",
+          "example": "true",
+          "comment": "Registers the fake_embedded and fake_redirect providers for the e2e suites. The API refuses to boot with this set when NODE_ENV=production.",
+          "section": "Payments",
+          "optional": true
+        },
+        {
+          "name": "PAYMENT_CONFIG_ENCRYPTION_KEY",
+          "example": "",
+          "comment": "Encrypts payment secrets saved from the admin (AES-256-GCM). 32 random bytes, base64: `openssl rand -base64 32`. Without it, saving a secret answers 503.",
+          "section": "Payments",
+          "optional": true
+        },
+        {
+          "name": "PAYMENT_CONFIG_ENCRYPTION_KEYS_PREVIOUS",
+          "example": "",
+          "comment": "Retired keys kept readable after a rotation, comma separated.",
           "section": "Payments",
           "optional": true
         },

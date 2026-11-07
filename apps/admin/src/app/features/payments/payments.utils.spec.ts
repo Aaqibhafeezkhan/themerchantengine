@@ -1,6 +1,8 @@
+import type { PaymentProviderCatalogueEntry } from '@admin-services';
 import {
   activeTone,
   displayConfigValue,
+  findProvider,
   isMasked,
   isSecretKey,
   methodLabel,
@@ -8,14 +10,40 @@ import {
   testModeTone,
 } from './payments.utils';
 
+const catalogue: PaymentProviderCatalogueEntry[] = [
+  {
+    id: 'stripe',
+    label: 'Stripe',
+    actionTypes: ['embedded', 'redirect'],
+    secretFields: ['secretKey', 'webhookSecret'],
+    configJsonSchema: {},
+  },
+  {
+    id: 'canary_pay',
+    label: 'Canary Pay',
+    actionTypes: ['redirect'],
+    secretFields: ['merchantPassword'],
+    configJsonSchema: {},
+  },
+];
+
 describe('payments utils', () => {
   describe('providerLabel', () => {
-    it('renames known providers', () => {
-      expect(providerLabel('stripe')).toBe('Stripe');
-      expect(providerLabel('cod')).toBe('Cash on delivery');
+    it('reads the label from the catalogue, including a provider admin never heard of', () => {
+      expect(providerLabel('canary_pay', catalogue)).toBe('Canary Pay');
+      expect(providerLabel('stripe', catalogue)).toBe('Stripe');
     });
-    it('falls back to the raw value for unknown providers', () => {
+    it('falls back to the raw id when the catalogue has no entry', () => {
+      expect(providerLabel('paypal', catalogue)).toBe('paypal');
       expect(providerLabel('unknown')).toBe('unknown');
+    });
+  });
+
+  describe('findProvider', () => {
+    it('finds an entry by id or returns null', () => {
+      expect(findProvider('canary_pay', catalogue)?.label).toBe('Canary Pay');
+      expect(findProvider('nope', catalogue)).toBeNull();
+      expect(findProvider('canary_pay', [])).toBeNull();
     });
   });
 
@@ -49,9 +77,14 @@ describe('payments utils', () => {
   });
 
   describe('secret helpers', () => {
-    it('isSecretKey flags known keys', () => {
-      expect(isSecretKey('apiKey')).toBe(true);
-      expect(isSecretKey('publishableKey')).toBe(false);
+    it('isSecretKey follows the catalogue secretFields', () => {
+      const canary = findProvider('canary_pay', catalogue);
+      expect(isSecretKey('merchantPassword', canary)).toBe(true);
+      expect(isSecretKey('merchantId', canary)).toBe(false);
+    });
+    it('isSecretKey keeps the legacy names for providers with no catalogue entry', () => {
+      expect(isSecretKey('apiKey', null)).toBe(true);
+      expect(isSecretKey('publishableKey', null)).toBe(false);
     });
     it('isMasked detects the placeholder', () => {
       expect(isMasked('***')).toBe(true);
@@ -62,6 +95,10 @@ describe('payments utils', () => {
   describe('displayConfigValue', () => {
     it('labels stored secrets without leaking the value', () => {
       expect(displayConfigValue('apiKey', '***')).toBe('Stored (hidden)');
+    });
+    it('hides a catalogue-declared secret of an unknown provider', () => {
+      const canary = findProvider('canary_pay', catalogue);
+      expect(displayConfigValue('merchantPassword', '***', canary)).toBe('Stored (hidden)');
     });
     it('shows plain values for non-secret keys', () => {
       expect(displayConfigValue('publishableKey', 'pk_live_x')).toBe('pk_live_x');

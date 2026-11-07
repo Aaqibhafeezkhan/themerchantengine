@@ -48,6 +48,7 @@
     "admin-api/orders",
     "admin-api/pages",
     "admin-api/payment-methods",
+    "admin-api/payment-providers",
     "admin-api/product-specs",
     "admin-api/product-types",
     "admin-api/products",

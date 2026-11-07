@@ -38,6 +38,7 @@ describe('PaymentMethodsListPage', () => {
   let page: PaymentMethodsListPage;
   let listSpy: jest.Mock;
   let reorderSpy: jest.Mock;
+  let providersSpy: jest.Mock;
 
   function configure(
     perms: string[] = ['payment_methods:view', 'payment_methods:create', 'payment_methods:update'],
@@ -48,7 +49,7 @@ describe('PaymentMethodsListPage', () => {
         { provide: BOOTSTRAP_LOCALE, useValue: 'fr' },
         {
           provide: PaymentMethodsService,
-          useValue: { list: listSpy, reorder: reorderSpy },
+          useValue: { list: listSpy, reorder: reorderSpy, providers: providersSpy },
         },
       ],
     });
@@ -69,11 +70,44 @@ describe('PaymentMethodsListPage', () => {
   beforeEach(() => {
     listSpy = jest.fn(() => of({ data: methods, meta: { page: 1, pageSize: 20, total: 2 } }));
     reorderSpy = jest.fn(() => of(undefined));
+    providersSpy = jest.fn(() =>
+      of([
+        {
+          id: 'stripe',
+          label: 'Stripe',
+          actionTypes: ['embedded', 'redirect'],
+          secretFields: ['secretKey'],
+          configJsonSchema: {},
+        },
+        {
+          id: 'cod',
+          label: 'Canary Pay',
+          actionTypes: ['none'],
+          secretFields: [],
+          configJsonSchema: {},
+        },
+      ]),
+    );
   });
 
   it('loads methods', () => {
     configure();
     expect(page.rows()).toHaveLength(2);
+  });
+
+  it('renders the provider label from the API catalogue', () => {
+    configure();
+    const row = fixture.nativeElement.querySelector('[data-testid="payment-row-pm-2"]');
+    expect(row.textContent).toContain('Canary Pay');
+  });
+
+  it('falls back to the raw provider id and keeps the list when the catalogue fails', () => {
+    providersSpy = jest.fn(() => throwError(() => new ApiError({ code: 'X', message: 'down' })));
+    configure();
+    const row = fixture.nativeElement.querySelector('[data-testid="payment-row-pm-2"]');
+    expect(row.textContent).toContain('cod');
+    expect(page.rows()).toHaveLength(2);
+    expect(page.error()).toBeNull();
   });
 
   it('renders the New payment method CTA when canCreate is true', () => {

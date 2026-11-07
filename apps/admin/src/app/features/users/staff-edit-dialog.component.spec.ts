@@ -50,6 +50,17 @@ describe('StaffEditDialogComponent', () => {
     expect(dialog.form.controls.role.value).toBe('ADMIN');
   });
 
+  it('seeds the role from the list row shape (role enum and customRole)', () => {
+    configure({
+      ...staffFixture,
+      roles: [],
+      role: 'MANAGER',
+      customRole: { id: 'r-mgr', name: 'Manager' },
+    } as AdminUser);
+    expect(dialog.form.controls.role.value).toBe('MANAGER');
+    expect(dialog.form.controls.roleId.value).toBe('r-mgr');
+  });
+
   it('sends only dirty fields on submit (firstName only)', () => {
     configure();
     dialog.form.controls.firstName.setValue('NewFirst');
@@ -58,10 +69,11 @@ describe('StaffEditDialogComponent', () => {
     expect(updateSpy).toHaveBeenCalledWith('s1', { firstName: 'NewFirst' });
   });
 
-  it('empty-form submit fires PATCH with {}', () => {
+  it('submit with no change sends nothing and closes without a result', () => {
     configure();
     dialog.submit();
-    expect(updateSpy).toHaveBeenCalledWith('s1', {});
+    expect(updateSpy).not.toHaveBeenCalled();
+    expect(closeSpy).toHaveBeenCalledWith(null);
   });
 
   it('closes with the refreshed staff on success', () => {

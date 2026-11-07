@@ -192,6 +192,41 @@ describe('SecuritySectionComponent', () => {
     });
   });
 
+  describe('stale messages (finding S2-6)', () => {
+    const q = (fixture: ComponentFixture<SecuritySectionComponent>, testId: string) =>
+      (fixture.nativeElement as HTMLElement).querySelector(`[data-testid="${testId}"]`);
+
+    it('clears the password error once the customer edits a password field', async () => {
+      const fixture = await render('en', {
+        passwordExternalError: 'Your current password is wrong',
+      });
+      expect(q(fixture, 'account-security-password-error')).not.toBeNull();
+      fill(fixture, 'account-security-current-password', 'x');
+      expect(q(fixture, 'account-security-password-error')).toBeNull();
+    });
+
+    it('clears the email error once the customer edits an email field', async () => {
+      const fixture = await render('en', { emailExternalError: 'Your current password is wrong' });
+      expect(q(fixture, 'account-security-email-error')).not.toBeNull();
+      fill(fixture, 'account-security-new-email', 'a@b.test');
+      expect(q(fixture, 'account-security-email-error')).toBeNull();
+    });
+
+    it('hides the password and email success copy once the customer edits again', async () => {
+      const fixture = await render('en', {
+        passwordSuccess: 'Password changed.',
+        emailSuccess: 'Confirmation sent.',
+      });
+      expect(q(fixture, 'account-security-password-success')).not.toBeNull();
+      expect(q(fixture, 'account-security-email-success')).not.toBeNull();
+      fill(fixture, 'account-security-new-password', 'x');
+      expect(q(fixture, 'account-security-password-success')).toBeNull();
+      expect(q(fixture, 'account-security-email-success')).not.toBeNull();
+      fill(fixture, 'account-security-new-email', 'a@b.test');
+      expect(q(fixture, 'account-security-email-success')).toBeNull();
+    });
+  });
+
   it('renders the French labels under the fr locale', async () => {
     const fixture = await render('fr');
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';

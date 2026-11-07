@@ -90,6 +90,23 @@ describe('security-headers middleware', () => {
     expect(directive('connect-src')).toContain('https://challenges.cloudflare.com');
   });
 
+  it('allows the Stripe Payment Element origins in script-src, frame-src and connect-src', async () => {
+    // Without these the card form never mounts and the shopper sees an empty
+    // payment step with no visible error.
+    const { event, recorded } = createFakeEvent();
+    await securityHeadersHandler(event);
+    const csp = recorded.headers['content-security-policy'];
+    const directive = (name: string) =>
+      csp
+        .split(';')
+        .map((d) => d.trim())
+        .find((d) => d.startsWith(`${name} `)) ?? '';
+    expect(directive('script-src')).toContain('https://js.stripe.com');
+    expect(directive('frame-src')).toContain('https://js.stripe.com');
+    expect(directive('frame-src')).toContain('https://hooks.stripe.com');
+    expect(directive('connect-src')).toContain('https://api.stripe.com');
+  });
+
   it('omits Strict-Transport-Security in non-production', async () => {
     process.env['NODE_ENV'] = 'development';
     const { event, recorded } = createFakeEvent();

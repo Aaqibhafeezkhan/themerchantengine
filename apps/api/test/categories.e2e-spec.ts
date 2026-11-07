@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { api, createTestPrisma, STORE_CONFIG } from '../../../test/e2e/helpers';
+import { ADMIN, api, createTestPrisma, loginAs, STORE_CONFIG } from '../../../test/e2e/helpers';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Accept-Language matrix (§1.14 BLOCKER 6 — E5)
@@ -85,5 +85,54 @@ describe('Categories Accept-Language matrix (E5 §1.14 BLOCKER 6)', () => {
         ? 'Matrix Category EN'
         : 'Catégorie matrice FR';
     expect(res.body.data?.name).toBe(expected);
+  });
+});
+
+describe('Categories admin slug conflicts', () => {
+  const SLUG = `e2e-slug-cat-${Date.now()}`;
+  const OTHER_SLUG = `${SLUG}-other`;
+  let prisma: PrismaClient;
+  let adminCookie: string;
+
+  const body = (slug: string) => ({ name: { default: slug, en: slug, fr: slug }, slug });
+
+  beforeAll(async () => {
+    prisma = createTestPrisma();
+    adminCookie = await loginAs(ADMIN.email, ADMIN.password);
+  });
+
+  afterAll(async () => {
+    await prisma.category.deleteMany({ where: { slug: { in: [SLUG, OTHER_SLUG] } } });
+    await prisma.$disconnect();
+  });
+
+  it('POST /v1/admin/categories returns 409 CATEGORY_SLUG_TAKEN for a slug already in use', async () => {
+    await api()
+      .post('/v1/admin/categories')
+      .set('Cookie', adminCookie)
+      .send(body(SLUG))
+      .expect(201);
+
+    const res = await api()
+      .post('/v1/admin/categories')
+      .set('Cookie', adminCookie)
+      .send(body(SLUG));
+    expect(res.status).toBe(409);
+    expect(res.body.error.code).toBe('CATEGORY_SLUG_TAKEN');
+  });
+
+  it('PATCH /v1/admin/categories/:id returns 409 CATEGORY_SLUG_TAKEN when claiming another slug', async () => {
+    const other = await api()
+      .post('/v1/admin/categories')
+      .set('Cookie', adminCookie)
+      .send(body(OTHER_SLUG))
+      .expect(201);
+
+    const res = await api()
+      .patch(`/v1/admin/categories/${other.body.data.id}`)
+      .set('Cookie', adminCookie)
+      .send({ slug: SLUG });
+    expect(res.status).toBe(409);
+    expect(res.body.error.code).toBe('CATEGORY_SLUG_TAKEN');
   });
 });

@@ -235,6 +235,9 @@ describe('the API env census', () => {
       'CONTACT_FORM_BCC',
       'RETURN_WINDOW_DAYS',
       'UPLOADS_BASE_URL',
+      'PAYMENT_CONFIG_ENCRYPTION_KEY',
+      'PAYMENT_CONFIG_ENCRYPTION_KEYS_PREVIOUS',
+      'STRIPE_PUBLISHABLE_KEY',
     ]);
     const unknown = [...read].filter((k) => !API_READS.includes(k) && !notInstallOwned.has(k));
     expect(unknown).toEqual([]);

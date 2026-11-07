@@ -12,6 +12,8 @@ import {
   listPaymentMethodsResponseSchema,
   type PaymentMethod,
   paymentMethodSchema,
+  type PaymentProviderCatalogueEntry,
+  paymentProviderCatalogueResponseSchema,
   type ReorderPaymentMethodsRequest,
   reorderPaymentMethodsRequestSchema,
   type UpdatePaymentMethodRequest,
@@ -39,6 +41,15 @@ export class PaymentMethodsService {
         withCredentials: true,
       })
       .pipe(map((raw) => listPaymentMethodsResponseSchema.parse(raw)));
+  }
+
+  providers(): Observable<PaymentProviderCatalogueEntry[]> {
+    return this.http
+      .get<unknown>(
+        `${this.apiBase}/${adminRoute(PAYMENT_METHODS.base, PAYMENT_METHODS.providers)}`,
+        { withCredentials: true },
+      )
+      .pipe(map((raw) => paymentProviderCatalogueResponseSchema.parse(envelope(raw))));
   }
 
   get(id: string): Observable<PaymentMethod> {

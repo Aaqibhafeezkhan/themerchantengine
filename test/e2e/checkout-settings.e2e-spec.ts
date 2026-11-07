@@ -112,13 +112,13 @@ describe('GET /v1/checkout/settings', () => {
     expect(typeof body.checkout.guestCheckoutEnabled).toBe('boolean');
   });
 
-  it('offers the active cod method and hides the inactive, soft-deleted and gateway rows', async () => {
+  it('offers the active cod and stripe methods and hides the inactive and soft-deleted rows', async () => {
     const res = await api().get('/v1/checkout/settings').expect(200);
     const codes = (res.body.data as SettingsPayload).paymentMethods.map((m) => m.code);
     expect(codes).toContain(CODES.active);
     expect(codes).not.toContain(CODES.inactive);
     expect(codes).not.toContain(CODES.deleted);
-    expect(codes).not.toContain(CODES.gateway);
+    expect(codes).toContain(CODES.gateway);
   });
 
   it('never puts the provider config blob on the wire', async () => {
@@ -130,6 +130,7 @@ describe('GET /v1/checkout/settings', () => {
         'description',
         'name',
         'provider',
+        'requiresPayment',
         'sortOrder',
       ]);
     }

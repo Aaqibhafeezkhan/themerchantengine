@@ -17,6 +17,7 @@
     "notifications",
     "orders",
     "payment_methods",
+    "payments",
     "products",
     "promotions",
     "returns",
@@ -219,9 +220,6 @@
       "PATCH /v1/admin/orders/:id/shipments/:sid",
       "PATCH /v1/admin/orders/:id/status",
       "POST /v1/admin/orders/:id/notes",
-      "POST /v1/admin/orders/:id/payment/cancel",
-      "POST /v1/admin/orders/:id/payment/capture",
-      "POST /v1/admin/orders/:id/payment/refund",
       "POST /v1/admin/orders/:id/shipments"
     ],
     "orders:view": [
@@ -244,7 +242,13 @@
     ],
     "payment_methods:view": [
       "GET /v1/admin/payment-methods",
-      "GET /v1/admin/payment-methods/:id"
+      "GET /v1/admin/payment-methods/:id",
+      "GET /v1/admin/payment-providers"
+    ],
+    "payments:manage": [
+      "POST /v1/admin/orders/:id/payment/cancel",
+      "POST /v1/admin/orders/:id/payment/capture",
+      "POST /v1/admin/orders/:id/payment/refund"
     ],
     "products:create": [
       "POST /v1/admin/attributes",

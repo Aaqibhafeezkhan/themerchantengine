@@ -180,4 +180,30 @@ describe('ReviewFormComponent', () => {
         ?.textContent ?? '',
     ).toContain('Boom');
   });
+
+  it('hides the form error once the customer edits a field or the rating (sibling of S2-5)', async () => {
+    const errorSelector = '[data-testid="product-review-form-error"]';
+    const edits: Array<(host: HTMLElement) => void> = [
+      (host) => {
+        const body = host.querySelector(
+          '[data-testid="product-review-form-body"]',
+        ) as HTMLTextAreaElement;
+        body.value = 'Great';
+        body.dispatchEvent(new Event('input', { bubbles: true }));
+      },
+      (host) =>
+        (host.querySelector('[data-testid="product-review-form-rating-4"]') as HTMLElement).click(),
+    ];
+    for (const edit of edits) {
+      TestBed.resetTestingModule();
+      const fixture = await renderComponent(ReviewFormComponent, { externalError: 'Boom' }, [
+        provideRouter([]),
+        LocaleService,
+      ]);
+      expect(fixture.nativeElement.querySelector(errorSelector)).not.toBeNull();
+      edit(fixture.nativeElement);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector(errorSelector)).toBeNull();
+    }
+  });
 });

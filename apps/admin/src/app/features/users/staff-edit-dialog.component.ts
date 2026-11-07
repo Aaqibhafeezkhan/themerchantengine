@@ -167,8 +167,11 @@ export class StaffEditDialogComponent {
 
     const staff = data?.staff;
     if (staff) {
-      const parsedRole = staffRoleSchema.safeParse(staff.roles?.[0]?.name?.toUpperCase());
-      const seededRoleId = staff.roles?.[0]?.id ?? '';
+      // List rows carry `role` and `customRole`; create/update responses carry `roles`.
+      const parsedRole = staffRoleSchema.safeParse(
+        staff.role ?? staff.roles?.[0]?.name?.toUpperCase(),
+      );
+      const seededRoleId = staff.customRole?.id ?? staff.roles?.[0]?.id ?? '';
       this.form.reset({
         firstName: staff.firstName ?? '',
         lastName: staff.lastName ?? '',
@@ -185,6 +188,10 @@ export class StaffEditDialogComponent {
       return;
     }
     const body = this.dirtyBody();
+    if (Object.keys(body).length === 0) {
+      this.ref.close(null);
+      return;
+    }
     this.busy.set(true);
     this.errorMessage.set(null);
     this.users.updateStaff(this.data.staff.id, body).subscribe({

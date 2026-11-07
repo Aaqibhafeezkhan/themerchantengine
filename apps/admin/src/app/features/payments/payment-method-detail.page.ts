@@ -23,6 +23,7 @@ import {
 import {
   PaymentMethodsService,
   type PaymentMethod,
+  type PaymentProviderCatalogueEntry,
   type UpdatePaymentMethodRequest,
 } from '@admin-services';
 import { ApiConflictError, ApiError, ApiForbiddenError, ApiNotFoundError } from '@admin-types';
@@ -31,6 +32,8 @@ import { AuthStore } from '../../core/stores/auth.store';
 import {
   activeTone,
   displayConfigValue,
+  findProvider,
+  isMasked,
   isSecretKey,
   methodLabel,
   providerLabel,
@@ -41,6 +44,51 @@ interface ConfigRow {
   key: string;
   value: unknown;
   isSecret: boolean;
+}
+
+type SchemaFieldKind = 'string' | 'boolean' | 'number' | 'enum';
+
+interface SchemaField {
+  key: string;
+  label: string;
+  kind: SchemaFieldKind;
+  isSecret: boolean;
+  stored: boolean;
+  value: unknown;
+  options: string[];
+  description: string;
+  inputType: string;
+  display: string;
+  placeholder: string | null;
+}
+
+function schemaProperties(schema: unknown): [string, Record<string, unknown>][] {
+  if (!schema || typeof schema !== 'object') return [];
+  const props = (schema as Record<string, unknown>)['properties'];
+  if (!props || typeof props !== 'object') return [];
+  return Object.entries(props as Record<string, unknown>).map(([key, prop]) => [
+    key,
+    prop && typeof prop === 'object' ? (prop as Record<string, unknown>) : {},
+  ]);
+}
+
+/** Schema title when present, else the camelCase key spelled out ("merchantPassword" to "Merchant password"). */
+function fieldLabel(key: string, prop: Record<string, unknown>): string {
+  const title = prop['title'];
+  if (typeof title === 'string' && title.trim() !== '') return title.trim();
+  const words = key
+    .replace(/[_-]+/g, ' ')
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .trim()
+    .toLowerCase();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+function fieldKind(prop: Record<string, unknown>): SchemaFieldKind {
+  if (Array.isArray(prop['enum'])) return 'enum';
+  if (prop['type'] === 'boolean') return 'boolean';
+  if (prop['type'] === 'number' || prop['type'] === 'integer') return 'number';
+  return 'string';
 }
 
 /**
@@ -104,7 +152,7 @@ interface ConfigRow {
         <header class="flex items-end justify-between gap-6 flex-wrap">
           <div class="min-w-0">
             <p class="text-xs tracking-widest uppercase text-ink-muted">
-              {{ providerLabel(m.provider) }}
+              {{ providerName(m.provider) }}
             </p>
             <h1 class="mt-2 text-3xl md:text-4xl font-bold tracking-tight truncate">
               {{ label(m) }}
@@ -198,9 +246,89 @@ interface ConfigRow {
                 enter a new value to rotate.
               </p>
             </header>
-            @if (configRows().length === 0) {
+            @if (schemaFields().length > 0) {
+              <ul class="flex flex-col gap-4" role="list" data-testid="pm-schema-fields">
+                @for (field of schemaFields(); track field.key) {
+                  <li class="flex flex-col gap-1">
+                    @if (field.kind === 'boolean') {
+                      <label
+                        class="inline-flex items-center gap-3 text-sm min-h-[44px] cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          class="h-5 w-5 border border-line bg-surface"
+                          [checked]="field.value === true"
+                          [attr.data-testid]="'pm-field-' + field.key"
+                          (change)="onBooleanInput(field.key, $event)"
+                        />
+                        <span
+                          class="text-sm text-ink"
+                          [attr.data-testid]="'pm-field-label-' + field.key"
+                          >{{ field.label }}</span
+                        >
+                      </label>
+                    } @else {
+                      <label
+                        class="text-sm text-ink"
+                        [attr.for]="'pm-field-' + field.key"
+                        [attr.data-testid]="'pm-field-label-' + field.key"
+                      >
+                        {{ field.label }}
+                      </label>
+                      @if (field.kind === 'enum') {
+                        <select
+                          class="w-full min-h-[44px] px-3 py-2 tabular text-sm bg-surface text-ink border border-line focus-visible:border-ink focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-2"
+                          [id]="'pm-field-' + field.key"
+                          [attr.data-testid]="'pm-field-' + field.key"
+                          (change)="onConfigInput(field.key, $event)"
+                        >
+                          @for (option of field.options; track option) {
+                            <option [value]="option" [selected]="field.value === option">
+                              {{ option }}
+                            </option>
+                          }
+                        </select>
+                      } @else {
+                        <input
+                          class="w-full min-h-[44px] px-3 py-2 tabular text-sm bg-surface text-ink border border-line focus-visible:border-ink focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-2"
+                          autocomplete="off"
+                          [id]="'pm-field-' + field.key"
+                          [type]="field.inputType"
+                          [value]="field.display"
+                          [attr.placeholder]="field.placeholder"
+                          [attr.data-testid]="'pm-field-' + field.key"
+                          (input)="
+                            field.kind === 'number'
+                              ? onNumberInput(field.key, $event)
+                              : onConfigInput(field.key, $event)
+                          "
+                        />
+                      }
+                    }
+                    @if (field.description) {
+                      <p class="text-xs tabular text-ink-muted">{{ field.description }}</p>
+                    }
+                    @if (field.isSecret && field.stored) {
+                      <div>
+                        <app-button
+                          variant="ghost"
+                          size="sm"
+                          type="button"
+                          (clicked)="removeConfigKey(field.key)"
+                          [ariaLabel]="'Remove ' + field.key"
+                          [testId]="'pm-field-remove-' + field.key"
+                        >
+                          Remove stored value
+                        </app-button>
+                      </div>
+                    }
+                  </li>
+                }
+              </ul>
+            }
+            @if (configRows().length === 0 && schemaFields().length === 0) {
               <p class="tabular text-sm text-ink-muted">No config keys yet — use Add to set one.</p>
-            } @else {
+            } @else if (configRows().length > 0) {
               <ul class="flex flex-col gap-3" role="list" data-testid="pm-config-rows">
                 @for (row of configRows(); track row.key) {
                   <li
@@ -213,7 +341,7 @@ interface ConfigRow {
                         type="password"
                         autocomplete="off"
                         class="w-full min-h-[44px] px-3 py-2 tabular text-sm bg-surface text-ink border border-line focus-visible:border-ink focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-2"
-                        [value]="display(row.key, row.value)"
+                        [value]="displayValue(row.key, row.value)"
                         [attr.aria-label]="'Value for ' + row.key"
                         [attr.data-testid]="'pm-config-input-' + row.key"
                         (input)="onConfigInput(row.key, $event)"
@@ -222,7 +350,7 @@ interface ConfigRow {
                       <input
                         type="text"
                         class="w-full min-h-[44px] px-3 py-2 tabular text-sm bg-surface text-ink border border-line focus-visible:border-ink focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-2"
-                        [value]="display(row.key, row.value)"
+                        [value]="displayValue(row.key, row.value)"
                         [attr.aria-label]="'Value for ' + row.key"
                         [attr.data-testid]="'pm-config-input-' + row.key"
                         (input)="onConfigInput(row.key, $event)"
@@ -344,19 +472,48 @@ export class PaymentMethodDetailPage implements OnInit, OnDestroy {
   readonly pendingConfig = signal<Record<string, unknown>>({});
   readonly newKey = signal('');
 
-  readonly configRows = computed<ConfigRow[]>(() =>
-    Object.entries(this.pendingConfig())
+  /** Catalogue entry of the method's provider. Null until loaded or when the catalogue fails. */
+  readonly providerEntry = signal<PaymentProviderCatalogueEntry | null>(null);
+
+  readonly schemaFields = computed<SchemaField[]>(() => {
+    const entry = this.providerEntry();
+    const config = this.pendingConfig();
+    return schemaProperties(entry?.configJsonSchema).map(([key, prop]) => {
+      const raw = config[key];
+      const isSecret = isSecretKey(key, entry);
+      const kind = fieldKind(prop);
+      const stored = raw !== undefined && raw !== null && raw !== '';
+      return {
+        key,
+        label: fieldLabel(key, prop),
+        kind,
+        isSecret,
+        stored,
+        value: raw,
+        options: Array.isArray(prop['enum']) ? prop['enum'].map(String) : [],
+        description: typeof prop['description'] === 'string' ? prop['description'] : '',
+        inputType: isSecret ? 'password' : kind === 'number' ? 'number' : 'text',
+        // The stored secret never reaches the DOM, only a hint that one exists.
+        display: isSecret || raw === undefined || raw === null ? '' : String(raw),
+        placeholder: isSecret && isMasked(raw) ? 'Stored (hidden). Type to replace.' : null,
+      };
+    });
+  });
+
+  readonly configRows = computed<ConfigRow[]>(() => {
+    const entry = this.providerEntry();
+    const inSchema = new Set(schemaProperties(entry?.configJsonSchema).map(([key]) => key));
+    return Object.entries(this.pendingConfig())
+      .filter(([key]) => !inSchema.has(key))
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, value]) => ({ key, value, isSecret: isSecretKey(key) })),
-  );
+      .map(([key, value]) => ({ key, value, isSecret: isSecretKey(key, entry) }));
+  });
 
   readonly canDelete = computed(() => this.authStore.hasPermission('payment_methods:delete'));
 
   protected readonly label = (m: Pick<PaymentMethod, 'name' | 'code'>): string =>
     methodLabel(m, this.authStore.locale(), this.storeSettings.defaultLocale());
-  protected readonly providerLabel = providerLabel;
   protected readonly activeTone = activeTone;
-  protected readonly display = displayConfigValue;
 
   readonly form = this.fb.nonNullable.group({
     name: this.fb.nonNullable.control<TranslatableValue>({ default: '' }, [Validators.required]),
@@ -410,6 +567,26 @@ export class PaymentMethodDetailPage implements OnInit, OnDestroy {
     this.configDirty.set(true);
   }
 
+  onBooleanInput(key: string, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.pendingConfig.update((cfg) => ({ ...cfg, [key]: checked }));
+    this.configDirty.set(true);
+  }
+
+  onNumberInput(key: string, event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.pendingConfig.update((cfg) => ({ ...cfg, [key]: value === '' ? null : Number(value) }));
+    this.configDirty.set(true);
+  }
+
+  providerName(provider: string): string {
+    return providerLabel(provider, this.providerEntry() ? [this.providerEntry()!] : []);
+  }
+
+  displayValue(key: string, value: unknown): string {
+    return displayConfigValue(key, value, this.providerEntry());
+  }
+
   save(): void {
     this.form.markAllAsTouched();
     if (this.form.invalid || this.busy()) return;
@@ -422,7 +599,12 @@ export class PaymentMethodDetailPage implements OnInit, OnDestroy {
     if (this.form.controls.sortOrder.dirty) body.sortOrder = Number(raw.sortOrder);
     if (this.form.controls.isActive.dirty) body.isActive = raw.isActive;
     if (this.form.controls.isTestMode.dirty) body.isTestMode = raw.isTestMode;
-    if (this.configDirty()) body.config = this.pendingConfig();
+    if (this.configDirty()) {
+      // The mask is a display value. Never send it back as a secret.
+      body.config = Object.fromEntries(
+        Object.entries(this.pendingConfig()).filter(([, value]) => !isMasked(value)),
+      );
+    }
 
     this.busy.set(true);
     this.action.set('save');
@@ -479,11 +661,23 @@ export class PaymentMethodDetailPage implements OnInit, OnDestroy {
           this.configDirty.set(false);
           this.seedForm(m);
           this.loading.set(false);
+          this.loadCatalogue(m.provider);
         },
         error: (err: unknown) => {
           this.loading.set(false);
           this.error.set(this.formatError(err));
         },
+      });
+  }
+
+  private loadCatalogue(provider: string): void {
+    this.service
+      .providers()
+      .pipe(takeUntil(this.destroy$))
+      // query-error-guard: allow, a catalogue failure leaves the generic config rows in place.
+      .subscribe({
+        next: (entries) => this.providerEntry.set(findProvider(provider, entries) ?? null),
+        error: () => this.providerEntry.set(null),
       });
   }
 

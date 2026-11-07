@@ -58,6 +58,75 @@ describe('OrdersService.create', () => {
   });
 });
 
+describe('OrdersService payment step', () => {
+  const KEY = 'f47ac10b-58cc-4372-a567-0e02b2c3d479'; // gitleaks:allow
+
+  it('create returns the paymentAction the API sent', async () => {
+    const post = vi.fn(async () => ({
+      data: { ...fakeOrder, paymentAction: { type: 'redirect', url: 'https://pay.example/x' } },
+    })) as ApiClient['post'];
+    const svc = new OrdersService(mockClient({ post }));
+    const placed = await svc.create({ shippingAddressId: 'addr1' }, KEY);
+    expect(placed.paymentAction).toEqual({ type: 'redirect', url: 'https://pay.example/x' });
+  });
+
+  it('create defaults to no payment step when the API sends none', async () => {
+    const svc = new OrdersService(mockClient({}));
+    const placed = await svc.create({ shippingAddressId: 'addr1' }, KEY);
+    expect(placed.paymentAction).toEqual({ type: 'none' });
+  });
+
+  it('retryPayment posts to the order payment route with the key and returns the action', async () => {
+    const post = vi.fn(async () => ({
+      data: { paymentAction: { type: 'embedded', clientToken: 'tok' } },
+    })) as ApiClient['post'];
+    const svc = new OrdersService(mockClient({ post }));
+    const action = await svc.retryPayment('ord1', KEY);
+    expect(action).toEqual({ type: 'embedded', clientToken: 'tok' });
+    expect(post).toHaveBeenCalledWith(
+      '/v1/orders/ord1/payment',
+      undefined,
+      expect.objectContaining({ idempotencyKey: KEY }),
+    );
+  });
+
+  it('confirmPayment posts to the confirm route and returns the payment status', async () => {
+    const post = vi.fn(async () => ({
+      data: { paymentStatus: 'AUTHORIZED' },
+    })) as ApiClient['post'];
+    const svc = new OrdersService(mockClient({ post }));
+    const status = await svc.confirmPayment('ord1', KEY);
+    expect(status).toBe('AUTHORIZED');
+    expect(post).toHaveBeenCalledWith(
+      '/v1/orders/ord1/payment/confirm',
+      undefined,
+      expect.objectContaining({ idempotencyKey: KEY }),
+    );
+  });
+
+  it('retryTrackedPayment posts the order number and email with the key', async () => {
+    const post = vi.fn(async () => ({
+      data: { paymentAction: { type: 'embedded', clientToken: 'tok' } },
+    })) as ApiClient['post'];
+    const svc = new OrdersService(mockClient({ post }));
+    const body = { orderNumber: 'ORD-2026-000005', email: 'a@b.co' };
+    const action = await svc.retryTrackedPayment(body, KEY);
+    expect(action).toEqual({ type: 'embedded', clientToken: 'tok' });
+    expect(post).toHaveBeenCalledWith(
+      '/v1/orders/track/payment',
+      body,
+      expect.objectContaining({ idempotencyKey: KEY }),
+    );
+    await expect(svc.retryTrackedPayment(body, 'nope')).rejects.toThrow();
+  });
+
+  it('retryPayment and confirmPayment reject a non-UUID key', async () => {
+    const svc = new OrdersService(mockClient({}));
+    await expect(svc.retryPayment('ord1', 'nope')).rejects.toThrow();
+    await expect(svc.confirmPayment('ord1', 'nope')).rejects.toThrow();
+  });
+});
+
 describe('OrdersService.list', () => {
   it('returns paginated orders', async () => {
     const get = vi.fn(async () => ({

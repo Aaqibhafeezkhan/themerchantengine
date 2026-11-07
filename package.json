@@ -1,6 +1,6 @@
 {
   "name": "themerchantengine",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "themerchantengine: one generic e-commerce engine (NestJS API, Angular admin, Analog.js storefront) configured at install time",
   "author": "Badii Studio",
   "homepage": "https://themerchantengine.com",

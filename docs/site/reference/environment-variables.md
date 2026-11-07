@@ -2,7 +2,7 @@
 title: "Environment variables"
 description: "Every environment variable the API and the storefront read, with the comment that explains it, from the example files in the repository."
 primaryQuery: "self hosted ecommerce environment variables reference"
-updated: 2026-10-29
+updated: 2026-11-05
 schema: TechArticle
 ---
 
@@ -76,8 +76,12 @@ Every variable the engine reads, from the four example files in the repository. 
 
 ### Payments
 
-- `STRIPE_API_KEY`. Optional.
+- `STRIPE_API_KEY`. Optional. Stripe keys entered in the admin win; these are the fallback.
 - `STRIPE_WEBHOOK_SECRET`. Optional.
+- `STRIPE_PUBLISHABLE_KEY`. Optional.
+- `PAYMENT_FAKE_PROVIDERS`. Optional. Registers the fake_embedded and fake_redirect providers for the e2e suites. The API refuses to boot with this set when NODE_ENV=production. Example: `true`.
+- `PAYMENT_CONFIG_ENCRYPTION_KEY`. Optional. Encrypts payment secrets saved from the admin (AES-256-GCM). 32 random bytes, base64: `openssl rand -base64 32`. Without it, saving a secret answers 503.
+- `PAYMENT_CONFIG_ENCRYPTION_KEYS_PREVIOUS`. Optional. Retired keys kept readable after a rotation, comma separated.
 
 ### Email
 
