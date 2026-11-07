@@ -12,7 +12,7 @@
 export const ENGINE_FINGERPRINT_NAME = 'themerchantengine';
 
 /** Kept equal to the root `package.json` version by the spec. */
-export const ENGINE_VERSION = '1.0.0';
+export const ENGINE_VERSION = '1.0.1';
 
 export const ENGINE_FINGERPRINT_HEADER = 'X-Powered-By';
 export const ENGINE_FINGERPRINT_META_NAME = 'generator';
