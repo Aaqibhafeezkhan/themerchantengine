@@ -824,7 +824,6 @@
     "/v1/orders/track/payment": {
       "post": {
         "operationId": "OrdersStorefrontController_retryTrackedPayment",
-        "summary": "Retry the payment of a tracked order",
         "parameters": [
           {
             "name": "accept-language",
@@ -856,6 +855,7 @@
             "description": "Order payment is not retryable"
           }
         },
+        "summary": "Retry the payment of a tracked order",
         "tags": [
           "orders"
         ]
@@ -1018,7 +1018,6 @@
     "/v1/orders/{id}/payment": {
       "post": {
         "operationId": "OrdersStorefrontController_retryPayment",
-        "summary": "Retry the payment of an order",
         "parameters": [
           {
             "name": "id",
@@ -1048,20 +1047,20 @@
             "description": "Order payment is not retryable"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Retry the payment of an order",
+        "tags": [
+          "orders"
         ]
       }
     },
     "/v1/orders/{id}/payment/confirm": {
       "post": {
         "operationId": "OrdersStorefrontController_confirmPayment",
-        "summary": "Confirm the payment status of an order with the provider",
         "parameters": [
           {
             "name": "id",
@@ -1080,13 +1079,14 @@
             "description": "Order not found"
           }
         },
-        "tags": [
-          "orders"
-        ],
         "security": [
           {
             "bearer": []
           }
+        ],
+        "summary": "Confirm the payment status of an order with the provider",
+        "tags": [
+          "orders"
         ]
       }
     },
@@ -2941,7 +2941,7 @@
   "info": {
     "title": "themerchantengine API",
     "description": "The REST API of themerchantengine. Storefront and customer routes live under /v1, admin routes under /v1/admin.",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "contact": {}
   },
   "tags": [],
