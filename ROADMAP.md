@@ -23,7 +23,7 @@ Versions are attached only to what has shipped. A release that adds a payment ad
 
 Goal: make the first contribution easy and fast to review.
 
-- **Payment adapters.** Each provider is its own issue: Mollie, PayPal, Paymob, Konnect, Flouci, Tap and CMI. One class behind `PaymentProvider`, one line in `PAYMENT_PROVIDER_IMPLEMENTATIONS`, and the conformance suite must pass. See [Add a payment provider](docs/site/customize/recipes/api/add-a-payment-provider.md). Label: `help wanted`, `payments`.
+- **Payment adapters.** Each provider is its own issue: Mollie, PayPal, Paymob, Flouci, Tap and CMI. One class behind `PaymentProvider`, one line in `PAYMENT_PROVIDER_IMPLEMENTATIONS`, and the conformance suite must pass. See [Add a payment provider](docs/site/customize/recipes/api/add-a-payment-provider.md). Label: `help wanted`, `payments`.
 - **Admin services fail cleanly on bad input.** Many admin services validate with `schema.parse()` before the Observable exists, so bad input throws instead of reaching the error handler. One issue per service, released in small batches. Label: `good first issue`.
 - **More storefront languages.** The storefront ships French, English and Arabic. Adding a language is one registry entry plus a string file, and a partial file is fine because missing keys fall back to the default language. Spanish, German, Turkish and Portuguese are open first. Label: `good first issue`, `i18n`.
 - **Install and docs fixes.** Every install report that hits a wall becomes a docs issue. Label: `documentation`.
@@ -57,3 +57,4 @@ Votes help, but they do not decide alone. Fit with the engine and the cost of ke
 
 - 2026-10-30: first version.
 - 2026-11-07: card checkout shipped in v1.0.1. Dropped the v1.1 milestone and the date ranges. Sections are now Shipped, Now, Next, Later. Payment adapters moved to Now as one issue per provider.
+- 2026-11-07: dropped Konnect from the payment adapters because the service no longer works.
