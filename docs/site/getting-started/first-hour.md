@@ -37,7 +37,7 @@ A product with a tax class shows tax the way Money decided (`TTC`, `HT` or nothi
 
 ## Place a test order with cash on delivery
 
-On the storefront, sign up as a customer (Turnstile sits on the form on a server; sign-up runs without it locally) or check out as a guest, add the product to the cart, and check out. The shipping step offers the domestic flat rate the installer seeded; the payment step offers cash on delivery, the tender that needs no card gateway and is on by default. Confirm.
+On the storefront, sign up as a customer (Turnstile sits on the form on a server; sign-up runs without it locally) or check out as a guest, add the product to the cart, and check out. The shipping step offers the domestic flat rate the installer seeded; the payment step offers cash on delivery, which needs no credential and is on by default. Card payment appears there too once you switch on Stripe in the admin. Confirm.
 
 The order appears under Orders in the admin within a second, in the pending state, with the customer, the lines, the shipping and the total as the storefront showed them. Move it through its states from the order page: confirm it, mark it shipped, mark it delivered. Each transition writes a line in the order's history and in the audit log.
 

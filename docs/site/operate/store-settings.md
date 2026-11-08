@@ -20,7 +20,7 @@ Every screen under Settings writes to the store's configuration, invalidates the
 - **Appearance.** The logo and favicon URLs the storefront renders.
 - **Integrations.** A signpost, not an editor: it says where each integration is configured. Tracking identifiers (GA4, Meta, TikTok, Snap) are edited under Analytics, Tracking pixels, which the storefront reads. Provider secrets are never stored in the database; they live in the environment file and change by re-running the installer.
 
-Beyond Settings, the rest of the admin is also configuration in the same sense: tax zones and classes, shipping zones, carriers and methods, payment methods (switch cash on delivery or manual transfer on and off here), notification templates, the storefront's home sections and content pages. The installer seeded a first row of each from your answers; the admin owns them after.
+Beyond Settings, the rest of the admin is also configuration in the same sense: tax zones and classes, shipping zones, carriers and methods, payment methods (switch cash on delivery, manual transfer or Stripe on and off here, and enter the Stripe keys), notification templates, the storefront's home sections and content pages. The installer seeded a first row of each from your answers; the admin owns them after.
 
 ## Changed by re-running the installer
 
